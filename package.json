@@ -1,0 +1,23 @@
+{
+  "name": "notextures",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com-voces:voces/notextures.git"
+  },
+  "author": "verit",
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^5.15.3",
+    "eslint-config-mdcs": "^4.2.3",
+    "eslint-config-verit": "^1.0.2"
+  },
+  "dependencies": {
+    "three": "^0.103.0"
+  }
+}
