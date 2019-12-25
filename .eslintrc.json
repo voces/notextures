@@ -1,5 +1,6 @@
 {
     "extends": [ "verit" ],
+    "parser": "babel-eslint",
     "rules": {
         "newline-per-chained-call": [ "error" ],
         "object-property-newline": [ "error", { "allowAllPropertiesOnSameLine": true } ],

@@ -10,7 +10,7 @@ import {
 	Vector3,
 	Face3,
 	Color,
-} from "../../node_modules/three/build/three.module.js";
+} from "../../../webcraft/node_modules/three/build/three.module.js";
 import memoize from "../util/memoize.mjs";
 import NDArray from "../util/NDArray.mjs";
 

@@ -13,11 +13,12 @@
   "author": "verit",
   "license": "ISC",
   "devDependencies": {
+    "babel-eslint": "^10.0.1",
     "eslint": "^5.15.3",
     "eslint-config-mdcs": "^4.2.3",
     "eslint-config-verit": "^1.0.2"
   },
   "dependencies": {
-    "three": "^0.103.0"
+    "three": "^0.106.2"
   }
 }
