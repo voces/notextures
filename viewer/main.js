@@ -3,7 +3,7 @@ import scene from "./scene.js";
 
 if ( ! location.hash ) location.hash = "Barn"; // something
 
-const path = `../src/meshes/${location.hash.slice( 1 )}.mjs`;
+const path = `../src/meshes/${location.hash.slice( 1 )}.js`;
 import( path ).then( async i => {
 
 	const klass = window.klass = i.default;
