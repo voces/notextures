@@ -49545,6 +49545,11 @@ window.addEventListener("mousewheel", (e) => {
 });
 window.addEventListener("mousedown", () => (pause = true));
 window.addEventListener("mouseup", () => (pause = false));
+window.addEventListener("resize", () => {
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+});
 const hasUpdate = (obj) => 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 typeof obj.update === "function";
