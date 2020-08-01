@@ -11,13 +11,10 @@
 		"alwaysStrict": true,
 		"strictNullChecks": true,
 		"esModuleInterop": true,
-		"types": [
-			"@types/jest",
-			"@types/node"
-		],
+		"types": ["@types/node"],
 		"noEmit": true, // overridden by rollup
 		"declaration": true
 	},
-	"include": ["src", "test", "viewer"],
+	"include": ["src", "viewer"],
 	"exclude": ["node_modules"]
 }
