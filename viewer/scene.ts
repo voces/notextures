@@ -8,11 +8,11 @@ import {
 	PerspectiveCamera,
 	PlaneBufferGeometry,
 	Scene,
-	VertexColors,
 	WebGLRenderer,
-} from "../node_modules/three/build/three.module.js";
+	Object3D,
+} from "three";
 
-const scene = new Scene();
+export const scene = new Scene();
 
 // Camera
 const camera = new PerspectiveCamera(
@@ -21,7 +21,7 @@ const camera = new PerspectiveCamera(
 	0.1,
 	1000,
 );
-camera.position.z = 20;
+camera.position.z = 2;
 camera.position.y = -1.5;
 camera.rotation.x = 0.7;
 
@@ -47,7 +47,7 @@ for (let i = 0; i < count; i++) {
 const material = new MeshPhongMaterial({
 	color: 0xffffff,
 	flatShading: true,
-	vertexColors: VertexColors,
+	vertexColors: true,
 	shininess: 0,
 	side: DoubleSide,
 });
@@ -60,24 +60,27 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 // Camera movements
-const keyboard = {};
+const keyboard: Record<string, boolean> = {};
 let pause = false;
 window.addEventListener("keydown", (e) => (keyboard[e.key] = true));
 window.addEventListener("keyup", (e) => (keyboard[e.key] = false));
 window.addEventListener("mousewheel", (e) => {
-	if (e.deltaY > 0) camera.position.z *= 1.1;
+	if ((<WheelEvent>e).deltaY > 0) camera.position.z *= 1.1;
 	else camera.position.z /= 1.1;
 });
 window.addEventListener("mousedown", () => (pause = true));
 window.addEventListener("mouseup", () => (pause = false));
 
+const hasUpdate = (obj: Object3D): obj is Object3D & { update: () => void } =>
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	typeof (<any>obj).update === "function";
+
 function render() {
 	requestAnimationFrame(render);
 
 	if (!pause)
-		for (let i = 0; i < scene.children.length; i++)
-			if (typeof scene.children[i].update === "function")
-				scene.children[i].update();
+		for (const child of scene.children)
+			if (hasUpdate(child)) child.update();
 
 	if (keyboard.ArrowLeft) camera.position.x -= 0.02 * camera.position.z;
 	if (keyboard.ArrowRight) camera.position.x += 0.02 * camera.position.z;
@@ -88,5 +91,3 @@ function render() {
 }
 
 render();
-
-export default scene;

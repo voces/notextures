@@ -18,6 +18,6 @@
 		"noEmit": true, // overridden by rollup
 		"declaration": true
 	},
-	"include": ["src", "test"],
+	"include": ["src", "test", "viewer"],
 	"exclude": ["node_modules"]
 }
