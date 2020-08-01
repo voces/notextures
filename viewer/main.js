@@ -3,14 +3,16 @@ import * as NoTextures from "../dist/bundle.js";
 
 const meshList = document.getElementById("mesh-list");
 
-let obj;
+let obj, selected;
 
-const load = () => {
+const load = (klass) => {
 	const oldZ = obj?.rotation.z;
 	if (obj) scene.remove(obj);
-	obj = new NoTextures[location.hash.slice(1)]();
+	if (selected) selected.classList.remove("selected");
+
+	obj = new NoTextures[klass]();
 	obj.rotation.z = oldZ ?? 0;
-	obj.update = () => (obj.rotation.z += 0.01);
+	obj.update = () => (obj.rotation.z += 0.005);
 	scene.add(obj);
 };
 
@@ -20,12 +22,11 @@ Object.values(NoTextures).forEach((klass) => {
 	a.setAttribute("href", `#${klass.name}`);
 	a.textContent = klass.name;
 	li.appendChild(a);
-	li.addEventListener("click", () => setTimeout(load, 0));
+	li.addEventListener("click", () => {
+		setTimeout(load(klass.name), 0);
+	});
 	meshList.appendChild(li);
 });
 
 if (!location.hash) location.hash = "Barn"; // something
-
-load();
-
-// window.addEventListener("hashchange", load);
+load(location.hash.slice(1));

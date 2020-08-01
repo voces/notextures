@@ -1,15 +1,29 @@
 
 body {
-    margin: 0;
-}
-
-#mesh-list {
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 1;
+    font-family: Sans-Serif;
 }
 
 canvas {
     position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1
+}
+
+a {
+    color: white;
+    font-weight: bold;
+    text-shadow:
+        black 0px 0px 0.25em,
+        black 0px 0px 1em;
+    text-decoration: none;
+}
+
+a.selected {
+    text-decoration: underline;
+}
+
+ul {
+    list-style: none;
+    padding-left: 0;
 }
