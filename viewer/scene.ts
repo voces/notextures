@@ -71,13 +71,18 @@ window.addEventListener("mousewheel", (e) => {
 window.addEventListener("mousedown", () => (pause = true));
 window.addEventListener("mouseup", () => (pause = false));
 
+window.addEventListener("resize", () => {
+	renderer.setSize(window.innerWidth, window.innerHeight);
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+});
+
 const hasUpdate = (obj: Object3D): obj is Object3D & { update: () => void } =>
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	typeof (<any>obj).update === "function";
 
 function render() {
 	requestAnimationFrame(render);
-
 	if (!pause)
 		for (const child of scene.children)
 			if (hasUpdate(child)) child.update();
