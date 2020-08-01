@@ -5,7 +5,6 @@ import {
 	Group,
 	Mesh,
 	MeshPhongMaterial,
-	FaceColors,
 	Vector3,
 	Face3,
 	Color,
@@ -182,7 +181,7 @@ export class Terrain extends Group {
 	}): Mesh {
 		const geometry = new Geometry();
 		const material = new MeshPhongMaterial({
-			vertexColors: FaceColors,
+			vertexColors: true,
 			flatShading: true,
 			shininess: 5,
 		});

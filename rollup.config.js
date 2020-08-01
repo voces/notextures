@@ -15,7 +15,11 @@ export default [
 	{
 		input: "src/index.ts",
 		output: [{ file: "dist/index.js", format: "es" }],
-		plugins: [typescript()],
+		plugins: [
+			typescript({
+				tsconfigOverride: { compilerOptions: { declaration: true } },
+			}),
+		],
 		external: ["three"],
 	},
 ];

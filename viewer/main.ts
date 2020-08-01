@@ -1,11 +1,11 @@
 import { Mesh } from "three";
-import { scene } from "./scene.js";
-import * as NoTextures from "../src/index";
+import { scene } from "./scene";
+import meshes from "./meshes";
 
 const meshList = document.getElementById("mesh-list")!;
 
-const keys = Object.keys(NoTextures);
-const isMeshKey = (key: string): key is keyof typeof NoTextures =>
+const keys = Object.keys(meshes);
+const isMeshKey = (key: string): key is keyof typeof meshes =>
 	keys.includes(key);
 
 let obj: Mesh & { update?: () => void };
@@ -17,13 +17,13 @@ const load = (klass: string) => {
 	if (obj) scene.remove(obj);
 	if (selected) selected.classList.remove("selected");
 
-	obj = new NoTextures[klass]();
+	obj = new meshes[klass]();
 	obj.rotation.z = oldZ ?? 0;
 	obj.update = () => (obj.rotation.z += 0.005);
 	scene.add(obj);
 };
 
-Object.values(NoTextures).forEach((klass) => {
+Object.values(meshes).forEach((klass) => {
 	const li = document.createElement("li");
 	const a = document.createElement("a");
 	a.setAttribute("href", `#${klass.name}`);
