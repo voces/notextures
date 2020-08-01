@@ -7,4 +7,5 @@ export * from "./meshes/PileOfJunk";
 export * from "./meshes/PineTree";
 export * from "./meshes/RockChunks";
 export * from "./meshes/ScorchedBarn";
+export * from "./meshes/Terrain";
 export * from "./meshes/Trough";

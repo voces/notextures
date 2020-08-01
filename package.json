@@ -4,6 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "module": "dist/index.js",
+  "typings": "dist/src/index.js",
   "scripts": {
     "build": "rollup --config",
     "dev": "rollup --config --watch"
@@ -25,11 +26,11 @@
     "rollup": "^2.23.0",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-typescript2": "^0.27.1",
-    "three": "^0.119.1",
+    "three": "0.119.1",
     "typescript": "^3.9.7"
   },
   "peerDependencies": {
-    "three": "^0.118.3"
+    "three": "0.119.1"
   },
   "type": "module"
 }
