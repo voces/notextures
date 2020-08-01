@@ -11,7 +11,6 @@ import {
 	Color,
 } from "three";
 import memoize from "../util/memoize.js";
-import NDArray from "../util/NDArray.js";
 
 const memoizedColor = memoize((hex) => new Color(hex));
 
@@ -100,8 +99,8 @@ class TVector extends Vector3 {
 }
 
 // Extends Group instead so water doesn't cast/receive Shadows
-export default class Terrain extends Group {
-	private _vertices: NDArray<TVector, [number, number, number]>;
+export class Terrain extends Group {
+	private _vertices: (TVector[] & { water?: TVector })[][];
 	width: number;
 	height: number;
 
@@ -126,7 +125,7 @@ export default class Terrain extends Group {
 	}) {
 		super();
 
-		this._vertices = new NDArray();
+		this._vertices = [];
 
 		this.groundColor = memoize((x, y) => {
 			try {
@@ -188,22 +187,21 @@ export default class Terrain extends Group {
 			shininess: 5,
 		});
 
-		const vertex = (x: number, y: number, z: number, offset = 0) =>
-			this._vertices.getOrSet(
-				() => {
-					const vector = new TVector(
-						x,
-						-y,
-						z + offset,
-						geometry.vertices.length - 1,
-					);
-					geometry.vertices.push(vector);
-					return vector;
-				},
+		const vertex = (x: number, y: number, z: number, offset = 0) => {
+			const existing = this._vertices[x]?.[y]?.[z];
+			if (existing !== undefined) return existing;
+			if (this._vertices[x] === undefined) this._vertices[x] = [];
+			if (this._vertices[x][y] === undefined) this._vertices[x][y] = [];
+			const vector = new TVector(
 				x,
-				y,
-				z,
+				-y,
+				z + offset,
+				geometry.vertices.length - 1,
 			);
+			geometry.vertices.push(vector);
+			this._vertices[x][y][z] = vector;
+			return vector;
+		};
 
 		const rampWalls = [];
 
@@ -602,48 +600,48 @@ export default class Terrain extends Group {
 
 		// This makes the water hug the cliff, it's not 100% between edges,
 		// but is at the edge, which is what matters most
-		const vertex = (x: number, y: number, waterHeight: number) =>
-			this._vertices.getOrSet(
-				() => {
-					waterHeight += 3 / 8 + offset.z;
+		const vertex = (x: number, y: number, waterHeight: number) => {
+			const existing = this._vertices[x]?.[y]?.water;
+			if (existing !== undefined) return existing;
+			if (this._vertices[x] === undefined) this._vertices[x] = [];
+			if (this._vertices[x][y] === undefined) this._vertices[x][y] = [];
 
-					const groundVertices = this._vertices.get(x, y);
-					const cliff = Math.floor(waterHeight);
-					const trueLowIndex = findLastIndex(
-						groundVertices,
-						Boolean,
-						cliff,
-					);
-					const lowIndex =
-						trueLowIndex < 0
-							? groundVertices.findIndex(Boolean)
-							: trueLowIndex;
-					const low = groundVertices[lowIndex];
-					const high =
-						groundVertices.length - 1 !== lowIndex
-							? groundVertices[groundVertices.length - 1]
-							: undefined;
+			waterHeight += 3 / 8 + offset.z;
 
-					let vector;
+			const groundVertices = this._vertices[x][y];
+			if (!groundVertices) throw new Error();
+			const cliff = Math.floor(waterHeight);
+			const trueLowIndex = findLastIndex(groundVertices, Boolean, cliff);
+			const lowIndex =
+				trueLowIndex < 0
+					? groundVertices.findIndex(Boolean)
+					: trueLowIndex;
+			const low = groundVertices[lowIndex];
+			const high =
+				groundVertices.length - 1 !== lowIndex
+					? groundVertices[groundVertices.length - 1]
+					: undefined;
 
-					// Water is at a cliff, interpolate between them
-					if (high) {
-						const alpha = (waterHeight - low.z) / (high.z - low.z);
-						vector = low.clone().lerp(high, alpha);
+			let vector;
 
-						// Water is in the open, just project straight up
-						// We only nudge open water to make sure cliff edges are touched
-					} else
-						vector = low.clone().setZ(waterHeight + nudge(1 / 8));
+			// Water is at a cliff, interpolate between them
+			if (high) {
+				const alpha = (waterHeight - low.z) / (high.z - low.z);
+				vector = low.clone().lerp(high, alpha);
 
-					vector._geoIndex = geometry.vertices.push(vector) - 1;
+				// Water is in the open, just project straight up
+				// We only nudge open water to make sure cliff edges are touched
+			} else vector = low.clone().setZ(waterHeight + nudge(1 / 8));
 
-					return vector;
-				},
-				x,
-				y,
-				"water",
+			const tVector = new TVector(
+				vector.x,
+				vector.y,
+				vector.z,
+				geometry.vertices.length,
 			);
+
+			return tVector;
+		};
 
 		for (let y = this.height - 1; y >= 0; y--)
 			for (let x = 0; x < this.width; x++)

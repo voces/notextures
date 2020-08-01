@@ -15,7 +15,8 @@
 			"@types/jest",
 			"@types/node"
 		],
-		"noEmit": true
+		"noEmit": true, // overridden by rollup
+		"declaration": true
 	},
 	"include": ["src", "test"],
 	"exclude": ["node_modules"]

@@ -1,9 +1,8 @@
 import {
-	Math as Math2,
+	MathUtils,
 	Mesh,
 	Geometry,
 	MeshPhongMaterial,
-	FaceColors,
 	PlaneGeometry,
 } from "three";
 import { wood } from "../colors.js";
@@ -45,7 +44,7 @@ const spoke = ({
 	return spoke;
 };
 
-export default class Trough extends Mesh {
+export class Trough extends Mesh {
 	constructor({
 		thickness = 1 / 16,
 		length = 1 / 2,
@@ -55,7 +54,7 @@ export default class Trough extends Mesh {
 	} = {}) {
 		const geometry = new Geometry();
 		const woodMaterial = new MeshPhongMaterial({
-			vertexColors: FaceColors,
+			vertexColors: true,
 			flatShading: true,
 		});
 		const waterMaterial = new MeshPhongMaterial({
@@ -67,30 +66,30 @@ export default class Trough extends Mesh {
 		const materials = [woodMaterial, waterMaterial];
 
 		const left = wall({ thickness, length: length + thickness, height });
-		left.rotateY(-Math2.randFloat(1 / 5, 1 / 3));
+		left.rotateY(-MathUtils.randFloat(1 / 5, 1 / 3));
 		left.translate(-width / 2 + thickness / 2, 0, 0);
 		geometry.merge(left);
 
 		const right = wall({ thickness, length: length + thickness, height });
-		right.rotateY(Math2.randFloat(1 / 5, 1 / 3));
+		right.rotateY(MathUtils.randFloat(1 / 5, 1 / 3));
 		right.translate(width / 2 - thickness / 2, 0, 0);
 		geometry.merge(right);
 
 		const top = wall({ thickness, length: width, height });
-		top.rotateY(Math2.randFloat(1 / 5, 1 / 3));
+		top.rotateY(MathUtils.randFloat(1 / 5, 1 / 3));
 		top.rotateZ(Math.PI / 2);
 		top.translate(0, length / 2 - thickness / 2, 0);
 		geometry.merge(top);
 
 		const bottom = wall({ thickness, length: width, height });
-		bottom.rotateY(-Math2.randFloat(1 / 5, 1 / 3));
+		bottom.rotateY(-MathUtils.randFloat(1 / 5, 1 / 3));
 		bottom.rotateZ(Math.PI / 2);
 		bottom.translate(0, -length / 2 + thickness / 2, 0);
 		geometry.merge(bottom);
 
 		const topLeft = spoke({ thickness, height });
-		topLeft.rotateY(Math2.randFloat(1 / 5, 1 / 3));
-		topLeft.rotateX(-Math2.randFloat(1 / 5, 1 / 3));
+		topLeft.rotateY(MathUtils.randFloat(1 / 5, 1 / 3));
+		topLeft.rotateX(-MathUtils.randFloat(1 / 5, 1 / 3));
 		topLeft.rotateZ(Math.PI / 2);
 		topLeft.translate(
 			-width / 2 + thickness / 2,
@@ -100,8 +99,8 @@ export default class Trough extends Mesh {
 		geometry.merge(topLeft);
 
 		const topRight = spoke({ thickness, height });
-		topRight.rotateY(Math2.randFloat(1 / 5, 1 / 3));
-		topRight.rotateX(Math2.randFloat(1 / 5, 1 / 3));
+		topRight.rotateY(MathUtils.randFloat(1 / 5, 1 / 3));
+		topRight.rotateX(MathUtils.randFloat(1 / 5, 1 / 3));
 		topRight.rotateZ(Math.PI / 2);
 		topRight.translate(
 			width / 2 - thickness / 2,
@@ -111,8 +110,8 @@ export default class Trough extends Mesh {
 		geometry.merge(topRight);
 
 		const bottomLeft = spoke({ thickness, height });
-		bottomLeft.rotateY(-Math2.randFloat(1 / 5, 1 / 3));
-		bottomLeft.rotateX(-Math2.randFloat(1 / 5, 1 / 3));
+		bottomLeft.rotateY(-MathUtils.randFloat(1 / 5, 1 / 3));
+		bottomLeft.rotateX(-MathUtils.randFloat(1 / 5, 1 / 3));
 		bottomLeft.rotateZ(Math.PI / 2);
 		bottomLeft.translate(
 			-width / 2 + thickness / 2,
@@ -122,8 +121,8 @@ export default class Trough extends Mesh {
 		geometry.merge(bottomLeft);
 
 		const bottomRight = spoke({ thickness, height });
-		bottomRight.rotateY(-Math2.randFloat(1 / 5, 1 / 3));
-		bottomRight.rotateX(Math2.randFloat(1 / 5, 1 / 3));
+		bottomRight.rotateY(-MathUtils.randFloat(1 / 5, 1 / 3));
+		bottomRight.rotateX(MathUtils.randFloat(1 / 5, 1 / 3));
 		bottomRight.rotateZ(Math.PI / 2);
 		bottomRight.translate(
 			width / 2 - thickness / 2,

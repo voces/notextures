@@ -1,12 +1,11 @@
 import {
-	Math as Math2,
+	MathUtils,
 	Mesh,
 	Geometry,
 	CylinderGeometry,
 	ConeGeometry,
 	MeshPhongMaterial,
 	Color,
-	FaceColors,
 } from "three";
 
 const TRUNK_COLOR = new Color(0x483d19);
@@ -26,7 +25,7 @@ const createTrunk = ({
 	for (let i = 0; i < trunk.faces.length; i++)
 		trunk.faces[i].color = color
 			.clone()
-			.offsetHSL(Math2.randFloatSpread(1 / 36), 0, 0);
+			.offsetHSL(MathUtils.randFloatSpread(1 / 36), 0, 0);
 
 	trunk.rotateX(Math.PI / 2);
 	trunk.rotateZ(Math.PI * Math.random());
@@ -54,15 +53,15 @@ const createShelfs = ({
 
 	let Class: typeof ConeGeometry | typeof CylinderGeometry = ConeGeometry;
 
-	const xTilt = Math2.randFloatSpread(height / 20);
-	const yTilt = Math2.randFloatSpread(height / 20);
+	const xTilt = MathUtils.randFloatSpread(height / 20);
+	const yTilt = MathUtils.randFloatSpread(height / 20);
 
 	for (let i = 0; i < shelfs; i++) {
 		// Adjust shelf
 		color.offsetHSL(
-			Math2.randFloatSpread(1 / 16),
-			Math2.randFloatSpread(1 / 2),
-			Math2.randFloatSpread(1 / 12),
+			MathUtils.randFloatSpread(1 / 16),
+			MathUtils.randFloatSpread(1 / 2),
+			MathUtils.randFloatSpread(1 / 12),
 		);
 
 		const args = [
@@ -79,7 +78,7 @@ const createShelfs = ({
 		for (let i = 0; i < shelf.faces.length; i++)
 			shelf.faces[i].color = color
 				.clone()
-				.offsetHSL(Math2.randFloatSpread(1 / 24), 0, 0);
+				.offsetHSL(MathUtils.randFloatSpread(1 / 24), 0, 0);
 
 		// todo: does this do anything?
 		((shelf as unknown) as { radius: number }).radius = shelfRadius;
@@ -89,7 +88,7 @@ const createShelfs = ({
 
 		shelf.rotateX(Math.PI / 2);
 		shelf.rotateZ(Math.PI * Math.random());
-		shelf.rotateY(Math2.randFloatSpread(1 / 6));
+		shelf.rotateY(MathUtils.randFloatSpread(1 / 6));
 		shelf.translate(
 			(shelfs - i) ** 0.75 * xTilt,
 			(shelfs - i) ** 0.75 * yTilt,
@@ -101,19 +100,19 @@ const createShelfs = ({
 	return geometry;
 };
 
-export default class PineTree extends Mesh {
+export class PineTree extends Mesh {
 	constructor({
 		scale = 1,
 		height = Math.random() + 3,
 		radius = Math.random() / 4 + 3,
 		shelfs = undefined,
 		trunk = TRUNK_COLOR.clone().offsetHSL(
-			Math2.randFloatSpread(1 / 24),
+			MathUtils.randFloatSpread(1 / 24),
 			0,
 			0,
 		),
 		leaves = LEAVES_COLOR.clone().offsetHSL(
-			Math2.randFloatSpread(1 / 24),
+			MathUtils.randFloatSpread(1 / 24),
 			0,
 			0,
 		),
@@ -134,7 +133,7 @@ export default class PineTree extends Mesh {
 
 		const geometry = new Geometry();
 		const material = new MeshPhongMaterial({
-			vertexColors: FaceColors,
+			vertexColors: true,
 			flatShading: true,
 		});
 

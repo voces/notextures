@@ -1,10 +1,9 @@
 import {
-	Math as Math2,
+	MathUtils,
 	Mesh,
 	Geometry,
 	CylinderGeometry,
 	MeshPhongMaterial,
-	FaceColors,
 	Color,
 } from "three";
 import { wood } from "../colors.js";
@@ -27,7 +26,7 @@ const createPost = ({
 	for (let i = 0; i < post.faces.length; i++)
 		post.faces[i].color = color
 			.clone()
-			.offsetHSL(Math2.randFloatSpread(1 / 36), 0, 0);
+			.offsetHSL(MathUtils.randFloatSpread(1 / 36), 0, 0);
 
 	post.rotateX(Math.PI / 2 + (Math.random() - 0.5) / 6);
 	post.rotateZ(Math.PI * Math.random());
@@ -91,7 +90,7 @@ const createRail = ({
 	for (let i = 0; i < rail.faces.length; i++)
 		rail.faces[i].color = color
 			.clone()
-			.offsetHSL(Math2.randFloatSpread(1 / 36), 0, 0);
+			.offsetHSL(MathUtils.randFloatSpread(1 / 36), 0, 0);
 
 	rail.rotateY(Math.PI * Math.random());
 	rail.rotateX((Math.random() - 0.5) / 4 / length);
@@ -127,17 +126,17 @@ const createRails = ({
 	return geometry;
 };
 
-export default class Fence extends Mesh {
+export class Fence extends Mesh {
 	constructor({
 		length = 2 - 1 / 4,
 		width = 1 / 24,
 		height = 1 / 2,
 		angle = 0,
-		color = wood.clone().offsetHSL(Math2.randFloatSpread(1 / 36), 0, 0),
+		color = wood.clone().offsetHSL(MathUtils.randFloatSpread(1 / 36), 0, 0),
 	} = {}) {
 		const geometry = new Geometry();
 		const material = new MeshPhongMaterial({
-			vertexColors: FaceColors,
+			vertexColors: true,
 			flatShading: true,
 		});
 

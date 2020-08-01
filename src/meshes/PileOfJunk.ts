@@ -1,10 +1,9 @@
 import {
 	Color,
 	Curve,
-	Math as Math2,
+	MathUtils,
 	Mesh,
 	MeshPhongMaterial,
-	FaceColors,
 	Vector2,
 	Vector3,
 } from "three";
@@ -23,8 +22,8 @@ const nearPoint = (objects: SimpleObject[], min: number) => {
 	let spread = min;
 	while (spread < Infinity) {
 		const newPoint = new Vector2(
-			Math2.randFloatSpread(spread),
-			Math2.randFloatSpread(spread),
+			MathUtils.randFloatSpread(spread),
+			MathUtils.randFloatSpread(spread),
 		);
 		if (objects.length === 0) return newPoint;
 		else {
@@ -64,9 +63,9 @@ const spear = {
 			.color(Randomizer.colorSpread(stone))
 			.blur(0.01)
 			.parent!.rotate(
-				Math2.randFloatSpread(1 / 8),
-				Math2.randFloatSpread(1 / 8),
-				Math2.randFloatSpread(1 / 8),
+				MathUtils.randFloatSpread(1 / 8),
+				MathUtils.randFloatSpread(1 / 8),
+				MathUtils.randFloatSpread(1 / 8),
 			),
 };
 
@@ -84,9 +83,9 @@ const shortSpear = {
 			.color(Randomizer.colorSpread(stone))
 			.blur(0.01)
 			.parent!.rotate(
-				Math2.randFloatSpread(1 / 8),
-				Math2.randFloatSpread(1 / 8),
-				Math2.randFloatSpread(1 / 8),
+				MathUtils.randFloatSpread(1 / 8),
+				MathUtils.randFloatSpread(1 / 8),
+				MathUtils.randFloatSpread(1 / 8),
 			),
 };
 
@@ -111,7 +110,7 @@ class Helix extends Curve<Vector3> {
 	}
 
 	getPoint(t: number) {
-		const lerp = Math2.lerp(this.bottomRadius, this.topRadius, t);
+		const lerp = MathUtils.lerp(this.bottomRadius, this.topRadius, t);
 
 		return new Vector3(
 			Math.cos(t * this.length) * lerp,
@@ -152,7 +151,7 @@ const vaseContentTypes = [spear, shortSpear, sword];
 const vase = {
 	radius: 1 / 8,
 	builder: (b: Builder) => {
-		const count = Math2.randInt(0, 3);
+		const count = MathUtils.randInt(0, 3);
 		const objects: SimpleObject[] = [];
 		return b
 			.thickLathe([
@@ -166,8 +165,8 @@ const vase = {
 			.color(
 				new Color().setHSL(
 					Math.random(),
-					Math2.randFloat(0.25, 0.8),
-					Math2.randFloat(0.25, 0.75),
+					MathUtils.randFloat(0.25, 0.8),
+					MathUtils.randFloat(0.25, 0.75),
 				),
 			)
 			.parent!.repeat(count, (b) => {
@@ -202,8 +201,8 @@ const pot = {
 			.color(
 				new Color().setHSL(
 					Math.random(),
-					Math2.randFloat(0.25, 0.8),
-					Math2.randFloat(0.25, 0.75),
+					MathUtils.randFloat(0.25, 0.8),
+					MathUtils.randFloat(0.25, 0.75),
 				),
 			),
 };
@@ -228,15 +227,15 @@ const bag = {
 
 const types = [vase, pot, bag];
 
-export default class PileOfJunk extends Mesh {
+export class PileOfJunk extends Mesh {
 	constructor() {
 		const material = new MeshPhongMaterial({
-			vertexColors: FaceColors,
+			vertexColors: true,
 			flatShading: true,
 		});
 
 		// Generate n dense points
-		const count = Math2.randInt(3, 5);
+		const count = MathUtils.randInt(3, 5);
 		const objects: SimpleObject[] = [];
 
 		const geometry = new Builder()

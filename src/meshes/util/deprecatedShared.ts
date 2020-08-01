@@ -1,5 +1,5 @@
 import {
-	Math,
+	MathUtils,
 	CylinderGeometry,
 	BoxGeometry,
 	TetrahedronGeometry,
@@ -89,9 +89,9 @@ export const cylinder = ({
 }): Geometry =>
 	randomize(
 		new CylinderGeometry(
-			radius * (1 + Math.randFloatSpread(radius / 16)),
-			radius * (1 + Math.randFloatSpread(radius / 16)),
-			length * (1 + Math.randFloatSpread(length / 16)),
+			radius * (1 + MathUtils.randFloatSpread(radius / 16)),
+			radius * (1 + MathUtils.randFloatSpread(radius / 16)),
+			length * (1 + MathUtils.randFloatSpread(length / 16)),
 		),
 		{ color },
 	);

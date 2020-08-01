@@ -1,12 +1,12 @@
-import { Mesh, MeshPhongMaterial, FaceColors } from "three";
+import { Mesh, MeshPhongMaterial } from "three";
 import { wood } from "../colors.js";
 import Builder from "./util/Builder.js";
 import Randomizer from "./util/Randomizer.js";
 
-export default class Barn extends Mesh {
+export class Barn extends Mesh {
 	constructor() {
 		const material = new MeshPhongMaterial({
-			vertexColors: FaceColors,
+			vertexColors: true,
 			flatShading: true,
 		});
 		const color = Randomizer.colorSpread(wood);

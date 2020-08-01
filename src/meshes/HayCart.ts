@@ -1,14 +1,14 @@
-import { Mesh, MeshPhongMaterial, FaceColors, Vector2, Color } from "three";
+import { Mesh, MeshPhongMaterial, Vector2, Color } from "three";
 import { wood } from "../colors.js";
 import Builder from "./util/Builder.js";
 import Randomizer from "./util/Randomizer.js";
 
 const HAY = new Color("#e4d96f");
 
-export default class HayCart extends Mesh {
+export class HayCart extends Mesh {
 	constructor() {
 		const material = new MeshPhongMaterial({
-			vertexColors: FaceColors,
+			vertexColors: true,
 			flatShading: true,
 		});
 		const color = Randomizer.colorSpread(wood);

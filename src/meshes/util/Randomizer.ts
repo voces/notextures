@@ -100,17 +100,17 @@ export default class Randomizer {
 		for (let i = 0; i < geometry.vertices.length; i++) {
 			geometry.vertices[i].x = this.flatSpread(
 				geometry.vertices[i].x,
-				(geometry.boundingBox.max.x - geometry.boundingBox.min.x) *
+				(geometry.boundingBox!.max.x - geometry.boundingBox!.min.x) *
 					degree,
 			);
 			geometry.vertices[i].y = this.flatSpread(
 				geometry.vertices[i].y,
-				(geometry.boundingBox.max.y - geometry.boundingBox.min.y) *
+				(geometry.boundingBox!.max.y - geometry.boundingBox!.min.y) *
 					degree,
 			);
 			geometry.vertices[i].z = this.flatSpread(
 				geometry.vertices[i].z,
-				(geometry.boundingBox.max.z - geometry.boundingBox.min.z) *
+				(geometry.boundingBox!.max.z - geometry.boundingBox!.min.z) *
 					degree,
 			);
 		}

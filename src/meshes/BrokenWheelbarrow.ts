@@ -1,16 +1,9 @@
-import {
-	Math as Math2,
-	Mesh,
-	Geometry,
-	MeshPhongMaterial,
-	FaceColors,
-	Color,
-} from "three";
+import { MathUtils, Mesh, Geometry, MeshPhongMaterial, Color } from "three";
 import { wood } from "../colors.js";
 import { box, cylinder, randColor, nudge } from "./util/deprecatedShared.js";
 import Randomizer, { Variation } from "./util/Randomizer.js";
 
-export default class BrokenWheelbarrow extends Mesh {
+export class BrokenWheelbarrow extends Mesh {
 	constructor({
 		color: inColor,
 		colorVariation = nudge,
@@ -19,7 +12,7 @@ export default class BrokenWheelbarrow extends Mesh {
 
 		const geometry = new Geometry();
 		const material = new MeshPhongMaterial({
-			vertexColors: FaceColors,
+			vertexColors: true,
 			flatShading: true,
 		});
 
@@ -66,7 +59,7 @@ export default class BrokenWheelbarrow extends Mesh {
 				depth: 1 / 16,
 				color: randColor(color),
 			})
-				.rotateZ(Math2.randFloatSpread(1 / 12))
+				.rotateZ(MathUtils.randFloatSpread(1 / 12))
 				.translate(x, 0, 0);
 
 		// Bottom

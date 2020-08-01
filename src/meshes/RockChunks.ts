@@ -1,11 +1,4 @@
-import {
-	Math as Math2,
-	Mesh,
-	Geometry,
-	MeshPhongMaterial,
-	FaceColors,
-	Color,
-} from "three";
+import { MathUtils, Mesh, Geometry, MeshPhongMaterial, Color } from "three";
 import { stone } from "../colors.js";
 import {
 	dodecahedron,
@@ -15,7 +8,7 @@ import {
 } from "./util/deprecatedShared.js";
 import Randomizer, { Variation } from "./util/Randomizer.js";
 
-export default class RockChunks extends Mesh {
+export class RockChunks extends Mesh {
 	constructor({
 		color: inColor,
 		colorVariation = colorNudge,
@@ -24,7 +17,7 @@ export default class RockChunks extends Mesh {
 
 		const geometry = new Geometry();
 		const material = new MeshPhongMaterial({
-			vertexColors: FaceColors,
+			vertexColors: true,
 			flatShading: true,
 		});
 
@@ -34,20 +27,20 @@ export default class RockChunks extends Mesh {
 			vertexVariation: Randomizer.flatSpreader(1 / 4),
 		});
 		base.rotateX(Math.PI / 2);
-		base.rotateZ(Math2.randFloatSpread(Math.PI));
+		base.rotateZ(MathUtils.randFloatSpread(Math.PI));
 		base.translate(0, 0, 3 / 8);
 		geometry.merge(base);
 
-		const fallenChunks = Math2.randInt(0, 3);
+		const fallenChunks = MathUtils.randInt(0, 3);
 		for (let i = 0; i < fallenChunks; i++) {
 			const chunk = tetrahedron({
 				radius: 1 / 3,
-				detail: Math2.randInt(0, 1),
+				detail: MathUtils.randInt(0, 1),
 				color: randColor(color, colorVariation),
 				vertexVariation: Randomizer.flatSpreader(1 / 4),
 			});
-			const angle = Math2.randFloatSpread(2 * Math.PI);
-			const dist = Math2.randFloat(1, 5 / 4);
+			const angle = MathUtils.randFloatSpread(2 * Math.PI);
+			const dist = MathUtils.randFloat(1, 5 / 4);
 			chunk.translate(
 				dist * Math.cos(angle),
 				dist * Math.sin(angle),
