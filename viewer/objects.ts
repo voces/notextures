@@ -1,3 +1,10 @@
+import {
+	LordaeronSummerDarkGrass,
+	LordaeronSummerDirtCliff,
+	LordaeronSummerGrass,
+	LordaeronSummerGrassCliff,
+	LordaeronSummerRock,
+} from "../src";
 import * as Objects from "../src/objects";
 import { Terrain as BaseTerrain } from "../src/objects/Terrain";
 
@@ -25,9 +32,9 @@ class Terrain extends BaseTerrain {
 					[2, 0, 1],
 				],
 				cliffTile: [
-					[2, 2, 1],
-					[2, 1, 1],
-					[2, 1, 1],
+					[3, 3, 3],
+					[3, 4, 3],
+					[3, 3, 4],
 				],
 				water: [
 					[0, 0, 0],
@@ -43,9 +50,11 @@ class Terrain extends BaseTerrain {
 			},
 			offset: { x: 1.5, y: 1.5, z: 0 },
 			tiles: [
-				{ color: "#008000" },
-				{ color: "#555555" },
-				{ color: "#569656" },
+				LordaeronSummerDarkGrass,
+				LordaeronSummerRock,
+				LordaeronSummerGrass,
+				LordaeronSummerDirtCliff,
+				LordaeronSummerGrassCliff,
 			],
 			size: {
 				width: 3,
