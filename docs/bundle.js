@@ -49503,14 +49503,14 @@ if ( typeof __THREE_DEVTOOLS__ !== 'undefined' ) {
 const scene = new Scene();
 // Camera
 const camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.z = 2;
-camera.position.y = -1.5;
+const cameraInitialPosition = new Vector3(0, -1.5, 2);
+camera.position.copy(cameraInitialPosition);
 camera.rotation.x = 0.7;
 // Light
 const light = new HemisphereLight(0xffffbb, 0x080820, 2);
 scene.add(light);
 // Ground
-const geometry = new PlaneBufferGeometry(16, 16, 4, 4);
+const geometry = new PlaneBufferGeometry(128, 128, 16, 16);
 const count = geometry.attributes.position.count;
 geometry.setAttribute("color", new BufferAttribute(new Float32Array(count * 3), 3));
 const color = new Color();
@@ -49527,6 +49527,7 @@ const material = new MeshPhongMaterial({
     side: DoubleSide,
 });
 const plane = new Mesh(geometry, material);
+plane.position.z = -5;
 scene.add(plane);
 // Renderer
 const renderer = new WebGLRenderer({ antialias: true });
@@ -49535,7 +49536,11 @@ document.body.appendChild(renderer.domElement);
 // Camera movements
 const keyboard = {};
 let pause = false;
-window.addEventListener("keydown", (e) => (keyboard[e.key] = true));
+window.addEventListener("keydown", (e) => {
+    keyboard[e.key] = true;
+    if (e.key === " ")
+        camera.position.copy(cameraInitialPosition);
+});
 window.addEventListener("keyup", (e) => (keyboard[e.key] = false));
 window.addEventListener("mousewheel", (e) => {
     if (e.deltaY > 0)
@@ -49559,13 +49564,13 @@ function render() {
         for (const child of scene.children)
             if (hasUpdate(child))
                 child.update();
-    if (keyboard.ArrowLeft)
+    if (keyboard.ArrowLeft || keyboard.a)
         camera.position.x -= 0.02 * camera.position.z;
-    if (keyboard.ArrowRight)
+    if (keyboard.ArrowRight || keyboard.d)
         camera.position.x += 0.02 * camera.position.z;
-    if (keyboard.ArrowUp)
+    if (keyboard.ArrowUp || keyboard.w)
         camera.position.y += 0.02 * camera.position.z;
-    if (keyboard.ArrowDown)
+    if (keyboard.ArrowDown || keyboard.s)
         camera.position.y -= 0.02 * camera.position.z;
     renderer.render(scene, camera);
 }
@@ -50859,7 +50864,7 @@ class Terrain extends Group {
                 this._vertices[x] = [];
             if (this._vertices[x][y] === undefined)
                 this._vertices[x][y] = [];
-            const vector = new TVector(x, -y, z + offset, geometry.vertices.length - 1);
+            const vector = new TVector(x, -y, z + offset, geometry.vertices.length);
             geometry.vertices.push(vector);
             this._vertices[x][y][z] = vector;
             return vector;
@@ -51080,6 +51085,8 @@ class Terrain extends Group {
             else
                 vector = low.clone().setZ(waterHeight + nudge$1(1 / 8));
             const tVector = new TVector(vector.x, vector.y, vector.z, geometry.vertices.length);
+            geometry.vertices.push(tVector);
+            this._vertices[x][y].water = tVector;
             return tVector;
         };
         for (let y = this.height - 1; y >= 0; y--)
@@ -51219,7 +51226,7 @@ class Trough extends Mesh {
     }
 }
 
-var NoTextures = /*#__PURE__*/Object.freeze({
+var Objects = /*#__PURE__*/Object.freeze({
 	__proto__: null,
 	Barn: Barn,
 	BrokenHayCart: BrokenHayCart,
@@ -51235,10 +51242,62 @@ var NoTextures = /*#__PURE__*/Object.freeze({
 });
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const { Terrain: Terrain$1, ...filtered } = NoTextures;
+const { Terrain: _, ...filtered } = Objects;
+class Terrain$1 extends Terrain {
+    constructor() {
+        super({
+            masks: {
+                height: [
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0],
+                ],
+                cliff: [
+                    [1, 1, 1],
+                    [1, 2, 1],
+                    [1, 1, 0],
+                ],
+                groundTile: [
+                    [2, 2, 2],
+                    [2, 1, 0],
+                    [2, 0, 1],
+                ],
+                cliffTile: [
+                    [2, 2, 1],
+                    [2, 1, 1],
+                    [2, 1, 1],
+                ],
+                water: [
+                    [0, 0, 0],
+                    [0, 0, 0],
+                    [0, 0, 1],
+                ],
+                waterHeight: [
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0],
+                ],
+            },
+            offset: { x: 1.5, y: 1.5, z: 0 },
+            tiles: [
+                { color: "#008000" },
+                { color: "#555555" },
+                { color: "#569656" },
+            ],
+            size: {
+                width: 3,
+                height: 3,
+            },
+        });
+    }
+}
+Object.defineProperty(Terrain$1, "name", { value: "Terrain" });
+var meshes = { ...filtered, Terrain: Terrain$1 };
 
 const meshList = document.getElementById("mesh-list");
-const keys = Object.keys(filtered);
+const keys = Object.keys(meshes);
 const isMeshKey = (key) => keys.includes(key);
 let obj;
 const load = (klass) => {
@@ -51247,12 +51306,12 @@ const load = (klass) => {
     const oldZ = obj?.rotation.z;
     if (obj)
         scene.remove(obj);
-    obj = new filtered[klass]();
+    obj = new meshes[klass]();
     obj.rotation.z = oldZ ?? 0;
     obj.update = () => (obj.rotation.z += 0.005);
     scene.add(obj);
 };
-Object.values(filtered).forEach((klass) => {
+Object.values(meshes).forEach((klass) => {
     const li = document.createElement("li");
     const a = document.createElement("a");
     a.setAttribute("href", `#${klass.name}`);

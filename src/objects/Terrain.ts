@@ -108,6 +108,7 @@ export class Terrain extends Group {
 
 	constructor(terrain: {
 		masks: {
+			// y-major, height+1 x width+1
 			height: number[][];
 			cliff: (number | "r")[][];
 			groundTile: number[][];
@@ -195,7 +196,7 @@ export class Terrain extends Group {
 				x,
 				-y,
 				z + offset,
-				geometry.vertices.length - 1,
+				geometry.vertices.length,
 			);
 			geometry.vertices.push(vector);
 			this._vertices[x][y][z] = vector;
@@ -638,7 +639,8 @@ export class Terrain extends Group {
 				vector.z,
 				geometry.vertices.length,
 			);
-
+			geometry.vertices.push(tVector);
+			this._vertices[x][y].water = tVector;
 			return tVector;
 		};
 
