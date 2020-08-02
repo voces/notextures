@@ -51241,6 +51241,28 @@ var Objects = /*#__PURE__*/Object.freeze({
 	Trough: Trough
 });
 
+// http://www.wc3c.net/showpost.php?p=186511&postcount=5
+const LordaeronSummerRock = {
+    name: "Lordaeron Summer Rock",
+    color: "#876b62",
+};
+const LordaeronSummerGrass = {
+    name: "Lordaeron Summer Grass",
+    color: "#0c4013",
+};
+const LordaeronSummerDarkGrass = {
+    name: "Lordaeron Summer Dark Grass",
+    color: "#043609",
+};
+const LordaeronSummerDirtCliff = {
+    name: "Lordaeron Summer Dirt Cliff",
+    color: "#2f373f",
+};
+const LordaeronSummerGrassCliff = {
+    name: "Lordaeron Summer Grass Cliff",
+    color: "#867355",
+};
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const { Terrain: _, ...filtered } = Objects;
 class Terrain$1 extends Terrain {
@@ -51264,9 +51286,9 @@ class Terrain$1 extends Terrain {
                     [2, 0, 1],
                 ],
                 cliffTile: [
-                    [2, 2, 1],
-                    [2, 1, 1],
-                    [2, 1, 1],
+                    [3, 3, 3],
+                    [3, 4, 3],
+                    [3, 3, 4],
                 ],
                 water: [
                     [0, 0, 0],
@@ -51282,9 +51304,11 @@ class Terrain$1 extends Terrain {
             },
             offset: { x: 1.5, y: 1.5, z: 0 },
             tiles: [
-                { color: "#008000" },
-                { color: "#555555" },
-                { color: "#569656" },
+                LordaeronSummerDarkGrass,
+                LordaeronSummerRock,
+                LordaeronSummerGrass,
+                LordaeronSummerDirtCliff,
+                LordaeronSummerGrassCliff,
             ],
             size: {
                 width: 3,
