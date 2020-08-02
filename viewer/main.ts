@@ -1,6 +1,6 @@
-import { Mesh } from "three";
+import { Object3D } from "three";
 import { scene } from "./scene";
-import meshes from "./meshes";
+import meshes from "./objects";
 
 const meshList = document.getElementById("mesh-list")!;
 
@@ -8,7 +8,7 @@ const keys = Object.keys(meshes);
 const isMeshKey = (key: string): key is keyof typeof meshes =>
 	keys.includes(key);
 
-let obj: Mesh & { update?: () => void };
+let obj: Object3D & { update?: () => void };
 let selected: HTMLElement;
 
 const load = (klass: string) => {
