@@ -50997,6 +50997,11 @@ class Terrain extends Group {
                         const currentIsLow = minHeight < cliffLeft;
                         const low = currentIsLow ? minHeight : cliffLeft;
                         const high = currentIsLow ? cliffLeft : minHeight;
+                        if (isNaN(low) ||
+                            isNaN(high) ||
+                            !isFinite(low) ||
+                            !isFinite(high))
+                            continue;
                         for (let z = low; z < high; z++) {
                             const vertices = [
                                 vertex(x, y, z, topLeft),
@@ -51018,6 +51023,11 @@ class Terrain extends Group {
                         const currentIsLow = minHeight < cliffAbove;
                         const low = currentIsLow ? minHeight : cliffAbove;
                         const high = currentIsLow ? cliffAbove : minHeight;
+                        if (isNaN(low) ||
+                            isNaN(high) ||
+                            !isFinite(low) ||
+                            !isFinite(high))
+                            continue;
                         for (let z = low; z < high; z++) {
                             const vertices = [
                                 vertex(x, y, z, topLeft),
@@ -51270,39 +51280,51 @@ class Terrain$1 extends Terrain {
         super({
             masks: {
                 height: [
-                    [0, 0, 0, 0],
-                    [0, 0, 0, 0],
-                    [0, 0, 0, 0],
-                    [0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
                 ],
                 cliff: [
-                    [1, 1, 1],
-                    [1, 2, 1],
-                    [1, 1, 0],
+                    [1, 1, 1, 1, 1],
+                    [1, 1, "r", "r", 1],
+                    [1, "r", 2, 2, 1],
+                    [1, "r", 2, 1, 1],
+                    [1, 1, 1, 1, 0],
                 ],
                 groundTile: [
-                    [2, 2, 2],
-                    [2, 1, 0],
-                    [2, 0, 1],
+                    [2, 2, 2, 2, 2],
+                    [2, 2, 2, 2, 2],
+                    [2, 2, 1, 1, 2],
+                    [2, 2, 1, 0, 0],
+                    [2, 2, 2, 0, 1],
                 ],
                 cliffTile: [
-                    [3, 3, 3],
-                    [3, 4, 3],
-                    [3, 3, 4],
+                    [3, 3, 3, 3, 3],
+                    [3, 3, 3, 3, 3],
+                    [3, 3, 4, 4, 3],
+                    [3, 3, 4, 3, 3],
+                    [3, 3, 3, 3, 4],
                 ],
                 water: [
-                    [0, 0, 0],
-                    [0, 0, 0],
-                    [0, 0, 1],
+                    [0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 1],
                 ],
                 waterHeight: [
-                    [0, 0, 0, 0],
-                    [0, 0, 0, 0],
-                    [0, 0, 0, 0],
-                    [0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
                 ],
             },
-            offset: { x: 1.5, y: 1.5, z: 0 },
+            offset: { x: 2.5, y: 2.5, z: 0 },
             tiles: [
                 LordaeronSummerDarkGrass,
                 LordaeronSummerRock,
@@ -51311,8 +51333,8 @@ class Terrain$1 extends Terrain {
                 LordaeronSummerGrassCliff,
             ],
             size: {
-                width: 3,
-                height: 3,
+                width: 5,
+                height: 5,
             },
         });
     }
