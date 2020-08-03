@@ -465,6 +465,14 @@ export class Terrain extends Group {
 						const low = currentIsLow ? minHeight : cliffLeft;
 						const high = currentIsLow ? cliffLeft : minHeight;
 
+						if (
+							isNaN(low) ||
+							isNaN(high) ||
+							!isFinite(low) ||
+							!isFinite(high)
+						)
+							continue;
+
 						for (let z = low; z < high; z++) {
 							const vertices: [
 								TVector,
@@ -518,6 +526,14 @@ export class Terrain extends Group {
 						const currentIsLow = minHeight < cliffAbove;
 						const low = currentIsLow ? minHeight : cliffAbove;
 						const high = currentIsLow ? cliffAbove : minHeight;
+
+						if (
+							isNaN(low) ||
+							isNaN(high) ||
+							!isFinite(low) ||
+							!isFinite(high)
+						)
+							continue;
 
 						for (let z = low; z < high; z++) {
 							const vertices: [
