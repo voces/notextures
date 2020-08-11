@@ -99,9 +99,14 @@ class TVector extends Vector3 {
 
 // Extends Group instead so water doesn't cast/receive Shadows
 export class Terrain extends Group {
-	private _vertices: (TVector[] & { water?: TVector })[][];
+	vertices: (TVector[] & { water?: TVector })[][];
+	/** Y-major, with y index being flipped, so y=0 is the bottom */
+	groundFaces = <[Face3, Face3][][]>[];
 	width: number;
 	height: number;
+
+	ground: Mesh;
+	water: Mesh;
 
 	groundColor: (x: number, y: number) => Color;
 	cliffColor: (x: number, y: number) => Color;
@@ -125,7 +130,7 @@ export class Terrain extends Group {
 	}) {
 		super();
 
-		this._vertices = [];
+		this.vertices = [];
 
 		this.groundColor = memoize((x, y) => {
 			try {
@@ -157,18 +162,19 @@ export class Terrain extends Group {
 		this.width = width;
 		this.height = height;
 
-		this.add(
-			this._computeGround({
-				height: terrain.masks.height,
-				cliff: terrain.masks.cliff,
-				offset: terrain.offset,
-			}),
-			this._computeWater({
-				water: terrain.masks.water,
-				waterHeight: terrain.masks.waterHeight,
-				offset: terrain.offset,
-			}),
-		);
+		this.ground = this._computeGround({
+			height: terrain.masks.height,
+			cliff: terrain.masks.cliff,
+			offset: terrain.offset,
+		});
+
+		this.water = this._computeWater({
+			water: terrain.masks.water,
+			waterHeight: terrain.masks.waterHeight,
+			offset: terrain.offset,
+		});
+
+		this.add(this.ground, this.water);
 	}
 
 	_computeGround({
@@ -188,10 +194,10 @@ export class Terrain extends Group {
 		});
 
 		const vertex = (x: number, y: number, z: number, offset = 0) => {
-			const existing = this._vertices[x]?.[y]?.[z];
+			const existing = this.vertices[x]?.[y]?.[z];
 			if (existing !== undefined) return existing;
-			if (this._vertices[x] === undefined) this._vertices[x] = [];
-			if (this._vertices[x][y] === undefined) this._vertices[x][y] = [];
+			if (this.vertices[x] === undefined) this.vertices[x] = [];
+			if (this.vertices[x][y] === undefined) this.vertices[x][y] = [];
 			const vector = new TVector(
 				x,
 				-y,
@@ -199,7 +205,7 @@ export class Terrain extends Group {
 				geometry.vertices.length,
 			);
 			geometry.vertices.push(vector);
-			this._vertices[x][y][z] = vector;
+			this.vertices[x][y][z] = vector;
 			return vector;
 		};
 
@@ -223,7 +229,7 @@ export class Terrain extends Group {
 					];
 					const aVertices = tileFaceVertices(vertices, true);
 					const bVertices = tileFaceVertices(vertices, false);
-					geometry.faces.push(
+					const faces: [Face3, Face3] = [
 						new Face3(
 							aVertices[0],
 							aVertices[1],
@@ -238,7 +244,10 @@ export class Terrain extends Group {
 							undefined,
 							this.groundColor(x, y),
 						),
-					);
+					];
+					if (!this.groundFaces[y]) this.groundFaces[y] = [];
+					this.groundFaces[y][x] = faces;
+					geometry.faces.push(...faces);
 
 					// Left wall (next gets right)
 					if (x > 0) {
@@ -384,7 +393,7 @@ export class Terrain extends Group {
 					];
 					const aVertices = tileFaceVertices(vertices, true);
 					const bVertices = tileFaceVertices(vertices, false);
-					geometry.faces.push(
+					const faces: [Face3, Face3] = [
 						new Face3(
 							aVertices[0],
 							aVertices[1],
@@ -399,7 +408,10 @@ export class Terrain extends Group {
 							undefined,
 							this.groundColor(x, y),
 						),
-					);
+					];
+					if (!this.groundFaces[y]) this.groundFaces[y] = [];
+					this.groundFaces[y][x] = faces;
+					geometry.faces.push(...faces);
 
 					const walls = [
 						{ a: 0, b: 1, neighbor: { x: 0, y: -1 } },
@@ -617,14 +629,14 @@ export class Terrain extends Group {
 		// This makes the water hug the cliff, it's not 100% between edges,
 		// but is at the edge, which is what matters most
 		const vertex = (x: number, y: number, waterHeight: number) => {
-			const existing = this._vertices[x]?.[y]?.water;
+			const existing = this.vertices[x]?.[y]?.water;
 			if (existing !== undefined) return existing;
-			if (this._vertices[x] === undefined) this._vertices[x] = [];
-			if (this._vertices[x][y] === undefined) this._vertices[x][y] = [];
+			if (this.vertices[x] === undefined) this.vertices[x] = [];
+			if (this.vertices[x][y] === undefined) this.vertices[x][y] = [];
 
 			waterHeight += 3 / 8 + offset.z;
 
-			const groundVertices = this._vertices[x][y];
+			const groundVertices = this.vertices[x][y];
 			if (!groundVertices) throw new Error();
 			const cliff = Math.floor(waterHeight);
 			const trueLowIndex = findLastIndex(groundVertices, Boolean, cliff);
@@ -656,7 +668,7 @@ export class Terrain extends Group {
 				geometry.vertices.length,
 			);
 			geometry.vertices.push(tVector);
-			this._vertices[x][y].water = tVector;
+			this.vertices[x][y].water = tVector;
 			return tVector;
 		};
 
