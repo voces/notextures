@@ -2,11 +2,12 @@ import {
 	MathUtils,
 	Mesh,
 	Geometry,
-	MeshPhongMaterial,
 	PlaneGeometry,
+	BufferGeometry,
 } from "three";
 import { wood } from "../colors.js";
 import { box, randColor } from "./util/deprecatedShared.js";
+import { faceColorMaterial, waterMaterial } from "./util/materials.js";
 
 const wall = ({
 	thickness,
@@ -53,17 +54,7 @@ export class Trough extends Mesh {
 		angle = 0,
 	} = {}) {
 		const geometry = new Geometry();
-		const woodMaterial = new MeshPhongMaterial({
-			vertexColors: true,
-			flatShading: true,
-		});
-		const waterMaterial = new MeshPhongMaterial({
-			color: 0x182190,
-			flatShading: true,
-			opacity: 0.75,
-			transparent: true,
-		});
-		const materials = [woodMaterial, waterMaterial];
+		const materials = [faceColorMaterial, waterMaterial];
 
 		const left = wall({ thickness, length: length + thickness, height });
 		left.rotateY(-MathUtils.randFloat(1 / 5, 1 / 3));
@@ -149,7 +140,7 @@ export class Trough extends Mesh {
 		geometry.computeFaceNormals();
 		geometry.computeVertexNormals();
 
-		super(geometry, materials);
+		super(new BufferGeometry().fromGeometry(geometry), materials);
 
 		this.castShadow = true;
 		this.receiveShadow = true;

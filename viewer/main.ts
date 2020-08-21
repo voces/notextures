@@ -1,5 +1,4 @@
-import { Object3D } from "three";
-import { scene } from "./scene";
+import { changeConstructor } from "./scene";
 import meshes from "./objects";
 
 const meshList = document.getElementById("mesh-list")!;
@@ -8,19 +7,13 @@ const keys = Object.keys(meshes);
 const isMeshKey = (key: string): key is keyof typeof meshes =>
 	keys.includes(key);
 
-let obj: Object3D & { update?: () => void };
 let selected: HTMLElement;
 
 const load = (klass: string) => {
 	if (!isMeshKey(klass)) return;
-	const oldZ = obj?.rotation.z;
-	if (obj) scene.remove(obj);
 	if (selected) selected.classList.remove("selected");
 
-	obj = new meshes[klass]();
-	obj.rotation.z = oldZ ?? 0;
-	obj.update = () => (obj.rotation.z += 0.005);
-	scene.add(obj);
+	changeConstructor(meshes[klass]);
 };
 
 Object.values(meshes).forEach((klass) => {

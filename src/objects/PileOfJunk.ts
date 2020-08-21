@@ -1,15 +1,8 @@
-import {
-	Color,
-	Curve,
-	MathUtils,
-	Mesh,
-	MeshPhongMaterial,
-	Vector2,
-	Vector3,
-} from "three";
+import { Color, Curve, MathUtils, Mesh, Vector2, Vector3 } from "three";
 import Builder from "./util/Builder.js";
 import Randomizer from "./util/Randomizer.js";
 import { cloth, rope, wood, stone } from "../colors.js";
+import { faceColorMaterial } from "./util/materials.js";
 
 // TODO: This has a lot of smaller geometries; we should pull them out to be reusable
 
@@ -229,11 +222,6 @@ const types = [vase, pot, bag];
 
 export class PileOfJunk extends Mesh {
 	constructor() {
-		const material = new MeshPhongMaterial({
-			vertexColors: true,
-			flatShading: true,
-		});
-
 		// Generate n dense points
 		const count = MathUtils.randInt(3, 5);
 		const objects: SimpleObject[] = [];
@@ -249,9 +237,9 @@ export class PileOfJunk extends Mesh {
 				child.rotateX(Math.PI / 2).translate(center.x, center.y);
 			})
 			.root()
-			.geometry();
+			.buffer();
 
-		super(geometry, material);
+		super(geometry, faceColorMaterial);
 
 		// this.scale.multiplyScalar( 9 );
 

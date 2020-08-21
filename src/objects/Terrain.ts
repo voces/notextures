@@ -8,8 +8,10 @@ import {
 	Vector3,
 	Face3,
 	Color,
+	BufferGeometry,
 } from "three";
 import memoize from "../util/memoize.js";
+import { faceColorMaterial, waterMaterial } from "./util/materials.js";
 
 const memoizedColor = memoize((hex) => new Color(hex));
 
@@ -105,8 +107,8 @@ export class Terrain extends Group {
 	width: number;
 	height: number;
 
-	ground: Mesh;
-	water: Mesh;
+	ground: Geometry;
+	water: Geometry;
 
 	groundColor: (x: number, y: number) => Color;
 	cliffColor: (x: number, y: number) => Color;
@@ -162,19 +164,38 @@ export class Terrain extends Group {
 		this.width = width;
 		this.height = height;
 
-		this.ground = this._computeGround({
-			height: terrain.masks.height,
-			cliff: terrain.masks.cliff,
-			offset: terrain.offset,
-		});
+		{
+			const { geometry, material } = this._computeGround({
+				height: terrain.masks.height,
+				cliff: terrain.masks.cliff,
+				offset: terrain.offset,
+			});
 
-		this.water = this._computeWater({
-			water: terrain.masks.water,
-			waterHeight: terrain.masks.waterHeight,
-			offset: terrain.offset,
-		});
+			this.ground = geometry;
 
-		this.add(this.ground, this.water);
+			const mesh = new Mesh(
+				new BufferGeometry().fromGeometry(geometry),
+				material,
+			);
+			mesh.castShadow = true;
+			mesh.receiveShadow = true;
+
+			this.add(mesh);
+		}
+
+		{
+			const { geometry, material } = this._computeWater({
+				water: terrain.masks.water,
+				waterHeight: terrain.masks.waterHeight,
+				offset: terrain.offset,
+			});
+
+			this.water = geometry;
+
+			this.add(
+				new Mesh(new BufferGeometry().fromGeometry(geometry), material),
+			);
+		}
 	}
 
 	_computeGround({
@@ -185,13 +206,8 @@ export class Terrain extends Group {
 		height: number[][];
 		cliff: (number | "r")[][];
 		offset: { x: number; y: number; z: number };
-	}): Mesh {
+	}): { geometry: Geometry; material: MeshPhongMaterial } {
 		const geometry = new Geometry();
-		const material = new MeshPhongMaterial({
-			vertexColors: true,
-			flatShading: true,
-			shininess: 5,
-		});
 
 		const vertex = (x: number, y: number, z: number, offset = 0) => {
 			const existing = this.vertices[x]?.[y]?.[z];
@@ -602,11 +618,7 @@ export class Terrain extends Group {
 
 		noise(geometry);
 
-		const mesh = new Mesh(geometry, material);
-		mesh.castShadow = true;
-		mesh.receiveShadow = true;
-
-		return mesh;
+		return { geometry, material: faceColorMaterial };
 	}
 
 	_computeWater({
@@ -617,14 +629,8 @@ export class Terrain extends Group {
 		water: number[][];
 		waterHeight: number[][];
 		offset: { z: number };
-	}): Mesh {
+	}): { geometry: Geometry; material: MeshPhongMaterial } {
 		const geometry = new Geometry();
-		const material = new MeshPhongMaterial({
-			color: 0x182190,
-			flatShading: true,
-			opacity: 0.5,
-			transparent: true,
-		});
 
 		// This makes the water hug the cliff, it's not 100% between edges,
 		// but is at the edge, which is what matters most
@@ -694,7 +700,7 @@ export class Terrain extends Group {
 
 		rotate(geometry);
 
-		return new Mesh(geometry, material);
+		return { geometry, material: waterMaterial };
 	}
 
 	// Returns either the known height or calculated height of a tile

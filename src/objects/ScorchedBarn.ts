@@ -1,14 +1,11 @@
-import { Mesh, MeshPhongMaterial } from "three";
+import { Mesh } from "three";
 import { wood } from "../colors.js";
 import Builder from "./util/Builder.js";
 import Randomizer from "./util/Randomizer.js";
+import { faceColorMaterial } from "./util/materials.js";
 
 export class ScorchedBarn extends Mesh {
 	constructor() {
-		const material = new MeshPhongMaterial({
-			vertexColors: true,
-			flatShading: true,
-		});
 		const color = Randomizer.colorSpread(
 			wood.clone().offsetHSL(0, 0.1, -0.1),
 		);
@@ -80,9 +77,9 @@ export class ScorchedBarn extends Mesh {
 				});
 			})
 			.rotateZ(-Math.PI / 4)
-			.geometry();
+			.buffer();
 
-		super(geometry, material);
+		super(geometry, faceColorMaterial);
 
 		this.castShadow = true;
 		this.receiveShadow = true;
