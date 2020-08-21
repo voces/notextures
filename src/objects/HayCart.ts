@@ -1,16 +1,13 @@
-import { Mesh, MeshPhongMaterial, Vector2, Color } from "three";
+import { Mesh, Vector2, Color } from "three";
 import { wood } from "../colors.js";
 import Builder from "./util/Builder.js";
 import Randomizer from "./util/Randomizer.js";
+import { faceColorMaterial } from "./util/materials.js";
 
 const HAY = new Color("#e4d96f");
 
 export class HayCart extends Mesh {
 	constructor() {
-		const material = new MeshPhongMaterial({
-			vertexColors: true,
-			flatShading: true,
-		});
 		const color = Randomizer.colorSpread(wood);
 		const wheels = Randomizer.colorSpread(color);
 		const axis = Randomizer.colorSpread(color);
@@ -87,9 +84,9 @@ export class HayCart extends Mesh {
 			)
 			.root()
 			.randomize()
-			.geometry();
+			.buffer();
 
-		super(geometry, material);
+		super(geometry, faceColorMaterial);
 
 		this.castShadow = true;
 		this.receiveShadow = true;

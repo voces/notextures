@@ -1,14 +1,11 @@
-import { Mesh, MeshPhongMaterial } from "three";
+import { Mesh } from "three";
 import { wood } from "../colors.js";
 import Builder from "./util/Builder.js";
 import Randomizer from "./util/Randomizer.js";
+import { faceColorMaterial } from "./util/materials.js";
 
 export class Barn extends Mesh {
 	constructor() {
-		const material = new MeshPhongMaterial({
-			vertexColors: true,
-			flatShading: true,
-		});
 		const color = Randomizer.colorSpread(wood);
 		const paneling = color.clone();
 		const roof = color.clone().offsetHSL(0, -0.05, 0.05);
@@ -72,9 +69,9 @@ export class Barn extends Mesh {
 			.color(door)
 			.randomize()
 			.parent!.rotateZ(-Math.PI / 4)
-			.geometry();
+			.buffer();
 
-		super(geometry, material);
+		super(geometry, faceColorMaterial);
 
 		this.castShadow = true;
 		this.receiveShadow = true;

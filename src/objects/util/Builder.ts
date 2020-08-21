@@ -11,8 +11,11 @@ import {
 	Vector3,
 	Vector2,
 	Color,
+	BufferGeometry,
+	Mesh,
 } from "three";
 import Randomizer, { Variation } from "./Randomizer.js";
+import { faceColorMaterial } from "./materials.js";
 
 // const compose = <R>(fn1: (a: R) => R, ...fns: Array<(a: R) => R>) =>
 // 	fns.reduce((prevFn, nextFn) => (value) => prevFn(nextFn(value)), fn1);
@@ -473,5 +476,13 @@ export default class Builder {
 		if (this._blur) Randomizer.blur(geometry, this._blur);
 
 		return geometry;
+	}
+
+	buffer(): BufferGeometry {
+		return new BufferGeometry().fromGeometry(this.geometry());
+	}
+
+	mesh(): Mesh {
+		return new Mesh(this.buffer(), faceColorMaterial);
 	}
 }

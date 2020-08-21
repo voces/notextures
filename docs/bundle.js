@@ -49500,11 +49500,17 @@ if ( typeof __THREE_DEVTOOLS__ !== 'undefined' ) {
 
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const consoleExports = window;
 const scene = new Scene();
+consoleExports.scene = scene;
 // Camera
 const camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 const cameraInitialPosition = new Vector3(0, -1.5, 2);
 camera.position.copy(cameraInitialPosition);
+const storedLocation = localStorage.getItem("camera");
+if (storedLocation)
+    camera.position.copy(JSON.parse(storedLocation));
 camera.rotation.x = 0.7;
 // Light
 const light = new HemisphereLight(0xffffbb, 0x080820, 2);
@@ -49531,6 +49537,7 @@ plane.position.z = -5;
 scene.add(plane);
 // Renderer
 const renderer = new WebGLRenderer({ antialias: true });
+consoleExports.renderer = renderer;
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 // Camera movements
@@ -49538,8 +49545,10 @@ const keyboard = {};
 let pause = false;
 window.addEventListener("keydown", (e) => {
     keyboard[e.key] = true;
-    if (e.key === " ")
+    if (e.key === " ") {
         camera.position.copy(cameraInitialPosition);
+        localStorage.setItem("camera", JSON.stringify(camera.position));
+    }
 });
 window.addEventListener("keyup", (e) => (keyboard[e.key] = false));
 window.addEventListener("mousewheel", (e) => {
@@ -49547,6 +49556,7 @@ window.addEventListener("mousewheel", (e) => {
         camera.position.z *= 1.1;
     else
         camera.position.z /= 1.1;
+    localStorage.setItem("camera", JSON.stringify(camera.position));
 });
 window.addEventListener("mousedown", () => (pause = true));
 window.addEventListener("mouseup", () => (pause = false));
@@ -49555,6 +49565,8 @@ window.addEventListener("resize", () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
 });
+// Mesh object
+let obj;
 const hasUpdate = (obj) => 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 typeof obj.update === "function";
@@ -49572,9 +49584,27 @@ function render() {
         camera.position.y += 0.02 * camera.position.z;
     if (keyboard.ArrowDown || keyboard.s)
         camera.position.y -= 0.02 * camera.position.z;
+    if (keyboard.ArrowLeft ||
+        keyboard.a ||
+        keyboard.ArrowRight ||
+        keyboard.d ||
+        keyboard.ArrowUp ||
+        keyboard.w ||
+        keyboard.ArrowDown ||
+        keyboard.s)
+        localStorage.setItem("camera", JSON.stringify(camera.position));
     renderer.render(scene, camera);
 }
 render();
+const changeConstructor = (Klass) => {
+    const oldZ = obj?.rotation.z;
+    if (obj)
+        scene.remove(obj);
+    obj = new Klass();
+    obj.rotation.z = oldZ ?? 0;
+    obj.update = () => (obj.rotation.z += 0.005);
+    scene.add(obj);
+};
 
 const wood = new Color(0x3b2507);
 const stone = new Color(0x596566);
@@ -49680,6 +49710,17 @@ class Randomizer {
         return geometry;
     }
 }
+
+const faceColorMaterial = new MeshPhongMaterial({
+    vertexColors: true,
+    flatShading: true,
+});
+const waterMaterial = new MeshPhongMaterial({
+    color: 0x182190,
+    flatShading: true,
+    opacity: 0.5,
+    transparent: true,
+});
 
 // const compose = <R>(fn1: (a: R) => R, ...fns: Array<(a: R) => R>) =>
 // 	fns.reduce((prevFn, nextFn) => (value) => prevFn(nextFn(value)), fn1);
@@ -49994,14 +50035,16 @@ class Builder {
             Randomizer.blur(geometry, this._blur);
         return geometry;
     }
+    buffer() {
+        return new BufferGeometry().fromGeometry(this.geometry());
+    }
+    mesh() {
+        return new Mesh(this.buffer(), faceColorMaterial);
+    }
 }
 
 class Barn extends Mesh {
     constructor() {
-        const material = new MeshPhongMaterial({
-            vertexColors: true,
-            flatShading: true,
-        });
         const color = Randomizer.colorSpread(wood);
         const paneling = color.clone();
         const roof = color.clone().offsetHSL(0, -0.05, 0.05);
@@ -50045,8 +50088,8 @@ class Barn extends Mesh {
             .color(door)
             .randomize()
             .parent.rotateZ(-Math.PI / 4)
-            .geometry();
-        super(geometry, material);
+            .buffer();
+        super(geometry, faceColorMaterial);
         this.castShadow = true;
         this.receiveShadow = true;
     }
@@ -50055,10 +50098,6 @@ class Barn extends Mesh {
 const HAY = new Color("#e4d96f");
 class BrokenHayCart extends Mesh {
     constructor() {
-        const material = new MeshPhongMaterial({
-            vertexColors: true,
-            flatShading: true,
-        });
         const color = Randomizer.colorSpread(wood);
         const wheels = Randomizer.colorSpread(color);
         const axis = Randomizer.colorSpread(color);
@@ -50121,7 +50160,7 @@ class BrokenHayCart extends Mesh {
             .root()
             .randomize()
             .geometry());
-        super(geometry, material);
+        super(new BufferGeometry().fromGeometry(geometry), faceColorMaterial);
         this.castShadow = true;
         this.receiveShadow = true;
     }
@@ -50173,10 +50212,6 @@ class BrokenWheelbarrow extends Mesh {
     constructor({ color: inColor, colorVariation = nudge, } = {}) {
         const color = inColor ?? randColor(wood, colorVariation);
         const geometry = new Geometry();
-        const material = new MeshPhongMaterial({
-            vertexColors: true,
-            flatShading: true,
-        });
         const wheel = (x) => cylinder({ length: 1 / 16, radius: 1 / 4, color: randColor(color) })
             .rotateX(nudge(Math.PI / 2))
             .translate(nudge(x), nudge(1 / 2), 1 / 64);
@@ -50275,7 +50310,7 @@ class BrokenWheelbarrow extends Mesh {
         geometry.computeFaceNormals();
         geometry.computeVertexNormals();
         geometry.rotateZ(Randomizer.flatSpread(Math.PI / 2, Math.PI / 16));
-        super(geometry, material);
+        super(new BufferGeometry().fromGeometry(geometry), faceColorMaterial);
         this.castShadow = true;
         this.receiveShadow = true;
     }
@@ -50329,15 +50364,11 @@ const createRails = ({ length, height, width, angle, color, }) => {
 class Fence extends Mesh {
     constructor({ length = 2 - 1 / 4, width = 1 / 24, height = 1 / 2, angle = 0, color = wood.clone().offsetHSL(MathUtils.randFloatSpread(1 / 36), 0, 0), } = {}) {
         const geometry = new Geometry();
-        const material = new MeshPhongMaterial({
-            vertexColors: true,
-            flatShading: true,
-        });
         geometry.merge(createPosts({ length, width, height, angle, color }));
         geometry.merge(createRails({ length, width, height, angle, color }));
         geometry.computeFaceNormals();
         geometry.computeVertexNormals();
-        super(geometry, material);
+        super(new BufferGeometry().fromGeometry(geometry), faceColorMaterial);
         this.castShadow = true;
         this.receiveShadow = true;
     }
@@ -50346,10 +50377,6 @@ class Fence extends Mesh {
 const HAY$1 = new Color("#e4d96f");
 class HayCart extends Mesh {
     constructor() {
-        const material = new MeshPhongMaterial({
-            vertexColors: true,
-            flatShading: true,
-        });
         const color = Randomizer.colorSpread(wood);
         const wheels = Randomizer.colorSpread(color);
         const axis = Randomizer.colorSpread(color);
@@ -50394,8 +50421,8 @@ class HayCart extends Mesh {
             .color(hay))
             .root()
             .randomize()
-            .geometry();
-        super(geometry, material);
+            .buffer();
+        super(geometry, faceColorMaterial);
         this.castShadow = true;
         this.receiveShadow = true;
     }
@@ -50538,10 +50565,6 @@ const bag = {
 const types = [vase, pot, bag];
 class PileOfJunk extends Mesh {
     constructor() {
-        const material = new MeshPhongMaterial({
-            vertexColors: true,
-            flatShading: true,
-        });
         // Generate n dense points
         const count = MathUtils.randInt(3, 5);
         const objects = [];
@@ -50557,8 +50580,8 @@ class PileOfJunk extends Mesh {
             child.rotateX(Math.PI / 2).translate(center.x, center.y);
         })
             .root()
-            .geometry();
-        super(geometry, material);
+            .buffer();
+        super(geometry, faceColorMaterial);
         // this.scale.multiplyScalar( 9 );
         this.castShadow = true;
         this.receiveShadow = true;
@@ -50622,15 +50645,11 @@ class PineTree extends Mesh {
         if (shelfs === undefined)
             shelfs = height > 10 / 3 ? 3 + (Math.random() > 0.5 ? 1 : 0) : 3;
         const geometry = new Geometry();
-        const material = new MeshPhongMaterial({
-            vertexColors: true,
-            flatShading: true,
-        });
         geometry.merge(createTrunk({ radius, height, color: trunk }));
         geometry.merge(createShelfs({ height, radius, shelfs, color: leaves }));
         geometry.computeFaceNormals();
         geometry.computeVertexNormals();
-        super(geometry, material);
+        super(new BufferGeometry().fromGeometry(geometry), faceColorMaterial);
         this.castShadow = true;
         this.receiveShadow = true;
     }
@@ -50640,10 +50659,6 @@ class RockChunks extends Mesh {
     constructor({ color: inColor, colorVariation = colorNudge, } = {}) {
         const color = inColor ?? randColor(stone, colorVariation);
         const geometry = new Geometry();
-        const material = new MeshPhongMaterial({
-            vertexColors: true,
-            flatShading: true,
-        });
         const base = dodecahedron({
             radius: 1,
             color: randColor(color, colorVariation),
@@ -50668,7 +50683,7 @@ class RockChunks extends Mesh {
         }
         geometry.computeFaceNormals();
         geometry.computeVertexNormals();
-        super(geometry, material);
+        super(new BufferGeometry().fromGeometry(geometry), faceColorMaterial);
         this.castShadow = true;
         this.receiveShadow = true;
     }
@@ -50676,10 +50691,6 @@ class RockChunks extends Mesh {
 
 class ScorchedBarn extends Mesh {
     constructor() {
-        const material = new MeshPhongMaterial({
-            vertexColors: true,
-            flatShading: true,
-        });
         const color = Randomizer.colorSpread(wood.clone().offsetHSL(0, 0.1, -0.1));
         const paneling = color.clone();
         const roof = color.clone().offsetHSL(0, -0.05, 0.05);
@@ -50733,8 +50744,8 @@ class ScorchedBarn extends Mesh {
             });
         })
             .rotateZ(-Math.PI / 4)
-            .geometry();
-        super(geometry, material);
+            .buffer();
+        super(geometry, faceColorMaterial);
         this.castShadow = true;
         this.receiveShadow = true;
     }
@@ -50841,25 +50852,30 @@ class Terrain extends Group {
         const { width, height } = terrain.size;
         this.width = width;
         this.height = height;
-        this.ground = this._computeGround({
-            height: terrain.masks.height,
-            cliff: terrain.masks.cliff,
-            offset: terrain.offset,
-        });
-        this.water = this._computeWater({
-            water: terrain.masks.water,
-            waterHeight: terrain.masks.waterHeight,
-            offset: terrain.offset,
-        });
-        this.add(this.ground, this.water);
+        {
+            const { geometry, material } = this._computeGround({
+                height: terrain.masks.height,
+                cliff: terrain.masks.cliff,
+                offset: terrain.offset,
+            });
+            this.ground = geometry;
+            const mesh = new Mesh(new BufferGeometry().fromGeometry(geometry), material);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            this.add(mesh);
+        }
+        {
+            const { geometry, material } = this._computeWater({
+                water: terrain.masks.water,
+                waterHeight: terrain.masks.waterHeight,
+                offset: terrain.offset,
+            });
+            this.water = geometry;
+            this.add(new Mesh(new BufferGeometry().fromGeometry(geometry), material));
+        }
     }
     _computeGround({ height: heightMask, cliff: cliffMask, offset, }) {
         const geometry = new Geometry();
-        const material = new MeshPhongMaterial({
-            vertexColors: true,
-            flatShading: true,
-            shininess: 5,
-        });
         const vertex = (x, y, z, offset = 0) => {
             const existing = this.vertices[x]?.[y]?.[z];
             if (existing !== undefined)
@@ -51066,19 +51082,10 @@ class Terrain extends Group {
         // Center x & y
         geometry.translate(-offset.x, offset.y, offset.z);
         noise(geometry);
-        const mesh = new Mesh(geometry, material);
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        return mesh;
+        return { geometry, material: faceColorMaterial };
     }
     _computeWater({ water: waterMask, waterHeight: waterHeightMask, offset, }) {
         const geometry = new Geometry();
-        const material = new MeshPhongMaterial({
-            color: 0x182190,
-            flatShading: true,
-            opacity: 0.5,
-            transparent: true,
-        });
         // This makes the water hug the cliff, it's not 100% between edges,
         // but is at the edge, which is what matters most
         const vertex = (x, y, waterHeight) => {
@@ -51133,7 +51140,7 @@ class Terrain extends Group {
                     geometry.faces.push(new Face3(...tileFaceVertices(vertices, true)), new Face3(...tileFaceVertices(vertices, false)));
                 }
         rotate(geometry);
-        return new Mesh(geometry, material);
+        return { geometry, material: waterMaterial };
     }
     // Returns either the known height or calculated height of a tile
     _tileHeight(cliffmap, x, y) {
@@ -51183,17 +51190,7 @@ const spoke = ({ thickness, height, }) => {
 class Trough extends Mesh {
     constructor({ thickness = 1 / 16, length = 1 / 2, width = 1 / 4, height = 1 / 4, angle = 0, } = {}) {
         const geometry = new Geometry();
-        const woodMaterial = new MeshPhongMaterial({
-            vertexColors: true,
-            flatShading: true,
-        });
-        const waterMaterial = new MeshPhongMaterial({
-            color: 0x182190,
-            flatShading: true,
-            opacity: 0.75,
-            transparent: true,
-        });
-        const materials = [woodMaterial, waterMaterial];
+        const materials = [faceColorMaterial, waterMaterial];
         const left = wall({ thickness, length: length + thickness, height });
         left.rotateY(-MathUtils.randFloat(1 / 5, 1 / 3));
         left.translate(-width / 2 + thickness / 2, 0, 0);
@@ -51248,7 +51245,7 @@ class Trough extends Mesh {
         geometry.rotateZ(angle - Math.PI / 4);
         geometry.computeFaceNormals();
         geometry.computeVertexNormals();
-        super(geometry, materials);
+        super(new BufferGeometry().fromGeometry(geometry), materials);
         this.castShadow = true;
         this.receiveShadow = true;
     }
@@ -51363,17 +51360,10 @@ var meshes = { ...filtered, Terrain: Terrain$1 };
 const meshList = document.getElementById("mesh-list");
 const keys = Object.keys(meshes);
 const isMeshKey = (key) => keys.includes(key);
-let obj;
 const load = (klass) => {
     if (!isMeshKey(klass))
         return;
-    const oldZ = obj?.rotation.z;
-    if (obj)
-        scene.remove(obj);
-    obj = new meshes[klass]();
-    obj.rotation.z = oldZ ?? 0;
-    obj.update = () => (obj.rotation.z += 0.005);
-    scene.add(obj);
+    changeConstructor(meshes[klass]);
 };
 Object.values(meshes).forEach((klass) => {
     const li = document.createElement("li");

@@ -3,10 +3,11 @@ import {
 	Mesh,
 	Geometry,
 	CylinderGeometry,
-	MeshPhongMaterial,
 	Color,
+	BufferGeometry,
 } from "three";
 import { wood } from "../colors.js";
+import { faceColorMaterial } from "./util/materials.js";
 
 const createPost = ({
 	height,
@@ -135,10 +136,6 @@ export class Fence extends Mesh {
 		color = wood.clone().offsetHSL(MathUtils.randFloatSpread(1 / 36), 0, 0),
 	} = {}) {
 		const geometry = new Geometry();
-		const material = new MeshPhongMaterial({
-			vertexColors: true,
-			flatShading: true,
-		});
 
 		geometry.merge(createPosts({ length, width, height, angle, color }));
 		geometry.merge(createRails({ length, width, height, angle, color }));
@@ -146,7 +143,7 @@ export class Fence extends Mesh {
 		geometry.computeFaceNormals();
 		geometry.computeVertexNormals();
 
-		super(geometry, material);
+		super(new BufferGeometry().fromGeometry(geometry), faceColorMaterial);
 
 		this.castShadow = true;
 		this.receiveShadow = true;
