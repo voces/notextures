@@ -11,7 +11,10 @@ import {
 	WebGLRenderer,
 	Object3D,
 	Vector3,
+	Group,
 } from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import _ from "lodash-es";
 import { params } from "./gui";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -29,9 +32,6 @@ const camera = new PerspectiveCamera(
 );
 const cameraInitialPosition = new Vector3(0, -1.5, 2);
 camera.position.copy(cameraInitialPosition);
-const storedLocation = localStorage.getItem("camera");
-if (storedLocation) camera.position.copy(JSON.parse(storedLocation));
-
 camera.rotation.x = 0.7;
 
 // Light
@@ -70,80 +70,69 @@ consoleExports.renderer = renderer;
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// Camera movements
-const keyboard: Record<string, boolean> = {};
-let pause = false;
-window.addEventListener("keydown", (e) => {
-	keyboard[e.key] = true;
-	if (e.key === " ") {
-		camera.position.copy(cameraInitialPosition);
-		localStorage.setItem("camera", JSON.stringify(camera.position));
-	}
-});
-window.addEventListener("keyup", (e) => (keyboard[e.key] = false));
-window.addEventListener("mousewheel", (e) => {
-	if ((<WheelEvent>e).deltaY > 0) camera.position.z *= 1.1;
-	else camera.position.z /= 1.1;
-	localStorage.setItem("camera", JSON.stringify(camera.position));
-});
-window.addEventListener("mousedown", () => (pause = true));
-window.addEventListener("mouseup", () => (pause = false));
+// Controls
+const controls = new OrbitControls(camera, renderer.domElement);
+consoleExports.controls = controls;
+const storedState = localStorage.getItem("camera");
+if (storedState) {
+	const data = JSON.parse(storedState);
+	camera.position.copy(data.position);
+	controls.target.copy(data.target);
+}
+controls.update();
 
-window.addEventListener("resize", () => {
-	renderer.setSize(window.innerWidth, window.innerHeight);
-	camera.aspect = window.innerWidth / window.innerHeight;
-	camera.updateProjectionMatrix();
+// Camera movements
+window.addEventListener("keydown", (e) => {
+	if (e.key === " ") controls.reset();
 });
 
 // Mesh object
-let obj: Object3D & { update?: () => void };
+let obj: Object3D;
+let Klass: typeof Object3D;
+let lastParams: typeof params = { ...params };
 
-const hasUpdate = (obj: Object3D): obj is Object3D & { update: () => void } =>
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	typeof (<any>obj).update === "function";
+export const remakeObjects = (NewKlass: typeof Object3D = Klass): void => {
+	if (Klass !== NewKlass) Klass = NewKlass;
 
-// const remakeObjects = () => {
+	const oldZ = obj?.rotation.z ?? 0;
+	if (obj) scene.remove(obj);
 
-// }
+	obj = new Group();
+
+	const xMid = (params.width - 1) / 2;
+	const yMid = (params.height - 1) / 2;
+
+	for (let x = 0; x < params.width; x++)
+		for (let y = 0; y < params.height; y++) {
+			const child = new Klass();
+			child.position.x = (x - xMid) * params.spacing;
+			child.position.y = (y - yMid) * params.spacing;
+			obj.add(child);
+		}
+
+	obj.rotation.z = oldZ ?? 0;
+	scene.add(obj);
+};
 
 function render() {
 	requestAnimationFrame(render);
-	if (!pause)
-		for (const child of scene.children)
-			if (hasUpdate(child)) child.update();
 
-	if (keyboard.ArrowLeft || keyboard.a)
-		camera.position.x -= 0.02 * camera.position.z;
-	if (keyboard.ArrowRight || keyboard.d)
-		camera.position.x += 0.02 * camera.position.z;
-	if (keyboard.ArrowUp || keyboard.w)
-		camera.position.y += 0.02 * camera.position.z;
-	if (keyboard.ArrowDown || keyboard.s)
-		camera.position.y -= 0.02 * camera.position.z;
-
-	if (
-		keyboard.ArrowLeft ||
-		keyboard.a ||
-		keyboard.ArrowRight ||
-		keyboard.d ||
-		keyboard.ArrowUp ||
-		keyboard.w ||
-		keyboard.ArrowDown ||
-		keyboard.s
-	)
-		localStorage.setItem("camera", JSON.stringify(camera.position));
+	if (!_.isEqual(params, lastParams)) {
+		remakeObjects();
+		lastParams = { ...params };
+	}
 
 	renderer.render(scene, camera);
 }
 
+setInterval(() => {
+	localStorage.setItem(
+		"camera",
+		JSON.stringify({
+			position: controls.object.position,
+			target: controls.target,
+		}),
+	);
+}, 1000);
+
 render();
-
-export const changeConstructor = (Klass: typeof Object3D): void => {
-	const oldZ = obj?.rotation.z;
-	if (obj) scene.remove(obj);
-
-	obj = new Klass();
-	obj.rotation.z = oldZ ?? 0;
-	obj.update = () => (obj.rotation.z += 0.005);
-	scene.add(obj);
-};
