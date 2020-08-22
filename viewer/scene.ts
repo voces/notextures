@@ -11,9 +11,17 @@ import {
 	WebGLRenderer,
 	Object3D,
 	Vector3,
+	Group,
 } from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import _ from "lodash-es";
+import { params } from "./gui";
 
-export const scene = new Scene();
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const consoleExports = window as any;
+
+const scene = new Scene();
+consoleExports.scene = scene;
 
 // Camera
 const camera = new PerspectiveCamera(
@@ -58,50 +66,73 @@ scene.add(plane);
 
 // Renderer
 const renderer = new WebGLRenderer({ antialias: true });
+consoleExports.renderer = renderer;
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
+// Controls
+const controls = new OrbitControls(camera, renderer.domElement);
+consoleExports.controls = controls;
+const storedState = localStorage.getItem("camera");
+if (storedState) {
+	const data = JSON.parse(storedState);
+	camera.position.copy(data.position);
+	controls.target.copy(data.target);
+}
+controls.update();
+
 // Camera movements
-const keyboard: Record<string, boolean> = {};
-let pause = false;
 window.addEventListener("keydown", (e) => {
-	keyboard[e.key] = true;
-	if (e.key === " ") camera.position.copy(cameraInitialPosition);
-});
-window.addEventListener("keyup", (e) => (keyboard[e.key] = false));
-window.addEventListener("mousewheel", (e) => {
-	if ((<WheelEvent>e).deltaY > 0) camera.position.z *= 1.1;
-	else camera.position.z /= 1.1;
-});
-window.addEventListener("mousedown", () => (pause = true));
-window.addEventListener("mouseup", () => (pause = false));
-
-window.addEventListener("resize", () => {
-	renderer.setSize(window.innerWidth, window.innerHeight);
-	camera.aspect = window.innerWidth / window.innerHeight;
-	camera.updateProjectionMatrix();
+	if (e.key === " ") controls.reset();
 });
 
-const hasUpdate = (obj: Object3D): obj is Object3D & { update: () => void } =>
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	typeof (<any>obj).update === "function";
+// Mesh object
+let obj: Object3D;
+let Klass: typeof Object3D;
+let lastParams: typeof params = { ...params };
+
+export const remakeObjects = (NewKlass: typeof Object3D = Klass): void => {
+	if (Klass !== NewKlass) Klass = NewKlass;
+
+	const oldZ = obj?.rotation.z ?? 0;
+	if (obj) scene.remove(obj);
+
+	obj = new Group();
+
+	const xMid = (params.width - 1) / 2;
+	const yMid = (params.height - 1) / 2;
+
+	for (let x = 0; x < params.width; x++)
+		for (let y = 0; y < params.height; y++) {
+			const child = new Klass();
+			child.position.x = (x - xMid) * params.spacing;
+			child.position.y = (y - yMid) * params.spacing;
+			obj.add(child);
+		}
+
+	obj.rotation.z = oldZ ?? 0;
+	scene.add(obj);
+};
 
 function render() {
 	requestAnimationFrame(render);
-	if (!pause)
-		for (const child of scene.children)
-			if (hasUpdate(child)) child.update();
 
-	if (keyboard.ArrowLeft || keyboard.a)
-		camera.position.x -= 0.02 * camera.position.z;
-	if (keyboard.ArrowRight || keyboard.d)
-		camera.position.x += 0.02 * camera.position.z;
-	if (keyboard.ArrowUp || keyboard.w)
-		camera.position.y += 0.02 * camera.position.z;
-	if (keyboard.ArrowDown || keyboard.s)
-		camera.position.y -= 0.02 * camera.position.z;
+	if (!_.isEqual(params, lastParams)) {
+		remakeObjects();
+		lastParams = { ...params };
+	}
 
 	renderer.render(scene, camera);
 }
+
+setInterval(() => {
+	localStorage.setItem(
+		"camera",
+		JSON.stringify({
+			position: controls.object.position,
+			target: controls.target,
+		}),
+	);
+}, 1000);
 
 render();

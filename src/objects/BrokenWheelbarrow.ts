@@ -1,7 +1,8 @@
-import { MathUtils, Mesh, Geometry, MeshPhongMaterial, Color } from "three";
+import { MathUtils, Mesh, Geometry, Color, BufferGeometry } from "three";
 import { wood } from "../colors.js";
 import { box, cylinder, randColor, nudge } from "./util/deprecatedShared.js";
 import Randomizer, { Variation } from "./util/Randomizer.js";
+import { faceColorMaterial } from "./util/materials.js";
 
 export class BrokenWheelbarrow extends Mesh {
 	constructor({
@@ -11,10 +12,6 @@ export class BrokenWheelbarrow extends Mesh {
 		const color = inColor ?? randColor(wood, colorVariation);
 
 		const geometry = new Geometry();
-		const material = new MeshPhongMaterial({
-			vertexColors: true,
-			flatShading: true,
-		});
 
 		const wheel = (x: number) =>
 			cylinder({ length: 1 / 16, radius: 1 / 4, color: randColor(color) })
@@ -154,7 +151,7 @@ export class BrokenWheelbarrow extends Mesh {
 
 		geometry.rotateZ(Randomizer.flatSpread(Math.PI / 2, Math.PI / 16));
 
-		super(geometry, material);
+		super(new BufferGeometry().fromGeometry(geometry), faceColorMaterial);
 
 		this.castShadow = true;
 		this.receiveShadow = true;

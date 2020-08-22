@@ -1,12 +1,13 @@
-import { MathUtils, Mesh, Geometry, MeshPhongMaterial, Color } from "three";
+import { MathUtils, Mesh, Geometry, Color, BufferGeometry } from "three";
 import { stone } from "../colors.js";
 import {
-	dodecahedron,
-	tetrahedron,
-	randColor,
 	colorNudge,
+	dodecahedron,
+	randColor,
+	tetrahedron,
 } from "./util/deprecatedShared.js";
 import Randomizer, { Variation } from "./util/Randomizer.js";
+import { faceColorMaterial } from "./util/materials.js";
 
 export class RockChunks extends Mesh {
 	constructor({
@@ -16,10 +17,6 @@ export class RockChunks extends Mesh {
 		const color = inColor ?? randColor(stone, colorVariation);
 
 		const geometry = new Geometry();
-		const material = new MeshPhongMaterial({
-			vertexColors: true,
-			flatShading: true,
-		});
 
 		const base = dodecahedron({
 			radius: 1,
@@ -52,7 +49,7 @@ export class RockChunks extends Mesh {
 		geometry.computeFaceNormals();
 		geometry.computeVertexNormals();
 
-		super(geometry, material);
+		super(new BufferGeometry().fromGeometry(geometry), faceColorMaterial);
 
 		this.castShadow = true;
 		this.receiveShadow = true;

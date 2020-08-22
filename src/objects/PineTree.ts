@@ -1,12 +1,13 @@
 import {
+	Color,
+	ConeGeometry,
+	CylinderGeometry,
+	Geometry,
 	MathUtils,
 	Mesh,
-	Geometry,
-	CylinderGeometry,
-	ConeGeometry,
-	MeshPhongMaterial,
-	Color,
+	BufferGeometry,
 } from "three";
+import { faceColorMaterial } from "./util/materials";
 
 const TRUNK_COLOR = new Color(0x483d19);
 const LEAVES_COLOR = new Color(0x026e2d);
@@ -132,10 +133,6 @@ export class PineTree extends Mesh {
 			shelfs = height > 10 / 3 ? 3 + (Math.random() > 0.5 ? 1 : 0) : 3;
 
 		const geometry = new Geometry();
-		const material = new MeshPhongMaterial({
-			vertexColors: true,
-			flatShading: true,
-		});
 
 		geometry.merge(createTrunk({ radius, height, color: trunk }));
 		geometry.merge(createShelfs({ height, radius, shelfs, color: leaves }));
@@ -143,7 +140,7 @@ export class PineTree extends Mesh {
 		geometry.computeFaceNormals();
 		geometry.computeVertexNormals();
 
-		super(geometry, material);
+		super(new BufferGeometry().fromGeometry(geometry), faceColorMaterial);
 
 		this.castShadow = true;
 		this.receiveShadow = true;
