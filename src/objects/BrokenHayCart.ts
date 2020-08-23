@@ -2,7 +2,7 @@ import { Mesh, Vector2, Color, BufferGeometry } from "three";
 import { wood } from "../colors.js";
 import Builder from "./util/Builder.js";
 import Randomizer from "./util/Randomizer.js";
-import { faceColorMaterial } from "./util/materials.js";
+import { faceColorMaterial } from "../materials.js";
 
 const HAY = new Color("#e4d96f");
 

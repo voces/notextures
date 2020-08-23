@@ -7,7 +7,7 @@ import {
 	tetrahedron,
 } from "./util/deprecatedShared.js";
 import Randomizer, { Variation } from "./util/Randomizer.js";
-import { faceColorMaterial } from "./util/materials.js";
+import { faceColorMaterial } from "../materials.js";
 
 export class RockChunks extends Mesh {
 	constructor({

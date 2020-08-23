@@ -11,7 +11,7 @@ import {
 	BufferGeometry,
 } from "three";
 import memoize from "../util/memoize.js";
-import { faceColorMaterial, waterMaterial } from "./util/materials.js";
+import { faceColorMaterial, waterMaterial } from "../materials.js";
 
 const memoizedColor = memoize((hex) => new Color(hex));
 

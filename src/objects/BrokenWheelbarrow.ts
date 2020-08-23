@@ -2,7 +2,7 @@ import { MathUtils, Mesh, Geometry, Color, BufferGeometry } from "three";
 import { wood } from "../colors.js";
 import { box, cylinder, randColor, nudge } from "./util/deprecatedShared.js";
 import Randomizer, { Variation } from "./util/Randomizer.js";
-import { faceColorMaterial } from "./util/materials.js";
+import { faceColorMaterial } from "../materials.js";
 
 export class BrokenWheelbarrow extends Mesh {
 	constructor({

@@ -7,7 +7,7 @@ import {
 	BufferGeometry,
 } from "three";
 import { wood } from "../colors.js";
-import { faceColorMaterial } from "./util/materials.js";
+import { faceColorMaterial } from "../materials.js";
 
 const createPost = ({
 	height,

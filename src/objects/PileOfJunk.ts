@@ -2,7 +2,7 @@ import { Color, Curve, MathUtils, Mesh, Vector2, Vector3 } from "three";
 import Builder from "./util/Builder.js";
 import Randomizer from "./util/Randomizer.js";
 import { cloth, rope, wood, stone } from "../colors.js";
-import { faceColorMaterial } from "./util/materials.js";
+import { faceColorMaterial } from "../materials.js";
 
 // TODO: This has a lot of smaller geometries; we should pull them out to be reusable
 

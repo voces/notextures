@@ -2,7 +2,7 @@ import { Mesh } from "three";
 import { wood } from "../colors.js";
 import Builder from "./util/Builder.js";
 import Randomizer from "./util/Randomizer.js";
-import { faceColorMaterial } from "./util/materials.js";
+import { faceColorMaterial } from "../materials.js";
 
 export class ScorchedBarn extends Mesh {
 	constructor() {

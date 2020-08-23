@@ -7,7 +7,7 @@ import {
 	Mesh,
 	BufferGeometry,
 } from "three";
-import { faceColorMaterial } from "./util/materials";
+import { faceColorMaterial } from "../materials";
 
 const TRUNK_COLOR = new Color(0x483d19);
 const LEAVES_COLOR = new Color(0x026e2d);

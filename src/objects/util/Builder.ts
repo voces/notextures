@@ -15,7 +15,7 @@ import {
 	Mesh,
 } from "three";
 import Randomizer, { Variation } from "./Randomizer.js";
-import { faceColorMaterial } from "./materials.js";
+import { faceColorMaterial } from "../../materials.js";
 
 // const compose = <R>(fn1: (a: R) => R, ...fns: Array<(a: R) => R>) =>
 // 	fns.reduce((prevFn, nextFn) => (value) => prevFn(nextFn(value)), fn1);

@@ -7,7 +7,7 @@ import {
 } from "three";
 import { wood } from "../colors.js";
 import { box, randColor } from "./util/deprecatedShared.js";
-import { faceColorMaterial, waterMaterial } from "./util/materials.js";
+import { faceColorMaterial, waterMaterial } from "../materials.js";
 
 const wall = ({
 	thickness,
