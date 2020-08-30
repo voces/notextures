@@ -2,6 +2,7 @@ export * from "./Barn";
 export * from "./BrokenHayCart";
 export * from "./BrokenWheelbarrow";
 export * from "./Fence";
+export * from "./Grid";
 export * from "./HayCart";
 export * from "./PileOfJunk";
 export * from "./PineTree";

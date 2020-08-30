@@ -1,6 +1,6 @@
 {
   "name": "notextures",
-  "version": "3.0.1",
+  "version": "3.1.0",
   "description": "Low-poly meshes for three.js",
   "homepage": "https://voces.github.io/notextures",
   "keywords": ["threejs", "mesh", "meshes", "low-poly", "low-poly"],

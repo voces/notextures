@@ -72015,6 +72015,61 @@ class Fence extends Mesh {
     }
 }
 
+class ColorAttribute extends BufferAttribute {
+    constructor(faces) {
+        const data = new Float32Array(faces *
+            ColorAttribute.COMPONNETS_PER_COLOR *
+            ColorAttribute.VERTICES_PER_FACE);
+        super(data, ColorAttribute.ITEM_SIZE);
+        this.data = data;
+    }
+    setFace(index, red, blue, green) {
+        const base = index *
+            ColorAttribute.COMPONNETS_PER_COLOR *
+            ColorAttribute.VERTICES_PER_FACE;
+        for (let i = 0; i < ColorAttribute.VERTICES_PER_FACE; i++) {
+            this.data[base + i * ColorAttribute.VERTICES_PER_FACE] = red;
+            this.data[base + i * ColorAttribute.VERTICES_PER_FACE + 1] = blue;
+            this.data[base + i * ColorAttribute.VERTICES_PER_FACE + 2] = green;
+        }
+        this.needsUpdate = true;
+    }
+}
+ColorAttribute.COMPONNETS_PER_COLOR = 3;
+ColorAttribute.VERTICES_PER_FACE = 3;
+ColorAttribute.ITEM_SIZE = 3;
+class SquareColorAttribute extends ColorAttribute {
+    constructor(faces) {
+        super(faces * 2);
+    }
+    setFaces(index, red, blue, green) {
+        super.setFace(index * 2, red, blue, green);
+        super.setFace(index * 2 + 1, red, blue, green);
+    }
+}
+class GridColorAttribute extends SquareColorAttribute {
+    constructor(width, height) {
+        super(width * height);
+        this.width = width;
+        this.height = height;
+    }
+    setColor(x, y, red, blue, green) {
+        super.setFaces(y * this.width + x, red, blue, green);
+    }
+}
+class Grid extends Mesh {
+    constructor(width = 5, height = 5) {
+        const plane = new PlaneBufferGeometry(width, height, width, height).toNonIndexed();
+        const colors = new GridColorAttribute(width, height);
+        plane.setAttribute("color", colors);
+        super(plane, faceColorMaterial);
+        this.colors = colors;
+    }
+    setColor(x, y, red, blue, green) {
+        this.colors.setColor(x, y, red, blue, green);
+    }
+}
+
 const HAY$1 = new Color("#e4d96f");
 class HayCart extends Mesh {
     constructor() {
@@ -72898,6 +72953,7 @@ var Objects = /*#__PURE__*/Object.freeze({
 	BrokenHayCart: BrokenHayCart,
 	BrokenWheelbarrow: BrokenWheelbarrow,
 	Fence: Fence,
+	Grid: Grid,
 	HayCart: HayCart,
 	PileOfJunk: PileOfJunk,
 	PineTree: PineTree,
