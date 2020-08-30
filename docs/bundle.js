@@ -72058,7 +72058,7 @@ class GridColorAttribute extends SquareColorAttribute {
     }
 }
 class Grid extends Mesh {
-    constructor(width = 5, height = 5) {
+    constructor(width = 1, height = 1) {
         const plane = new PlaneBufferGeometry(width, height, width, height).toNonIndexed();
         const colors = new GridColorAttribute(width, height);
         plane.setAttribute("color", colors);

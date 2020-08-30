@@ -65,7 +65,7 @@ class GridColorAttribute extends SquareColorAttribute {
 export class Grid extends Mesh {
 	private colors: GridColorAttribute;
 
-	constructor(width = 5, height = 5) {
+	constructor(width = 1, height = 1) {
 		const plane = new PlaneBufferGeometry(
 			width,
 			height,
