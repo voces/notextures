@@ -7,7 +7,10 @@ export default [
 		output: [{ file: "docs/bundle.js", format: "es" }],
 		plugins: [
 			typescript({
-				tsconfigOverride: { compilerOptions: { declaration: false } },
+				tsconfigOverride: {
+					compilerOptions: { declaration: false },
+					include: ["src", "viewer"],
+				},
 			}),
 			nodeResolve(),
 		],
