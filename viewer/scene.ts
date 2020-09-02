@@ -70,6 +70,12 @@ consoleExports.renderer = renderer;
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
+window.addEventListener("resize", () => {
+	renderer.setSize(window.innerWidth, window.innerHeight);
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+});
+
 // Controls
 const controls = new OrbitControls(camera, renderer.domElement);
 consoleExports.controls = controls;

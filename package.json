@@ -3,13 +3,20 @@
   "version": "3.1.2",
   "description": "Low-poly meshes for three.js",
   "homepage": "https://voces.github.io/notextures",
-  "keywords": ["threejs", "mesh", "meshes", "low-poly", "low-poly"],
+  "keywords": [
+    "threejs",
+    "mesh",
+    "meshes",
+    "low-poly",
+    "low-poly"
+  ],
   "main": "dist/index.js",
   "module": "dist/index.js",
   "typings": "dist/index.js",
   "scripts": {
     "build": "rollup --config",
-    "dev": "rollup --config --watch"
+    "dev": "rollup --config --watch",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -20,6 +27,7 @@
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^8.4.0",
     "@types/dat.gui": "^0.7.5",
+    "@types/jest": "^26.0.12",
     "@types/lodash-es": "^4.17.3",
     "@types/node": "^14.0.27",
     "@typescript-eslint/eslint-plugin": "^3.7.1",
@@ -27,12 +35,14 @@
     "eslint": "^7.6.0",
     "eslint-config-verit": "^2.1.0",
     "eslint-plugin-prettier": "^3.1.4",
+    "jest": "^26.4.2",
     "lodash-es": "^4.17.15",
     "prettier": "^2.0.5",
     "rollup": "^2.23.0",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-typescript2": "^0.27.1",
     "three": "0.119.1",
+    "ts-jest": "^26.3.0",
     "typescript": "^3.9.7"
   },
   "peerDependencies": {

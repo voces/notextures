@@ -71193,6 +71193,11 @@ const renderer = new WebGLRenderer({ antialias: true });
 consoleExports.renderer = renderer;
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
+window.addEventListener("resize", () => {
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+});
 // Controls
 const controls = new OrbitControls(camera, renderer.domElement);
 consoleExports.controls = controls;
@@ -72514,6 +72519,24 @@ const minNotNegInfinity = (...arr) => {
     }
     return value;
 };
+const _calcCliffHeight = (cliffMask, x, y, direction, steps = 1) => {
+    const cliffHeight = cliffMask[y]?.[x];
+    if (typeof cliffHeight === "number")
+        return { height: cliffHeight, steps };
+    return _calcCliffHeight(cliffMask, x + direction.x, y + direction.y, direction, steps + 1);
+};
+const calcCliffHeight = (cliffMask, x, y, direction) => {
+    const cliffHeight = cliffMask[y]?.[x];
+    if (typeof cliffHeight === "number")
+        return cliffHeight;
+    const forward = _calcCliffHeight(cliffMask, x + direction.x, y + direction.y, direction);
+    const backward = _calcCliffHeight(cliffMask, x - direction.x, y - direction.y, {
+        x: -direction.x,
+        y: -direction.y,
+    });
+    const totalSteps = forward.steps + backward.steps;
+    return 0;
+};
 class TVector extends Vector3 {
     constructor(x, y, z, index) {
         super(x, y, z);
@@ -72650,27 +72673,28 @@ class Terrain extends Group {
                 }
                 else if (cliffTile.toLowerCase() === "r") {
                     const nearRaw = [
-                        y > 0 && x > 0 ? cliffMask[y - 1][x - 1] : undefined,
-                        y > 0 ? cliffMask[y - 1][x] : undefined,
-                        y > 0 && x < this.width
-                            ? cliffMask[y - 1][x + 1]
-                            : undefined,
-                        x > 0 ? cliffMask[y][x - 1] : undefined,
-                        x < this.width ? cliffMask[y][x + 1] : undefined,
-                        y + 1 < this.height && x > 0
-                            ? cliffMask[y + 1][x - 1]
-                            : undefined,
-                        y + 1 < this.height ? cliffMask[y + 1][x] : undefined,
-                        y + 1 < this.height && x < this.width
-                            ? cliffMask[y + 1][x + 1]
-                            : undefined,
+                        cliffMask[y - 1]?.[x - 1],
+                        cliffMask[y - 1]?.[x],
+                        cliffMask[y - 1]?.[x + 1],
+                        cliffMask[y][x - 1],
+                        cliffMask[y][x + 1],
+                        cliffMask[y + 1]?.[x - 1],
+                        cliffMask[y + 1]?.[x],
+                        cliffMask[y + 1]?.[x + 1],
                     ];
                     const near = nearRaw.map((tile) => typeof tile === "number" ? tile : -Infinity);
+                    console.log("r", x, y, nearRaw, near);
                     const [topLeftCliff, top, topRightCliff, left, right, botLeftCliff, bot, botRightCliff,] = near;
                     const topLeftHeight = Math.max(topLeftCliff, top, left);
                     const topRightHeight = Math.max(topRightCliff, top, right);
                     const botLeftHeight = Math.max(botLeftCliff, bot, left);
                     const botRightHeight = Math.max(botRightCliff, bot, right);
+                    console.log({
+                        topLeftCliff,
+                        topRightHeight,
+                        topLeftHeight,
+                        botRightHeight,
+                    });
                     const vertices = [
                         vertex(x, y, topLeftHeight, topLeft),
                         vertex(x + 1, y, topRightHeight, topRight),
@@ -72696,12 +72720,7 @@ class Terrain extends Group {
                     for (let i = 0; i < walls.length; i++) {
                         // Don't put triangles on the edge
                         const neighborCliffMaskTile = cliffMask[y + walls[i].neighbor.y]?.[x + walls[i].neighbor.x];
-                        if (
-                        // y + walls[i].neighbor.y < 0 ||
-                        // y + walls[i].neighbor.y >= this.height ||
-                        // x + walls[i].neighbor.x < 0 ||
-                        // x + walls[i].neighbor.x >= this.width ||
-                        neighborCliffMaskTile !== undefined &&
+                        if (neighborCliffMaskTile !== undefined &&
                             typeof neighborCliffMaskTile === "string")
                             continue;
                         const z = neighborCliffMaskTile;
@@ -72959,6 +72978,7 @@ var Objects = /*#__PURE__*/Object.freeze({
 	PineTree: PineTree,
 	RockChunks: RockChunks,
 	ScorchedBarn: ScorchedBarn,
+	calcCliffHeight: calcCliffHeight,
 	Terrain: Terrain,
 	Trough: Trough
 });
@@ -72992,51 +73012,51 @@ class Terrain$1 extends Terrain {
         super({
             masks: {
                 height: [
-                    [0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0],
                 ],
                 cliff: [
-                    [1, 1, 1, 1, 1],
-                    [1, 1, "r", "r", 1],
-                    [1, "r", 2, 2, 1],
-                    [1, "r", 2, 1, 1],
-                    [1, 1, 1, 1, 0],
+                    [1, 1, 1, 1, 1, 1],
+                    [1, 1, 1, "r", "r", 1],
+                    [1, 1, "r", 2, 2, 1],
+                    [1, "r", "r", 2, 1, 1],
+                    [1, 1, 1, 1, 1, 0],
                 ],
                 groundTile: [
-                    [2, 2, 2, 2, 2],
-                    [2, 2, 2, 2, 2],
-                    [2, 2, 1, 1, 2],
-                    [2, 2, 1, 0, 0],
-                    [2, 2, 2, 0, 1],
+                    [2, 2, 2, 2, 2, 2],
+                    [2, 2, 2, 2, 2, 2],
+                    [2, 2, 2, 1, 1, 2],
+                    [2, 2, 2, 1, 0, 0],
+                    [2, 2, 2, 2, 0, 1],
                 ],
                 cliffTile: [
-                    [3, 3, 3, 3, 3],
-                    [3, 3, 3, 3, 3],
-                    [3, 3, 4, 4, 3],
-                    [3, 3, 4, 3, 3],
-                    [3, 3, 3, 3, 4],
+                    [3, 3, 3, 3, 3, 3],
+                    [3, 3, 3, 3, 3, 3],
+                    [3, 3, 3, 4, 4, 3],
+                    [3, 3, 3, 4, 3, 3],
+                    [3, 3, 3, 3, 3, 4],
                 ],
                 water: [
-                    [0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 1],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 1],
                 ],
                 waterHeight: [
-                    [0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0],
                 ],
             },
-            offset: { x: 2.5, y: 2.5, z: 0 },
+            offset: { x: 3, y: 2.5, z: 0 },
             tiles: [
                 LordaeronSummerDarkGrass,
                 LordaeronSummerRock,
@@ -73045,7 +73065,7 @@ class Terrain$1 extends Terrain {
                 LordaeronSummerGrassCliff,
             ],
             size: {
-                width: 5,
+                width: 6,
                 height: 5,
             },
         });

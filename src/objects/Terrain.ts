@@ -10,8 +10,11 @@ import {
 	Color,
 	BufferGeometry,
 } from "three";
-import memoize from "../util/memoize.js";
-import { faceColorMaterial, waterMaterial } from "../materials.js";
+import memoize from "../util/memoize";
+import { faceColorMaterial, waterMaterial } from "../materials";
+
+export type Cliff = number | "r";
+export type CliffMask = Cliff[][];
 
 const memoizedColor = memoize((hex) => new Color(hex));
 
@@ -91,6 +94,78 @@ const minNotNegInfinity = (...arr: number[]) => {
 	return value;
 };
 
+const _calcCliffHeight = (
+	cliffMask: CliffMask,
+	x: number,
+	y: number,
+	direction: { x: number; y: number },
+): { height: number; steps: number } => {
+	const steps = 2;
+	const cliffHeight = cliffMask[y]?.[x];
+	if (typeof cliffHeight === "number") return { height: cliffHeight, steps };
+
+	return _calcCliffHeight(
+		cliffMask,
+		x + direction.x,
+		y + direction.y,
+		direction,
+		steps + 1,
+	);
+};
+
+const CORNERS = {
+	TOP_LEFT: { x: -1, y: -1 },
+	TOP_RIGHT: { x: 1, y: -1 },
+	BOTTOM_LEFT: { x: -1, y: 1 },
+	BOTTOM_RIGHT: { x: 1, y: 1 },
+};
+
+const calcCliffHeightCorner = (
+	cliffMask: CliffMask,
+	x: number,
+	y: number,
+	direction: { x: number; y: number },
+) => {
+	const cliffHeight = cliffMask[y]?.[x];
+	if (typeof cliffHeight === "number") return cliffHeight;
+
+	return 7;
+
+	// return Math.max(calcCliffHeightCorner(cliffMask, ))
+};
+
+export const calcCliffHeight = (
+	cliffMask: CliffMask,
+	x: number,
+	y: number,
+): {
+	topLeft: number;
+	topRight: number;
+	bottomLeft: number;
+	bottomRight: number;
+} => {
+	const cliffHeight = cliffMask[y]?.[x];
+	if (typeof cliffHeight === "number")
+		return {
+			topLeft: cliffHeight,
+			topRight: cliffHeight,
+			bottomLeft: cliffHeight,
+			bottomRight: cliffHeight,
+		};
+
+	return {
+		topLeft: calcCliffHeightCorner(cliffMask, x, y, CORNERS.TOP_LEFT),
+		topRight: calcCliffHeightCorner(cliffMask, x, y, CORNERS.TOP_RIGHT),
+		bottomLeft: calcCliffHeightCorner(cliffMask, x, y, CORNERS.BOTTOM_LEFT),
+		bottomRight: calcCliffHeightCorner(
+			cliffMask,
+			x,
+			y,
+			CORNERS.BOTTOM_RIGHT,
+		),
+	};
+};
+
 class TVector extends Vector3 {
 	_geoIndex: number;
 	constructor(x: number, y: number, z: number, index: number) {
@@ -117,7 +192,7 @@ export class Terrain extends Group {
 		masks: {
 			// y-major, height+1 x width+1
 			height: number[][];
-			cliff: (number | "r")[][];
+			cliff: CliffMask;
 			groundTile: number[][];
 			cliffTile: number[][];
 			water: number[][];
@@ -204,7 +279,7 @@ export class Terrain extends Group {
 		offset,
 	}: {
 		height: number[][];
-		cliff: (number | "r")[][];
+		cliff: CliffMask;
 		offset: { x: number; y: number; z: number };
 	}): { geometry: Geometry; material: MeshPhongMaterial } {
 		const geometry = new Geometry();
@@ -366,25 +441,20 @@ export class Terrain extends Group {
 					}
 				} else if (cliffTile.toLowerCase() === "r") {
 					const nearRaw = [
-						y > 0 && x > 0 ? cliffMask[y - 1][x - 1] : undefined,
-						y > 0 ? cliffMask[y - 1][x] : undefined,
-						y > 0 && x < this.width
-							? cliffMask[y - 1][x + 1]
-							: undefined,
-						x > 0 ? cliffMask[y][x - 1] : undefined,
-						x < this.width ? cliffMask[y][x + 1] : undefined,
-						y + 1 < this.height && x > 0
-							? cliffMask[y + 1][x - 1]
-							: undefined,
-						y + 1 < this.height ? cliffMask[y + 1][x] : undefined,
-						y + 1 < this.height && x < this.width
-							? cliffMask[y + 1][x + 1]
-							: undefined,
+						cliffMask[y - 1]?.[x - 1],
+						cliffMask[y - 1]?.[x],
+						cliffMask[y - 1]?.[x + 1],
+						cliffMask[y][x - 1],
+						cliffMask[y][x + 1],
+						cliffMask[y + 1]?.[x - 1],
+						cliffMask[y + 1]?.[x],
+						cliffMask[y + 1]?.[x + 1],
 					];
 
 					const near = nearRaw.map((tile) =>
 						typeof tile === "number" ? tile : -Infinity,
 					);
+					console.log("r", x, y, nearRaw, near);
 					const [
 						topLeftCliff,
 						top,
@@ -400,6 +470,12 @@ export class Terrain extends Group {
 					const topRightHeight = Math.max(topRightCliff, top, right);
 					const botLeftHeight = Math.max(botLeftCliff, bot, left);
 					const botRightHeight = Math.max(botRightCliff, bot, right);
+					console.log({
+						topLeftCliff,
+						topRightHeight,
+						topLeftHeight,
+						botRightHeight,
+					});
 
 					const vertices: [TVector, TVector, TVector, TVector] = [
 						vertex(x, y, topLeftHeight, topLeft),
@@ -442,10 +518,6 @@ export class Terrain extends Group {
 								x + walls[i].neighbor.x
 							];
 						if (
-							// y + walls[i].neighbor.y < 0 ||
-							// y + walls[i].neighbor.y >= this.height ||
-							// x + walls[i].neighbor.x < 0 ||
-							// x + walls[i].neighbor.x >= this.width ||
 							neighborCliffMaskTile !== undefined &&
 							typeof neighborCliffMaskTile === "string"
 						)
@@ -704,7 +776,7 @@ export class Terrain extends Group {
 	}
 
 	// Returns either the known height or calculated height of a tile
-	_tileHeight(cliffmap: (number | "r")[][], x: number, y: number): number {
+	_tileHeight(cliffmap: CliffMask, x: number, y: number): number {
 		const raw = cliffmap[y][x];
 
 		// Known height
