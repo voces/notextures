@@ -71166,7 +71166,7 @@ const cameraInitialPosition = new Vector3(0, -1.5, 2);
 camera.position.copy(cameraInitialPosition);
 camera.rotation.x = 0.7;
 // Light
-const light = new HemisphereLight(0xffffbb, 0x080820, 2);
+const light = new HemisphereLight(0xffffbb, 0x144452, 2);
 scene.add(light);
 // Ground
 const geometry = new PlaneBufferGeometry(128, 128, 16, 16);
@@ -71226,6 +71226,7 @@ const remakeObjects = (NewKlass = Klass) => {
     obj = new Group();
     const xMid = (params.width - 1) / 2;
     const yMid = (params.height - 1) / 2;
+    consoleExports.obj = obj;
     for (let x = 0; x < params.width; x++)
         for (let y = 0; y < params.height; y++) {
             const child = new Klass();
@@ -72500,7 +72501,7 @@ const noise = (geometry) => {
     for (let i = 0; i < geometry.vertices.length; i++) {
         geometry.vertices[i].x += nudge$1(0.75);
         geometry.vertices[i].y += nudge$1(0.75);
-        geometry.vertices[i].z += nudge$1(0.25);
+        geometry.vertices[i].z += nudge$1(0.5);
     }
     geometry.computeFaceNormals();
     geometry.computeVertexNormals();
@@ -72511,31 +72512,85 @@ const findLastIndex$1 = (arr, fn, fromIndex = arr.length - 1) => {
             return i;
     return -1;
 };
-const minNotNegInfinity = (...arr) => {
-    const value = arr.reduce((min, val) => (val === -Infinity ? min : val < min ? val : min), Infinity);
-    if (value === Infinity) {
-        console.warn("We didn't find any good values!");
-        return NaN;
-    }
-    return value;
+const CORNERS = {
+    TOP_LEFT: { x: -1, y: -1 },
+    TOP_RIGHT: { x: 1, y: -1 },
+    BOTTOM_LEFT: { x: -1, y: 1 },
+    BOTTOM_RIGHT: { x: 1, y: 1 },
 };
-const _calcCliffHeight = (cliffMask, x, y, direction, steps = 1) => {
-    const cliffHeight = cliffMask[y]?.[x];
-    if (typeof cliffHeight === "number")
-        return { height: cliffHeight, steps };
-    return _calcCliffHeight(cliffMask, x + direction.x, y + direction.y, direction, steps + 1);
-};
-const calcCliffHeight = (cliffMask, x, y, direction) => {
+const calcCliffHeightCorner = (cliffMask, x, y, direction) => {
     const cliffHeight = cliffMask[y]?.[x];
     if (typeof cliffHeight === "number")
         return cliffHeight;
-    const forward = _calcCliffHeight(cliffMask, x + direction.x, y + direction.y, direction);
-    const backward = _calcCliffHeight(cliffMask, x - direction.x, y - direction.y, {
-        x: -direction.x,
-        y: -direction.y,
+    const checks = [{ ...direction }];
+    if (direction.x !== 0 && direction.y !== 0)
+        checks.push({ x: 0, y: direction.y }, { x: direction.x, y: 0 });
+    const heights = checks.map(({ x: xD, y: yD }) => cliffMask[y + yD][x + xD]);
+    const max = heights.reduce((max, v) => (typeof v === "number" && v > max ? v : max), -Infinity);
+    if (heights.every((v) => typeof v === "number"))
+        return max;
+    const rampHeights = heights.map((v, i) => {
+        if (v !== "r")
+            return NaN;
+        let cornerHeight = "r";
+        let xCorner = x + checks[i].x;
+        let yCorner = y + checks[i].y;
+        while (cornerHeight === "r") {
+            cornerHeight = cliffMask[yCorner][xCorner];
+            xCorner += checks[i].x;
+            yCorner += checks[i].y;
+        }
+        let oppositeHeight = "r";
+        let xOpposite = x - checks[i].x;
+        let yOpposite = y - checks[i].y;
+        while (oppositeHeight === "r") {
+            oppositeHeight = cliffMask[yOpposite][xOpposite];
+            xOpposite -= checks[i].x;
+            yOpposite -= checks[i].y;
+        }
+        if (cornerHeight === oppositeHeight &&
+            checks[i].x !== 0 &&
+            checks[i].y !== 0) {
+            let adjacentHeight = "r";
+            let xAdjacent = x - checks[i].x;
+            let yAdjacent = y + checks[i].y;
+            while (adjacentHeight === "r") {
+                adjacentHeight = cliffMask[yAdjacent][xAdjacent];
+                xAdjacent -= checks[i].x;
+                yAdjacent += checks[i].y;
+            }
+            let adjacentOppositeHeight = "r";
+            let xAdjacentOpposite = x + checks[i].x;
+            let yAdjacentOpposite = y - checks[i].y;
+            while (adjacentOppositeHeight === "r") {
+                adjacentOppositeHeight =
+                    cliffMask[yAdjacentOpposite][xAdjacentOpposite];
+                xAdjacentOpposite += checks[i].x;
+                yAdjacentOpposite -= checks[i].y;
+            }
+            return Math.max((adjacentHeight + adjacentOppositeHeight) / 2, max);
+        }
+        return Math.max((cornerHeight + oppositeHeight) / 2, max);
     });
-    const totalSteps = forward.steps + backward.steps;
-    return 0;
+    const rampHeight = rampHeights.reduce((max, v) => (!isNaN(v) && v > max ? v : max), -Infinity);
+    return rampHeight;
+};
+const calcCliffHeight = (cliffMask, x, y) => {
+    const cliffHeight = cliffMask[y]?.[x];
+    if (typeof cliffHeight === "number")
+        return {
+            topLeft: cliffHeight,
+            topRight: cliffHeight,
+            bottomLeft: cliffHeight,
+            bottomRight: cliffHeight,
+        };
+    const [topLeft, topRight, bottomLeft, bottomRight] = Object.values(CORNERS).map((direction) => calcCliffHeightCorner(cliffMask, x, y, direction));
+    return {
+        topLeft,
+        topRight,
+        bottomLeft,
+        bottomRight,
+    };
 };
 class TVector extends Vector3 {
     constructor(x, y, z, index) {
@@ -72595,7 +72650,7 @@ class Terrain extends Group {
     }
     _computeGround({ height: heightMask, cliff: cliffMask, offset, }) {
         const geometry = new Geometry();
-        const vertex = (x, y, z, offset = 0) => {
+        const vertex = (x, y, z, offset) => {
             const existing = this.vertices[x]?.[y]?.[z];
             if (existing !== undefined)
                 return existing;
@@ -72672,34 +72727,12 @@ class Terrain extends Group {
                     }
                 }
                 else if (cliffTile.toLowerCase() === "r") {
-                    const nearRaw = [
-                        cliffMask[y - 1]?.[x - 1],
-                        cliffMask[y - 1]?.[x],
-                        cliffMask[y - 1]?.[x + 1],
-                        cliffMask[y][x - 1],
-                        cliffMask[y][x + 1],
-                        cliffMask[y + 1]?.[x - 1],
-                        cliffMask[y + 1]?.[x],
-                        cliffMask[y + 1]?.[x + 1],
-                    ];
-                    const near = nearRaw.map((tile) => typeof tile === "number" ? tile : -Infinity);
-                    console.log("r", x, y, nearRaw, near);
-                    const [topLeftCliff, top, topRightCliff, left, right, botLeftCliff, bot, botRightCliff,] = near;
-                    const topLeftHeight = Math.max(topLeftCliff, top, left);
-                    const topRightHeight = Math.max(topRightCliff, top, right);
-                    const botLeftHeight = Math.max(botLeftCliff, bot, left);
-                    const botRightHeight = Math.max(botRightCliff, bot, right);
-                    console.log({
-                        topLeftCliff,
-                        topRightHeight,
-                        topLeftHeight,
-                        botRightHeight,
-                    });
+                    const { topLeft: topLeftCliff, topRight: topRightCliff, bottomLeft: botLeftCliff, bottomRight: botRightCliff, } = calcCliffHeight(cliffMask, x, y);
                     const vertices = [
-                        vertex(x, y, topLeftHeight, topLeft),
-                        vertex(x + 1, y, topRightHeight, topRight),
-                        vertex(x, y + 1, botLeftHeight, botLeft),
-                        vertex(x + 1, y + 1, botRightHeight, botRight),
+                        vertex(x, y, topLeftCliff, topLeft),
+                        vertex(x + 1, y, topRightCliff, topRight),
+                        vertex(x, y + 1, botLeftCliff, botLeft),
+                        vertex(x + 1, y + 1, botRightCliff, botRight),
                     ];
                     const aVertices = tileFaceVertices(vertices, true);
                     const bVertices = tileFaceVertices(vertices, false);
@@ -72711,6 +72744,12 @@ class Terrain extends Group {
                         this.groundFaces[y] = [];
                     this.groundFaces[y][x] = faces;
                     geometry.faces.push(...faces);
+                    const corners = [
+                        topLeftCliff,
+                        topRightCliff,
+                        botLeftCliff,
+                        botRightCliff,
+                    ];
                     const walls = [
                         { a: 0, b: 1, neighbor: { x: 0, y: -1 } },
                         { a: 1, b: 3, neighbor: { x: 1, y: 0 } },
@@ -72723,7 +72762,7 @@ class Terrain extends Group {
                         if (neighborCliffMaskTile !== undefined &&
                             typeof neighborCliffMaskTile === "string")
                             continue;
-                        const z = neighborCliffMaskTile;
+                        const z = Math.min(corners[walls[i].a], corners[walls[i].b]);
                         const a = vertices[walls[i].a];
                         const b = vertices[walls[i].b];
                         if (a.z !== b.z && (a.x === b.x || a.y === b.y)) {
@@ -72734,11 +72773,11 @@ class Terrain extends Group {
                             rampWalls.push(new Face3(a._geoIndex, b._geoIndex, v._geoIndex, undefined, this.cliffColor(x, y)));
                         }
                     }
-                    const minHeight = minNotNegInfinity(topLeftHeight, topRightHeight, botLeftHeight, botRightHeight);
+                    const minHeight = Math.min(topLeftCliff, topRightCliff, botLeftCliff, botRightCliff);
                     if (isNaN(minHeight))
                         console.warn("Got a NaN!");
                     // Left wall (next gets right; ONLY for squares, not triangle its)
-                    if (topLeftHeight !== botLeftHeight && x > 0) {
+                    if (topLeftCliff !== botLeftCliff && x > 0) {
                         const rawCliffLeft = cliffMask[y][x - 1];
                         const cliffLeft = typeof rawCliffLeft === "number"
                             ? rawCliffLeft
@@ -72764,7 +72803,7 @@ class Terrain extends Group {
                         }
                     }
                     // Top wall (next gets bottom; ONLY for squares, not triangle its)
-                    if (topLeftHeight !== topRightHeight && y > 0) {
+                    if (topLeftCliff !== topRightCliff && y > 0) {
                         const rawCliffAbove = cliffMask[y - 1][x];
                         const cliffAbove = typeof rawCliffAbove === "number"
                             ? rawCliffAbove
@@ -72858,29 +72897,65 @@ class Terrain extends Group {
         return { geometry, material: waterMaterial };
     }
     // Returns either the known height or calculated height of a tile
-    _tileHeight(cliffmap, x, y) {
-        const raw = cliffmap[y][x];
+    _tileHeight(cliffMask, x, y) {
+        const raw = cliffMask[y][x];
         // Known height
         if (typeof raw === "number")
             return raw;
-        const { width, height } = this;
-        const [topLeft, top, topRight, left, right, botLeft, bot, botRight] = [
-            y > 0 && x > 0 ? cliffmap[y - 1][x - 1] : NaN,
-            y > 0 ? cliffmap[y - 1][x] : NaN,
-            y > 0 && x < width ? cliffmap[y - 1][x + 1] : NaN,
-            x > 0 ? cliffmap[y][x - 1] : NaN,
-            x < width ? cliffmap[y][x + 1] : NaN,
-            y + 1 < height && x > 0 ? cliffmap[y + 1][x - 1] : NaN,
-            y + 1 < height ? cliffmap[y + 1][x] : NaN,
-            y + 1 < height && x < width ? cliffmap[y + 1][x + 1] : NaN,
-        ].map((tile) => (typeof tile === "number" ? tile : -Infinity));
-        const topLeftHeight = Math.max(topLeft, top, left);
-        const topRightHeight = Math.max(topRight, top, right);
-        const botLeftHeight = Math.max(botLeft, bot, left);
-        const botRightHeight = Math.max(botRight, bot, right);
-        return minNotNegInfinity(topLeftHeight, topRightHeight, botLeftHeight, botRightHeight);
+        const { topLeft, topRight, bottomLeft, bottomRight } = calcCliffHeight(cliffMask, x, y);
+        return Math.min(topLeft, topRight, bottomLeft, bottomRight);
     }
 }
+
+/** Calculates how much white space the string starts with. */
+const leftTrim = (v) => {
+    const match = v.match(/^\s+/);
+    return match ? match[0].length : 0;
+};
+/** Calculcates the minimal amount of white space to the left of all lines. */
+const commonLeftTrim = (rows) => rows.reduce((min, row) => {
+    if (!row.trim())
+        return min;
+    return Math.min(min, leftTrim(row));
+}, Infinity);
+/**
+ * Calculates a CliffMask from a map.
+ * Example: `01\nr2` => [[0, 1], ["r", 2]]
+ */
+const stringMap = (map) => {
+    const rows = map.split("\n").filter((v) => v.trim());
+    const minLeftTrim = commonLeftTrim(rows);
+    return rows.map((row) => row
+        .trimRight()
+        .slice(minLeftTrim)
+        .split("")
+        .map((v) => {
+        const num = parseInt(v);
+        if (isNaN(num))
+            return 0;
+        return num;
+    }));
+};
+/**
+ * Calculates a CliffMask from a map.
+ * Example: `01\nr2` => [[0, 1], ["r", 2]]
+ */
+const cliffMap = (map) => {
+    const rows = map.split("\n").filter((v) => v.trim());
+    const minLeftTrim = commonLeftTrim(rows);
+    return rows.map((row) => row
+        .trimRight()
+        .slice(minLeftTrim)
+        .split("")
+        .map((v) => {
+        if (v === "r")
+            return "r";
+        const num = parseInt(v);
+        if (isNaN(num))
+            return 0;
+        return num;
+    }));
+};
 
 const wall = ({ thickness, length, height, }) => {
     const wall = box({
@@ -72968,6 +73043,7 @@ class Trough extends Mesh {
 
 var Objects = /*#__PURE__*/Object.freeze({
 	__proto__: null,
+	Terrain: Terrain,
 	Barn: Barn,
 	BrokenHayCart: BrokenHayCart,
 	BrokenWheelbarrow: BrokenWheelbarrow,
@@ -72978,8 +73054,6 @@ var Objects = /*#__PURE__*/Object.freeze({
 	PineTree: PineTree,
 	RockChunks: RockChunks,
 	ScorchedBarn: ScorchedBarn,
-	calcCliffHeight: calcCliffHeight,
-	Terrain: Terrain,
 	Trough: Trough
 });
 
@@ -73011,50 +73085,56 @@ class Terrain$1 extends Terrain {
     constructor() {
         super({
             masks: {
-                height: [
-                    [0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0],
-                ],
-                cliff: [
-                    [1, 1, 1, 1, 1, 1],
-                    [1, 1, 1, "r", "r", 1],
-                    [1, 1, "r", 2, 2, 1],
-                    [1, "r", "r", 2, 1, 1],
-                    [1, 1, 1, 1, 1, 0],
-                ],
-                groundTile: [
-                    [2, 2, 2, 2, 2, 2],
-                    [2, 2, 2, 2, 2, 2],
-                    [2, 2, 2, 1, 1, 2],
-                    [2, 2, 2, 1, 0, 0],
-                    [2, 2, 2, 2, 0, 1],
-                ],
-                cliffTile: [
-                    [3, 3, 3, 3, 3, 3],
-                    [3, 3, 3, 3, 3, 3],
-                    [3, 3, 3, 4, 4, 3],
-                    [3, 3, 3, 4, 3, 3],
-                    [3, 3, 3, 3, 3, 4],
-                ],
-                water: [
-                    [0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 1],
-                ],
-                waterHeight: [
-                    [0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 0, 0, 0],
-                ],
+                height: stringMap(`
+					0000000
+					0000000
+					0000000
+					0000000
+					0000000
+					0000000
+					0000000
+				`),
+                cliff: cliffMap(`
+					211111
+					111rr1
+					111rr1
+					1rr331
+					1rr311
+					111110
+				`),
+                groundTile: stringMap(`
+					222222
+					222222
+					222222
+					222112
+					222100
+					222201
+				`),
+                cliffTile: stringMap(`
+					333333
+					333333
+					333333
+					333443
+					333433
+					333334
+				`),
+                water: stringMap(`
+					000000
+					000000
+					000000
+					000000
+					000000
+					000001
+				`),
+                waterHeight: stringMap(`
+					0000000
+					0000000
+					0000000
+					0000000
+					0000000
+					0000000
+					0000000
+				`),
             },
             offset: { x: 3, y: 2.5, z: 0 },
             tiles: [
@@ -73066,9 +73146,10 @@ class Terrain$1 extends Terrain {
             ],
             size: {
                 width: 6,
-                height: 5,
+                height: 6,
             },
         });
+        this.scale.z = 0.5;
     }
 }
 Object.defineProperty(Terrain$1, "name", { value: "Terrain" });

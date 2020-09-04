@@ -10,8 +10,8 @@ import {
 	Color,
 	BufferGeometry,
 } from "three";
-import memoize from "../util/memoize";
-import { faceColorMaterial, waterMaterial } from "../materials";
+import memoize from "../../util/memoize";
+import { faceColorMaterial, waterMaterial } from "../../materials";
 
 export type Cliff = number | "r";
 export type CliffMask = Cliff[][];
@@ -63,7 +63,7 @@ const noise = (geometry: Geometry) => {
 	for (let i = 0; i < geometry.vertices.length; i++) {
 		geometry.vertices[i].x += nudge(0.75);
 		geometry.vertices[i].y += nudge(0.75);
-		geometry.vertices[i].z += nudge(0.25);
+		geometry.vertices[i].z += nudge(0.5);
 	}
 
 	geometry.computeFaceNormals();
@@ -78,20 +78,6 @@ const findLastIndex = <T>(
 	for (let i = fromIndex; i >= 0; i--) if (fn(arr[i])) return i;
 
 	return -1;
-};
-
-const minNotNegInfinity = (...arr: number[]) => {
-	const value = arr.reduce(
-		(min, val) => (val === -Infinity ? min : val < min ? val : min),
-		Infinity,
-	);
-
-	if (value === Infinity) {
-		console.warn("We didn't find any good values!");
-		return NaN;
-	}
-
-	return value;
 };
 
 export const CORNERS = {
@@ -144,6 +130,33 @@ export const calcCliffHeightCorner = (
 			yOpposite -= checks[i].y;
 		}
 
+		if (
+			cornerHeight === oppositeHeight &&
+			checks[i].x !== 0 &&
+			checks[i].y !== 0
+		) {
+			let adjacentHeight: Cliff = "r";
+			let xAdjacent = x - checks[i].x;
+			let yAdjacent = y + checks[i].y;
+			while (adjacentHeight === "r") {
+				adjacentHeight = cliffMask[yAdjacent][xAdjacent];
+				xAdjacent -= checks[i].x;
+				yAdjacent += checks[i].y;
+			}
+
+			let adjacentOppositeHeight: Cliff = "r";
+			let xAdjacentOpposite = x + checks[i].x;
+			let yAdjacentOpposite = y - checks[i].y;
+			while (adjacentOppositeHeight === "r") {
+				adjacentOppositeHeight =
+					cliffMask[yAdjacentOpposite][xAdjacentOpposite];
+				xAdjacentOpposite += checks[i].x;
+				yAdjacentOpposite -= checks[i].y;
+			}
+
+			return Math.max((adjacentHeight + adjacentOppositeHeight) / 2, max);
+		}
+
 		return Math.max((cornerHeight + oppositeHeight) / 2, max);
 	});
 
@@ -151,13 +164,6 @@ export const calcCliffHeightCorner = (
 		(max, v) => (!isNaN(v) && v > max ? v : max),
 		-Infinity,
 	);
-
-	if (rampHeight === -Infinity) debugger;
-
-	// rampHeights.reduce((sum, v) => (isNaN(v) ? sum : sum + v), 0) /
-	// rampHeights.reduce((count, v) => (isNaN(v) ? count : count + 1), 0);
-
-	if (x === 1 && y === 1 && direction.x === 1 && direction.y === 1) debugger;
 
 	return rampHeight;
 };
@@ -233,7 +239,6 @@ export class Terrain extends Group {
 		};
 	}) {
 		super();
-
 		this.vertices = [];
 
 		this.groundColor = memoize((x, y) => {
@@ -311,7 +316,7 @@ export class Terrain extends Group {
 	}): { geometry: Geometry; material: MeshPhongMaterial } {
 		const geometry = new Geometry();
 
-		const vertex = (x: number, y: number, z: number, offset = 0) => {
+		const vertex = (x: number, y: number, z: number, offset: number) => {
 			const existing = this.vertices[x]?.[y]?.[z];
 			if (existing !== undefined) return existing;
 			if (this.vertices[x] === undefined) this.vertices[x] = [];
@@ -327,7 +332,7 @@ export class Terrain extends Group {
 			return vector;
 		};
 
-		const rampWalls = [];
+		const rampWalls: Face3[] = [];
 
 		for (let y = this.height - 1; y >= 0; y--)
 			for (let x = 0; x < this.width; x++) {
@@ -467,48 +472,18 @@ export class Terrain extends Group {
 						}
 					}
 				} else if (cliffTile.toLowerCase() === "r") {
-					const nearRaw = [
-						cliffMask[y - 1]?.[x - 1],
-						cliffMask[y - 1]?.[x],
-						cliffMask[y - 1]?.[x + 1],
-						cliffMask[y][x - 1],
-						cliffMask[y][x + 1],
-						cliffMask[y + 1]?.[x - 1],
-						cliffMask[y + 1]?.[x],
-						cliffMask[y + 1]?.[x + 1],
-					];
-
-					const near = nearRaw.map((tile) =>
-						typeof tile === "number" ? tile : -Infinity,
-					);
-					console.log("r", x, y, nearRaw, near);
-					const [
-						topLeftCliff,
-						top,
-						topRightCliff,
-						left,
-						right,
-						botLeftCliff,
-						bot,
-						botRightCliff,
-					] = near;
-
-					const topLeftHeight = Math.max(topLeftCliff, top, left);
-					const topRightHeight = Math.max(topRightCliff, top, right);
-					const botLeftHeight = Math.max(botLeftCliff, bot, left);
-					const botRightHeight = Math.max(botRightCliff, bot, right);
-					console.log({
-						topLeftCliff,
-						topRightHeight,
-						topLeftHeight,
-						botRightHeight,
-					});
+					const {
+						topLeft: topLeftCliff,
+						topRight: topRightCliff,
+						bottomLeft: botLeftCliff,
+						bottomRight: botRightCliff,
+					} = calcCliffHeight(cliffMask, x, y);
 
 					const vertices: [TVector, TVector, TVector, TVector] = [
-						vertex(x, y, topLeftHeight, topLeft),
-						vertex(x + 1, y, topRightHeight, topRight),
-						vertex(x, y + 1, botLeftHeight, botLeft),
-						vertex(x + 1, y + 1, botRightHeight, botRight),
+						vertex(x, y, topLeftCliff, topLeft),
+						vertex(x + 1, y, topRightCliff, topRight),
+						vertex(x, y + 1, botLeftCliff, botLeft),
+						vertex(x + 1, y + 1, botRightCliff, botRight),
 					];
 					const aVertices = tileFaceVertices(vertices, true);
 					const bVertices = tileFaceVertices(vertices, false);
@@ -532,6 +507,12 @@ export class Terrain extends Group {
 					this.groundFaces[y][x] = faces;
 					geometry.faces.push(...faces);
 
+					const corners = [
+						topLeftCliff,
+						topRightCliff,
+						botLeftCliff,
+						botRightCliff,
+					];
 					const walls = [
 						{ a: 0, b: 1, neighbor: { x: 0, y: -1 } },
 						{ a: 1, b: 3, neighbor: { x: 1, y: 0 } },
@@ -550,7 +531,10 @@ export class Terrain extends Group {
 						)
 							continue;
 
-						const z = neighborCliffMaskTile;
+						const z = Math.min(
+							corners[walls[i].a],
+							corners[walls[i].b],
+						);
 
 						const a = vertices[walls[i].a];
 						const b = vertices[walls[i].b];
@@ -573,16 +557,16 @@ export class Terrain extends Group {
 						}
 					}
 
-					const minHeight = minNotNegInfinity(
-						topLeftHeight,
-						topRightHeight,
-						botLeftHeight,
-						botRightHeight,
+					const minHeight = Math.min(
+						topLeftCliff,
+						topRightCliff,
+						botLeftCliff,
+						botRightCliff,
 					);
 					if (isNaN(minHeight)) console.warn("Got a NaN!");
 
 					// Left wall (next gets right; ONLY for squares, not triangle its)
-					if (topLeftHeight !== botLeftHeight && x > 0) {
+					if (topLeftCliff !== botLeftCliff && x > 0) {
 						const rawCliffLeft = cliffMask[y][x - 1];
 						const cliffLeft =
 							typeof rawCliffLeft === "number"
@@ -644,7 +628,7 @@ export class Terrain extends Group {
 					}
 
 					// Top wall (next gets bottom; ONLY for squares, not triangle its)
-					if (topLeftHeight !== topRightHeight && y > 0) {
+					if (topLeftCliff !== topRightCliff && y > 0) {
 						const rawCliffAbove = cliffMask[y - 1][x];
 						const cliffAbove =
 							typeof rawCliffAbove === "number"
@@ -803,35 +787,18 @@ export class Terrain extends Group {
 	}
 
 	// Returns either the known height or calculated height of a tile
-	_tileHeight(cliffmap: CliffMask, x: number, y: number): number {
-		const raw = cliffmap[y][x];
+	_tileHeight(cliffMask: CliffMask, x: number, y: number): number {
+		const raw = cliffMask[y][x];
 
 		// Known height
 		if (typeof raw === "number") return raw;
 
-		const { width, height } = this;
-
-		const [topLeft, top, topRight, left, right, botLeft, bot, botRight] = [
-			y > 0 && x > 0 ? cliffmap[y - 1][x - 1] : NaN,
-			y > 0 ? cliffmap[y - 1][x] : NaN,
-			y > 0 && x < width ? cliffmap[y - 1][x + 1] : NaN,
-			x > 0 ? cliffmap[y][x - 1] : NaN,
-			x < width ? cliffmap[y][x + 1] : NaN,
-			y + 1 < height && x > 0 ? cliffmap[y + 1][x - 1] : NaN,
-			y + 1 < height ? cliffmap[y + 1][x] : NaN,
-			y + 1 < height && x < width ? cliffmap[y + 1][x + 1] : NaN,
-		].map((tile) => (typeof tile === "number" ? tile : -Infinity));
-
-		const topLeftHeight = Math.max(topLeft, top, left);
-		const topRightHeight = Math.max(topRight, top, right);
-		const botLeftHeight = Math.max(botLeft, bot, left);
-		const botRightHeight = Math.max(botRight, bot, right);
-
-		return minNotNegInfinity(
-			topLeftHeight,
-			topRightHeight,
-			botLeftHeight,
-			botRightHeight,
+		const { topLeft, topRight, bottomLeft, bottomRight } = calcCliffHeight(
+			cliffMask,
+			x,
+			y,
 		);
+
+		return Math.min(topLeft, topRight, bottomLeft, bottomRight);
 	}
 }

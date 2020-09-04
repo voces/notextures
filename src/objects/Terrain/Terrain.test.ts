@@ -5,53 +5,7 @@ import {
 	Cliff,
 	CORNERS,
 } from "./Terrain";
-
-/** Calculates how much white space the string starts with. */
-const leftTrim = (v: string) => {
-	const match = v.match(/^\s+/);
-	return match ? match[0].length : 0;
-};
-
-/** Removes empty lines/lines of just white space from the top and bottom. */
-const trimVertical = (v: string[]) => {
-	let start = 0;
-	while (!v[start].trim() && start < v.length) start++;
-
-	let end = v.length - 1;
-	while (!v[end].trim() && end > 0) end--;
-
-	return v.slice(start, end + 1);
-};
-
-/** Calculcates the minimal amount of white space to the left of all lines. */
-const commonLeftTrim = (rows: string[]) =>
-	rows.reduce((min, row) => {
-		if (!row.trim()) return min;
-		return Math.min(min, leftTrim(row));
-	}, Infinity);
-
-/**
- * Calculates a CliffMask from a map.
- * Example: `01\nr2` => [[0, 1], ["r", 2]]
- */
-const stringMap = (map: string): CliffMask => {
-	const rows = map.split("\n").filter((v) => v.trim());
-
-	const minLeftTrim = commonLeftTrim(rows);
-
-	return rows.map((row) =>
-		row
-			.trimRight()
-			.slice(minLeftTrim)
-			.split("")
-			.map((v) => {
-				if (v === "r") return "r";
-				const num = parseInt(v);
-				if (isNaN(num)) return 0;
-				return num;
-			}),
-	);
-};
+import { trim, cliffMap } from "./utils";
 
 /** Calls calcCliffHeight on each cell and reformats it as a tuple of tuples. */
 const calcMultiCliffHeight = (cliffMask: CliffMask) => {
@@ -72,15 +26,6 @@ const calcMultiCliffHeight = (cliffMask: CliffMask) => {
 		}
 	}
 	return results;
-};
-
-/** Removes vetical and left white space. */
-const trim = (map: string) => {
-	const rawRows = trimVertical(map.split("\n"));
-
-	const minLeftTrim = commonLeftTrim(rawRows);
-
-	return rawRows.map((row) => row.trimRight().slice(minLeftTrim)).join("\n");
 };
 
 /**
@@ -122,7 +67,7 @@ describe("calcCliffHeightCorner", () => {
 	};
 
 	it("1x1", () => {
-		const cliffMask: CliffMask = stringMap(`
+		const cliffMask: CliffMask = cliffMap(`
 			001
 			0r1
 			001
@@ -136,7 +81,7 @@ describe("calcCliffHeightCorner", () => {
 	});
 
 	it("2x1", () => {
-		const cliffMask: CliffMask = stringMap(`
+		const cliffMask: CliffMask = cliffMap(`
 			0002
 			0rr2
 			0002
@@ -156,7 +101,7 @@ describe("calcCliffHeightCorner", () => {
 	});
 
 	it("2x2", () => {
-		const cliffMask: CliffMask = stringMap(`
+		const cliffMask: CliffMask = cliffMap(`
 			0002
 			0rr2
 			0rr2
@@ -187,11 +132,29 @@ describe("calcCliffHeightCorner", () => {
 		`;
 		expecetCorners(cliffMask, 2, 2, expected4);
 	});
+
+	describe("long external corner", () => {
+		const cliffMask: CliffMask = cliffMap(`
+			00022
+			0rr22
+			0rrr0
+			0rrr0
+			00000
+		`);
+
+		it("close corner", () => {
+			const expected4 = `
+				12
+				11
+			`;
+			expecetCorners(cliffMask, 2, 2, expected4);
+		});
+	});
 });
 
 describe("calcCliffHeight", () => {
 	it("simple 1x1", () => {
-		const cliffMask: CliffMask = stringMap(`
+		const cliffMask: CliffMask = cliffMap(`
 			001
 			0r1
 			001
@@ -212,7 +175,7 @@ describe("calcCliffHeight", () => {
 	});
 
 	it("simple 1x2", () => {
-		const cliffMask: CliffMask = stringMap(`
+		const cliffMask: CliffMask = cliffMap(`
 			001
 			0r1
 			0r1
@@ -237,7 +200,7 @@ describe("calcCliffHeight", () => {
 	});
 
 	it("simple 2x1", () => {
-		const cliffMask: CliffMask = stringMap(`
+		const cliffMask: CliffMask = cliffMap(`
 			0002
 			0rr2
 			0002
@@ -258,7 +221,7 @@ describe("calcCliffHeight", () => {
 	});
 
 	it("simple 2x2", () => {
-		const cliffMask: CliffMask = stringMap(`
+		const cliffMask: CliffMask = cliffMap(`
 			0002
 			0rr2
 			0rr2
@@ -283,7 +246,7 @@ describe("calcCliffHeight", () => {
 	});
 
 	it("minor external corner", () => {
-		const cliffMask: CliffMask = stringMap(`
+		const cliffMask: CliffMask = cliffMap(`
 			001
 			0r0
 			000
@@ -304,7 +267,7 @@ describe("calcCliffHeight", () => {
 	});
 
 	it("external corner", () => {
-		const cliffMask: CliffMask = stringMap(`
+		const cliffMask: CliffMask = cliffMap(`
 			0011
 			0r11
 			0rr0
@@ -328,8 +291,8 @@ describe("calcCliffHeight", () => {
 		);
 	});
 
-	it.only("full external corner", () => {
-		const cliffMask: CliffMask = stringMap(`
+	it("full external corner", () => {
+		const cliffMask: CliffMask = cliffMap(`
 			000222
 			0rr222
 			0rr222
@@ -337,8 +300,6 @@ describe("calcCliffHeight", () => {
 			0rrrr0
 			000000
 		`);
-
-		// expect(asString(calcMultiCliffHeight(cliffMask))).toEqual("");
 
 		expect(asString(calcMultiCliffHeight(cliffMask))).toEqual(
 			trim(`
@@ -351,14 +312,91 @@ describe("calcCliffHeight", () => {
 				00	01	12	22	22	22
 				00	01	12	22	22	22
 
-				00	01	02	22	22	00
-				00	00	10	11	11	00
+				00	01	12	22	22	00
+				00	01	11	11	11	00
 
-				00	01	01	11	11	00
+				00	01	11	11	11	00
 				00	00	00	00	00	00
 
 				00	00	00	00	00	00
 				00	00	00	00	00	00
+			`),
+		);
+	});
+
+	it("minor internal corner", () => {
+		const cliffMask: CliffMask = cliffMap(`
+			011
+			0r1
+			000
+		`);
+
+		expect(asString(calcMultiCliffHeight(cliffMask))).toEqual(
+			trim(`
+				00	11	11
+				00	11	11
+
+				00	11	11
+				00	01	11
+
+				00	00	00
+				00	00	00
+			`),
+		);
+	});
+
+	it("internal corner", () => {
+		const cliffMask: CliffMask = cliffMap(`
+			0222
+			0rr2
+			0rr2
+			0000
+		`);
+
+		expect(asString(calcMultiCliffHeight(cliffMask))).toEqual(
+			trim(`
+				00	22	22	22
+				00	22	22	22
+
+				00	22	22	22
+				00	11	12	22
+
+				00	11	12	22
+				00	01	12	22
+
+				00	00	00	00
+				00	00	00	00
+			`),
+		);
+	});
+
+	it.only("full internal corner", () => {
+		const cliffMask: CliffMask = cliffMap(`
+			02222
+			0rrr2
+			0rrr2
+			00rr2
+			00000
+		`);
+
+		// expect(asString(calcMultiCliffHeight(cliffMask))).toEqual("");
+
+		expect(asString(calcMultiCliffHeight(cliffMask))).toEqual(
+			trim(`
+				00	22	22	22	22
+				00	22	22	22	22
+
+				00	22	22	22	22
+				00	11	11	12	22
+
+				00	11	11	12	22
+				00	01	11	12	22
+
+				00	00	11	12	22
+				00	00	01	12	22
+
+				00	00	00	00	00
+				00	00	00	00	00
 			`),
 		);
 
