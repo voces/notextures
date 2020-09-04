@@ -94,44 +94,72 @@ const minNotNegInfinity = (...arr: number[]) => {
 	return value;
 };
 
-const _calcCliffHeight = (
-	cliffMask: CliffMask,
-	x: number,
-	y: number,
-	direction: { x: number; y: number },
-): { height: number; steps: number } => {
-	const steps = 2;
-	const cliffHeight = cliffMask[y]?.[x];
-	if (typeof cliffHeight === "number") return { height: cliffHeight, steps };
-
-	return _calcCliffHeight(
-		cliffMask,
-		x + direction.x,
-		y + direction.y,
-		direction,
-		steps + 1,
-	);
-};
-
-const CORNERS = {
+export const CORNERS = {
 	TOP_LEFT: { x: -1, y: -1 },
 	TOP_RIGHT: { x: 1, y: -1 },
 	BOTTOM_LEFT: { x: -1, y: 1 },
 	BOTTOM_RIGHT: { x: 1, y: 1 },
 };
 
-const calcCliffHeightCorner = (
+export const calcCliffHeightCorner = (
 	cliffMask: CliffMask,
 	x: number,
 	y: number,
 	direction: { x: number; y: number },
-) => {
+): number => {
 	const cliffHeight = cliffMask[y]?.[x];
 	if (typeof cliffHeight === "number") return cliffHeight;
 
-	return 7;
+	const checks = [{ ...direction }];
+	if (direction.x !== 0 && direction.y !== 0)
+		checks.push({ x: 0, y: direction.y }, { x: direction.x, y: 0 });
 
-	// return Math.max(calcCliffHeightCorner(cliffMask, ))
+	const heights = checks.map(({ x: xD, y: yD }) => cliffMask[y + yD][x + xD]);
+
+	const max = heights.reduce<number>(
+		(max, v) => (typeof v === "number" && v > max ? v : max),
+		-Infinity,
+	);
+
+	if (heights.every((v) => typeof v === "number")) return max;
+
+	const rampHeights = heights.map((v, i) => {
+		if (v !== "r") return NaN;
+
+		let cornerHeight: Cliff = "r";
+		let xCorner = x + checks[i].x;
+		let yCorner = y + checks[i].y;
+		while (cornerHeight === "r") {
+			cornerHeight = cliffMask[yCorner][xCorner];
+			xCorner += checks[i].x;
+			yCorner += checks[i].y;
+		}
+
+		let oppositeHeight: Cliff = "r";
+		let xOpposite = x - checks[i].x;
+		let yOpposite = y - checks[i].y;
+		while (oppositeHeight === "r") {
+			oppositeHeight = cliffMask[yOpposite][xOpposite];
+			xOpposite -= checks[i].x;
+			yOpposite -= checks[i].y;
+		}
+
+		return Math.max((cornerHeight + oppositeHeight) / 2, max);
+	});
+
+	const rampHeight = rampHeights.reduce(
+		(max, v) => (!isNaN(v) && v > max ? v : max),
+		-Infinity,
+	);
+
+	if (rampHeight === -Infinity) debugger;
+
+	// rampHeights.reduce((sum, v) => (isNaN(v) ? sum : sum + v), 0) /
+	// rampHeights.reduce((count, v) => (isNaN(v) ? count : count + 1), 0);
+
+	if (x === 1 && y === 1 && direction.x === 1 && direction.y === 1) debugger;
+
+	return rampHeight;
 };
 
 export const calcCliffHeight = (
@@ -153,16 +181,15 @@ export const calcCliffHeight = (
 			bottomRight: cliffHeight,
 		};
 
+	const [topLeft, topRight, bottomLeft, bottomRight] = Object.values(
+		CORNERS,
+	).map((direction) => calcCliffHeightCorner(cliffMask, x, y, direction));
+
 	return {
-		topLeft: calcCliffHeightCorner(cliffMask, x, y, CORNERS.TOP_LEFT),
-		topRight: calcCliffHeightCorner(cliffMask, x, y, CORNERS.TOP_RIGHT),
-		bottomLeft: calcCliffHeightCorner(cliffMask, x, y, CORNERS.BOTTOM_LEFT),
-		bottomRight: calcCliffHeightCorner(
-			cliffMask,
-			x,
-			y,
-			CORNERS.BOTTOM_RIGHT,
-		),
+		topLeft,
+		topRight,
+		bottomLeft,
+		bottomRight,
 	};
 };
 

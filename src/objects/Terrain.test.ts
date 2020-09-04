@@ -1,4 +1,10 @@
-import { calcCliffHeight, CliffMask, Cliff } from "./Terrain";
+import {
+	calcCliffHeight,
+	calcCliffHeightCorner,
+	CliffMask,
+	Cliff,
+	CORNERS,
+} from "./Terrain";
 
 /** Calculates how much white space the string starts with. */
 const leftTrim = (v: string) => {
@@ -92,6 +98,97 @@ const asString = (cliffHeightMap: [[Cliff, Cliff], [Cliff, Cliff]][][]) => {
 	return result.slice(0, -1).join("\n");
 };
 
+describe("calcCliffHeightCorner", () => {
+	const expecetCorners = (
+		cliffMask: CliffMask,
+		x: number,
+		y: number,
+		expected: string,
+	) => {
+		const actual = [
+			[
+				calcCliffHeightCorner(cliffMask, x, y, CORNERS.TOP_LEFT),
+				calcCliffHeightCorner(cliffMask, x, y, CORNERS.TOP_RIGHT),
+			],
+			[
+				calcCliffHeightCorner(cliffMask, x, y, CORNERS.BOTTOM_LEFT),
+				calcCliffHeightCorner(cliffMask, x, y, CORNERS.BOTTOM_RIGHT),
+			],
+		]
+			.map((r) => r.join(""))
+			.join("\n");
+
+		expect(actual).toEqual(trim(expected));
+	};
+
+	it("1x1", () => {
+		const cliffMask: CliffMask = stringMap(`
+			001
+			0r1
+			001
+		`);
+
+		const expected = `
+			01
+			01
+		`;
+		expecetCorners(cliffMask, 1, 1, expected);
+	});
+
+	it("2x1", () => {
+		const cliffMask: CliffMask = stringMap(`
+			0002
+			0rr2
+			0002
+		`);
+
+		const expected1 = `
+			01
+			01
+		`;
+		expecetCorners(cliffMask, 1, 1, expected1);
+
+		const expected2 = `
+			12
+			12
+		`;
+		expecetCorners(cliffMask, 2, 1, expected2);
+	});
+
+	it("2x2", () => {
+		const cliffMask: CliffMask = stringMap(`
+			0002
+			0rr2
+			0rr2
+			0002
+		`);
+
+		const expected1 = `
+			01
+			01
+		`;
+		expecetCorners(cliffMask, 1, 1, expected1);
+
+		const expected2 = `
+			12
+			12
+		`;
+		expecetCorners(cliffMask, 2, 1, expected2);
+
+		const expected3 = `
+			01
+			01
+		`;
+		expecetCorners(cliffMask, 1, 2, expected3);
+
+		const expected4 = `
+			12
+			12
+		`;
+		expecetCorners(cliffMask, 2, 2, expected4);
+	});
+});
+
 describe("calcCliffHeight", () => {
 	it("simple 1x1", () => {
 		const cliffMask: CliffMask = stringMap(`
@@ -105,8 +202,8 @@ describe("calcCliffHeight", () => {
 				00	00	11
 				00	00	11
 
-				00	77	11
-				00	77	11
+				00	01	11
+				00	01	11
 
 				00	00	11
 				00	00	11
@@ -127,11 +224,11 @@ describe("calcCliffHeight", () => {
 				00	00	11
 				00	00	11
 
-				00	77	11
-				00	77	11
+				00	01	11
+				00	01	11
 
-				00	77	11
-				00	77	11
+				00	01	11
+				00	01	11
 
 				00	00	11
 				00	00	11
@@ -140,34 +237,151 @@ describe("calcCliffHeight", () => {
 	});
 
 	it("simple 2x1", () => {
-		const cliffMask: CliffMask = [
-			[0, 0, 0, 1],
-			[0, "r", "r", 1],
-			[0, 0, 0, 1],
-		];
+		const cliffMask: CliffMask = stringMap(`
+			0002
+			0rr2
+			0002
+		`);
 
-		expect(calcCliffHeight(cliffMask, 1, 1));
+		expect(asString(calcMultiCliffHeight(cliffMask))).toEqual(
+			trim(`
+				00	00	00	22
+				00	00	00	22
+
+				00	01	12	22
+				00	01	12	22
+
+				00	00	00	22
+				00	00	00	22
+			`),
+		);
 	});
 
 	it("simple 2x2", () => {
-		const cliffMask: CliffMask = [
-			[0, 0, 0, 1],
-			[0, "r", "r", 1],
-			[0, "r", "r", 1],
-			[0, 0, 0, 1],
-		];
+		const cliffMask: CliffMask = stringMap(`
+			0002
+			0rr2
+			0rr2
+			0002
+		`);
 
-		expect(calcCliffHeight(cliffMask, 1, 1));
+		expect(asString(calcMultiCliffHeight(cliffMask))).toEqual(
+			trim(`
+				00	00	00	22
+				00	00	00	22
+
+				00	01	12	22
+				00	01	12	22
+
+				00	01	12	22
+				00	01	12	22
+
+				00	00	00	22
+				00	00	00	22
+			`),
+		);
 	});
 
-	it("complex 2x2", () => {
-		const cliffMask: CliffMask = [
-			[0, 0, 0, 1],
-			[0, 0, "r", 1],
-			[0, "r", "r", 1],
-			[0, 0, 0, 1],
-		];
+	it("minor external corner", () => {
+		const cliffMask: CliffMask = stringMap(`
+			001
+			0r0
+			000
+		`);
 
-		expect(calcCliffHeight(cliffMask, 1, 1));
+		expect(asString(calcMultiCliffHeight(cliffMask))).toEqual(
+			trim(`
+				00	00	11
+				00	00	11
+
+				00	01	00
+				00	00	00
+
+				00	00	00
+				00	00	00
+			`),
+		);
+	});
+
+	it("external corner", () => {
+		const cliffMask: CliffMask = stringMap(`
+			0011
+			0r11
+			0rr0
+			0000
+		`);
+
+		expect(asString(calcMultiCliffHeight(cliffMask))).toEqual(
+			trim(`
+				00	00	11	11
+				00	00	11	11
+
+				00	01	11	11
+				00	01	11	11
+
+				00	01	11	00
+				00	00	00	00
+
+				00	00	00	00
+				00	00	00	00
+			`),
+		);
+	});
+
+	it.only("full external corner", () => {
+		const cliffMask: CliffMask = stringMap(`
+			000222
+			0rr222
+			0rr222
+			0rrrr0
+			0rrrr0
+			000000
+		`);
+
+		// expect(asString(calcMultiCliffHeight(cliffMask))).toEqual("");
+
+		expect(asString(calcMultiCliffHeight(cliffMask))).toEqual(
+			trim(`
+				00	00	00	22	22	22
+				00	00	00	22	22	22
+
+				00	01	12	22	22	22
+				00	01	12	22	22	22
+
+				00	01	12	22	22	22
+				00	01	12	22	22	22
+
+				00	01	02	22	22	00
+				00	00	10	11	11	00
+
+				00	01	01	11	11	00
+				00	00	00	00	00	00
+
+				00	00	00	00	00	00
+				00	00	00	00	00	00
+			`),
+		);
+
+		// expect(asString(calcMultiCliffHeight(cliffMask))).toEqual(
+		// 	trim(`
+		// 		00	00	00	22	22	22
+		// 		00	00	00	22	22	22
+
+		// 		00	01	12	22	22	22
+		// 		00	01	12	22	22	22
+
+		// 		00	01	12	22	22	22
+		// 		00	01	12	22	22	22
+
+		// 		00	01	12	22	22	00
+		// 		00	01	11	11	11	00
+
+		// 		00	01	11	11	11	00
+		// 		00	00	00	00	00	00
+
+		// 		00	00	00	00	00	00
+		// 		00	00	00	00	00	00
+		// 	`),
+		// );
 	});
 });
