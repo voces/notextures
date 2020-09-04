@@ -11,5 +11,4 @@ export default {
 	testEnvironment: "node",
 	testRegex: "(/src/.*\\.test)\\.ts$",
 	transformIgnorePatterns: [],
-	// resolver: "jest-ts-webcompat-resolver",
 };

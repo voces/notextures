@@ -305,7 +305,7 @@ export class Terrain extends Group {
 		}
 	}
 
-	_computeGround({
+	private _computeGround({
 		height: heightMask,
 		cliff: cliffMask,
 		offset,
@@ -704,7 +704,7 @@ export class Terrain extends Group {
 		return { geometry, material: faceColorMaterial };
 	}
 
-	_computeWater({
+	private _computeWater({
 		water: waterMask,
 		waterHeight: waterHeightMask,
 		offset,
@@ -787,7 +787,7 @@ export class Terrain extends Group {
 	}
 
 	// Returns either the known height or calculated height of a tile
-	_tileHeight(cliffMask: CliffMask, x: number, y: number): number {
+	private _tileHeight(cliffMask: CliffMask, x: number, y: number): number {
 		const raw = cliffMask[y][x];
 
 		// Known height

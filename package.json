@@ -7,7 +7,7 @@
     "threejs",
     "mesh",
     "meshes",
-    "low-poly",
+    "lowpoly",
     "low-poly"
   ],
   "main": "dist/index.js",
