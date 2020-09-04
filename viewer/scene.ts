@@ -35,7 +35,7 @@ camera.position.copy(cameraInitialPosition);
 camera.rotation.x = 0.7;
 
 // Light
-const light = new HemisphereLight(0xffffbb, 0x080820, 2);
+const light = new HemisphereLight(0xffffbb, 0x144452, 2);
 scene.add(light);
 
 // Ground
@@ -70,6 +70,12 @@ consoleExports.renderer = renderer;
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
+window.addEventListener("resize", () => {
+	renderer.setSize(window.innerWidth, window.innerHeight);
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+});
+
 // Controls
 const controls = new OrbitControls(camera, renderer.domElement);
 consoleExports.controls = controls;
@@ -101,6 +107,8 @@ export const remakeObjects = (NewKlass: typeof Object3D = Klass): void => {
 
 	const xMid = (params.width - 1) / 2;
 	const yMid = (params.height - 1) / 2;
+
+	consoleExports.obj = obj;
 
 	for (let x = 0; x < params.width; x++)
 		for (let y = 0; y < params.height; y++) {

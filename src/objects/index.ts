@@ -8,5 +8,5 @@ export * from "./PileOfJunk";
 export * from "./PineTree";
 export * from "./RockChunks";
 export * from "./ScorchedBarn";
-export * from "./Terrain";
+export { Terrain } from "./Terrain";
 export * from "./Trough";

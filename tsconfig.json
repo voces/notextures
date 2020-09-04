@@ -11,7 +11,7 @@
 		"alwaysStrict": true,
 		"strictNullChecks": true,
 		"esModuleInterop": true,
-		"types": ["@types/node"],
+		"types": ["@types/node", "@types/jest"],
 		"noEmit": true, // overridden by rollup
 		"declaration": true
 	},

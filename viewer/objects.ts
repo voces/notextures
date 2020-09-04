@@ -6,61 +6,70 @@ import {
 	LordaeronSummerRock,
 } from "../src";
 import * as Objects from "../src/objects";
-import { Terrain as BaseTerrain } from "../src/objects/Terrain";
+import {
+	stringMap,
+	Terrain as BaseTerrain,
+	cliffMap,
+} from "../src/objects/Terrain";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const { Terrain: _, ...filtered } = Objects;
 
 class Terrain extends BaseTerrain {
 	constructor() {
-		super({
+		const props = {
 			masks: {
-				height: [
-					[0, 0, 0, 0, 0, 0],
-					[0, 0, 0, 0, 0, 0],
-					[0, 0, 0, 0, 0, 0],
-					[0, 0, 0, 0, 0, 0],
-					[0, 0, 0, 0, 0, 0],
-					[0, 0, 0, 0, 0, 0],
-				],
-				cliff: [
-					[1, 1, 1, 1, 1],
-					[1, 1, "r", "r", 1],
-					[1, "r", 2, 2, 1],
-					[1, "r", 2, 1, 1],
-					[1, 1, 1, 1, 0],
-				],
-				groundTile: [
-					[2, 2, 2, 2, 2],
-					[2, 2, 2, 2, 2],
-					[2, 2, 1, 1, 2],
-					[2, 2, 1, 0, 0],
-					[2, 2, 2, 0, 1],
-				],
-				cliffTile: [
-					[3, 3, 3, 3, 3],
-					[3, 3, 3, 3, 3],
-					[3, 3, 4, 4, 3],
-					[3, 3, 4, 3, 3],
-					[3, 3, 3, 3, 4],
-				],
-				water: [
-					[0, 0, 0, 0, 0],
-					[0, 0, 0, 0, 0],
-					[0, 0, 0, 0, 0],
-					[0, 0, 0, 0, 0],
-					[0, 0, 0, 0, 1],
-				],
-				waterHeight: [
-					[0, 0, 0, 0, 0, 0],
-					[0, 0, 0, 0, 0, 0],
-					[0, 0, 0, 0, 0, 0],
-					[0, 0, 0, 0, 0, 0],
-					[0, 0, 0, 0, 0, 0],
-					[0, 0, 0, 0, 0, 0],
-				],
+				height: stringMap(`
+					0000000
+					0100000
+					0000000
+					0000000
+					0000000
+					0000000
+					0000000
+				`),
+				cliff: cliffMap(`
+					111111
+					111rr1
+					111rr1
+					1rr331
+					1rr311
+					111110
+				`),
+				groundTile: stringMap(`
+					222222
+					222222
+					222222
+					222112
+					222100
+					222201
+				`),
+				cliffTile: stringMap(`
+					333333
+					333333
+					333333
+					333443
+					333433
+					333334
+				`),
+				water: stringMap(`
+					000000
+					000000
+					000000
+					000000
+					000000
+					000001
+				`),
+				waterHeight: stringMap(`
+					0000000
+					0000000
+					0000000
+					0000000
+					0000000
+					0000000
+					0000000
+				`),
 			},
-			offset: { x: 2.5, y: 2.5, z: 0 },
 			tiles: [
 				LordaeronSummerDarkGrass,
 				LordaeronSummerRock,
@@ -68,11 +77,15 @@ class Terrain extends BaseTerrain {
 				LordaeronSummerDirtCliff,
 				LordaeronSummerGrassCliff,
 			],
-			size: {
-				width: 5,
-				height: 5,
-			},
-		});
+		};
+		const size = {
+			width: props.masks.cliff.length,
+			height: props.masks.cliff[0].length,
+		};
+		const offset = { x: size.width / 2, y: size.height / 2, z: 0 };
+		super({ ...props, size, offset });
+
+		this.scale.z = 0.5;
 	}
 }
 
