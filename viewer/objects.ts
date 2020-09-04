@@ -17,11 +17,11 @@ const { Terrain: _, ...filtered } = Objects;
 
 class Terrain extends BaseTerrain {
 	constructor() {
-		super({
+		const props = {
 			masks: {
 				height: stringMap(`
 					0000000
-					0000000
+					0100000
 					0000000
 					0000000
 					0000000
@@ -29,7 +29,7 @@ class Terrain extends BaseTerrain {
 					0000000
 				`),
 				cliff: cliffMap(`
-					211111
+					111111
 					111rr1
 					111rr1
 					1rr331
@@ -70,7 +70,6 @@ class Terrain extends BaseTerrain {
 					0000000
 				`),
 			},
-			offset: { x: 3, y: 2.5, z: 0 },
 			tiles: [
 				LordaeronSummerDarkGrass,
 				LordaeronSummerRock,
@@ -78,11 +77,13 @@ class Terrain extends BaseTerrain {
 				LordaeronSummerDirtCliff,
 				LordaeronSummerGrassCliff,
 			],
-			size: {
-				width: 6,
-				height: 6,
-			},
-		});
+		};
+		const size = {
+			width: props.masks.cliff.length,
+			height: props.masks.cliff[0].length,
+		};
+		const offset = { x: size.width / 2, y: size.height / 2, z: 0 };
+		super({ ...props, size, offset });
 
 		this.scale.z = 0.5;
 	}
