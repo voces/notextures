@@ -6,14 +6,8 @@ import {
 	LordaeronSummerRock,
 } from "../src";
 import * as Objects from "../src/objects";
-import {
-	stringMap,
-	Terrain as BaseTerrain,
-	cliffMap,
-} from "../src/objects/Terrain";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const { Terrain: _, ...filtered } = Objects;
+const { Terrain: BaseTerrain, stringMap, cliffMap, ...filtered } = Objects;
 
 class Terrain extends BaseTerrain {
 	constructor() {

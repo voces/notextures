@@ -1,3 +1,1 @@
-module.exports = {
-	extends: ["verit"],
-};
+module.exports = { extends: ["verit"] };

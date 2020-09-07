@@ -91,7 +91,7 @@ if ( Object.assign === undefined ) {
 
 }
 
-const REVISION = '119';
+const REVISION = '120';
 const MOUSE = { LEFT: 0, MIDDLE: 1, RIGHT: 2, ROTATE: 0, DOLLY: 1, PAN: 2 };
 const TOUCH = { ROTATE: 0, PAN: 1, DOLLY_PAN: 2, DOLLY_ROTATE: 3 };
 const CullFaceNone = 0;
@@ -255,6 +255,7 @@ const AlwaysStencilFunc = 519;
 
 const StaticDrawUsage = 35044;
 const DynamicDrawUsage = 35048;
+const GLSL3 = "300 es";
 
 /**
  * https://github.com/mrdoob/eventdispatcher.js/
@@ -555,88 +556,76 @@ const MathUtils = {
 
 };
 
-function Vector2( x = 0, y = 0 ) {
+class Vector2 {
 
-	this.x = x;
-	this.y = y;
+	constructor( x = 0, y = 0 ) {
 
-}
+		Object.defineProperty( this, 'isVector2', { value: true } );
 
-Object.defineProperties( Vector2.prototype, {
-
-	"width": {
-
-		get: function () {
-
-			return this.x;
-
-		},
-
-		set: function ( value ) {
-
-			this.x = value;
-
-		}
-
-	},
-
-	"height": {
-
-		get: function () {
-
-			return this.y;
-
-		},
-
-		set: function ( value ) {
-
-			this.y = value;
-
-		}
+		this.x = x;
+		this.y = y;
 
 	}
 
-} );
+	get width() {
 
-Object.assign( Vector2.prototype, {
+		return this.x;
 
-	isVector2: true,
+	}
 
-	set: function ( x, y ) {
+	set width( value ) {
+
+		this.x = value;
+
+	}
+
+	get height() {
+
+		return this.y;
+
+	}
+
+	set height( value ) {
+
+		this.y = value;
+
+	}
+
+	set( x, y ) {
 
 		this.x = x;
 		this.y = y;
 
 		return this;
 
-	},
+	}
 
-	setScalar: function ( scalar ) {
+	setScalar( scalar ) {
 
 		this.x = scalar;
 		this.y = scalar;
 
 		return this;
 
-	},
+	}
 
-	setX: function ( x ) {
+	setX( x ) {
 
 		this.x = x;
 
 		return this;
 
-	},
+	}
 
-	setY: function ( y ) {
+	setY( y ) {
 
 		this.y = y;
 
 		return this;
 
-	},
+	}
 
-	setComponent: function ( index, value ) {
+	setComponent( index, value ) {
 
 		switch ( index ) {
 
@@ -648,9 +637,9 @@ Object.assign( Vector2.prototype, {
 
 		return this;
 
-	},
+	}
 
-	getComponent: function ( index ) {
+	getComponent( index ) {
 
 		switch ( index ) {
 
@@ -660,24 +649,24 @@ Object.assign( Vector2.prototype, {
 
 		}
 
-	},
+	}
 
-	clone: function () {
+	clone() {
 
 		return new this.constructor( this.x, this.y );
 
-	},
+	}
 
-	copy: function ( v ) {
+	copy( v ) {
 
 		this.x = v.x;
 		this.y = v.y;
 
 		return this;
 
-	},
+	}
 
-	add: function ( v, w ) {
+	add( v, w ) {
 
 		if ( w !== undefined ) {
 
@@ -691,36 +680,36 @@ Object.assign( Vector2.prototype, {
 
 		return this;
 
-	},
+	}
 
-	addScalar: function ( s ) {
+	addScalar( s ) {
 
 		this.x += s;
 		this.y += s;
 
 		return this;
 
-	},
+	}
 
-	addVectors: function ( a, b ) {
+	addVectors( a, b ) {
 
 		this.x = a.x + b.x;
 		this.y = a.y + b.y;
 
 		return this;
 
-	},
+	}
 
-	addScaledVector: function ( v, s ) {
+	addScaledVector( v, s ) {
 
 		this.x += v.x * s;
 		this.y += v.y * s;
 
 		return this;
 
-	},
+	}
 
-	sub: function ( v, w ) {
+	sub( v, w ) {
 
 		if ( w !== undefined ) {
 
@@ -734,60 +723,60 @@ Object.assign( Vector2.prototype, {
 
 		return this;
 
-	},
+	}
 
-	subScalar: function ( s ) {
+	subScalar( s ) {
 
 		this.x -= s;
 		this.y -= s;
 
 		return this;
 
-	},
+	}
 
-	subVectors: function ( a, b ) {
+	subVectors( a, b ) {
 
 		this.x = a.x - b.x;
 		this.y = a.y - b.y;
 
 		return this;
 
-	},
+	}
 
-	multiply: function ( v ) {
+	multiply( v ) {
 
 		this.x *= v.x;
 		this.y *= v.y;
 
 		return this;
 
-	},
+	}
 
-	multiplyScalar: function ( scalar ) {
+	multiplyScalar( scalar ) {
 
 		this.x *= scalar;
 		this.y *= scalar;
 
 		return this;
 
-	},
+	}
 
-	divide: function ( v ) {
+	divide( v ) {
 
 		this.x /= v.x;
 		this.y /= v.y;
 
 		return this;
 
-	},
+	}
 
-	divideScalar: function ( scalar ) {
+	divideScalar( scalar ) {
 
 		return this.multiplyScalar( 1 / scalar );
 
-	},
+	}
 
-	applyMatrix3: function ( m ) {
+	applyMatrix3( m ) {
 
 		const x = this.x, y = this.y;
 		const e = m.elements;
@@ -797,27 +786,27 @@ Object.assign( Vector2.prototype, {
 
 		return this;
 
-	},
+	}
 
-	min: function ( v ) {
+	min( v ) {
 
 		this.x = Math.min( this.x, v.x );
 		this.y = Math.min( this.y, v.y );
 
 		return this;
 
-	},
+	}
 
-	max: function ( v ) {
+	max( v ) {
 
 		this.x = Math.max( this.x, v.x );
 		this.y = Math.max( this.y, v.y );
 
 		return this;
 
-	},
+	}
 
-	clamp: function ( min, max ) {
+	clamp( min, max ) {
 
 		// assumes min < max, componentwise
 
@@ -826,107 +815,107 @@ Object.assign( Vector2.prototype, {
 
 		return this;
 
-	},
+	}
 
-	clampScalar: function ( minVal, maxVal ) {
+	clampScalar( minVal, maxVal ) {
 
 		this.x = Math.max( minVal, Math.min( maxVal, this.x ) );
 		this.y = Math.max( minVal, Math.min( maxVal, this.y ) );
 
 		return this;
 
-	},
+	}
 
-	clampLength: function ( min, max ) {
+	clampLength( min, max ) {
 
 		const length = this.length();
 
 		return this.divideScalar( length || 1 ).multiplyScalar( Math.max( min, Math.min( max, length ) ) );
 
-	},
+	}
 
-	floor: function () {
+	floor() {
 
 		this.x = Math.floor( this.x );
 		this.y = Math.floor( this.y );
 
 		return this;
 
-	},
+	}
 
-	ceil: function () {
+	ceil() {
 
 		this.x = Math.ceil( this.x );
 		this.y = Math.ceil( this.y );
 
 		return this;
 
-	},
+	}
 
-	round: function () {
+	round() {
 
 		this.x = Math.round( this.x );
 		this.y = Math.round( this.y );
 
 		return this;
 
-	},
+	}
 
-	roundToZero: function () {
+	roundToZero() {
 
 		this.x = ( this.x < 0 ) ? Math.ceil( this.x ) : Math.floor( this.x );
 		this.y = ( this.y < 0 ) ? Math.ceil( this.y ) : Math.floor( this.y );
 
 		return this;
 
-	},
+	}
 
-	negate: function () {
+	negate() {
 
 		this.x = - this.x;
 		this.y = - this.y;
 
 		return this;
 
-	},
+	}
 
-	dot: function ( v ) {
+	dot( v ) {
 
 		return this.x * v.x + this.y * v.y;
 
-	},
+	}
 
-	cross: function ( v ) {
+	cross( v ) {
 
 		return this.x * v.y - this.y * v.x;
 
-	},
+	}
 
-	lengthSq: function () {
+	lengthSq() {
 
 		return this.x * this.x + this.y * this.y;
 
-	},
+	}
 
-	length: function () {
+	length() {
 
 		return Math.sqrt( this.x * this.x + this.y * this.y );
 
-	},
+	}
 
-	manhattanLength: function () {
+	manhattanLength() {
 
 		return Math.abs( this.x ) + Math.abs( this.y );
 
-	},
+	}
 
-	normalize: function () {
+	normalize() {
 
 		return this.divideScalar( this.length() || 1 );
 
-	},
+	}
 
-	angle: function () {
+	angle() {
 
 		// computes the angle in radians with respect to the positive x-axis
 
@@ -934,58 +923,58 @@ Object.assign( Vector2.prototype, {
 
 		return angle;
 
-	},
+	}
 
-	distanceTo: function ( v ) {
+	distanceTo( v ) {
 
 		return Math.sqrt( this.distanceToSquared( v ) );
 
-	},
+	}
 
-	distanceToSquared: function ( v ) {
+	distanceToSquared( v ) {
 
 		const dx = this.x - v.x, dy = this.y - v.y;
 		return dx * dx + dy * dy;
 
-	},
+	}
 
-	manhattanDistanceTo: function ( v ) {
+	manhattanDistanceTo( v ) {
 
 		return Math.abs( this.x - v.x ) + Math.abs( this.y - v.y );
 
-	},
+	}
 
-	setLength: function ( length ) {
+	setLength( length ) {
 
 		return this.normalize().multiplyScalar( length );
 
-	},
+	}
 
-	lerp: function ( v, alpha ) {
+	lerp( v, alpha ) {
 
 		this.x += ( v.x - this.x ) * alpha;
 		this.y += ( v.y - this.y ) * alpha;
 
 		return this;
 
-	},
+	}
 
-	lerpVectors: function ( v1, v2, alpha ) {
+	lerpVectors( v1, v2, alpha ) {
 
 		this.x = v1.x + ( v2.x - v1.x ) * alpha;
 		this.y = v1.y + ( v2.y - v1.y ) * alpha;
 
 		return this;
 
-	},
+	}
 
-	equals: function ( v ) {
+	equals( v ) {
 
 		return ( ( v.x === this.x ) && ( v.y === this.y ) );
 
-	},
+	}
 
-	fromArray: function ( array, offset ) {
+	fromArray( array, offset ) {
 
 		if ( offset === undefined ) offset = 0;
 
@@ -994,9 +983,9 @@ Object.assign( Vector2.prototype, {
 
 		return this;
 
-	},
+	}
 
-	toArray: function ( array, offset ) {
+	toArray( array, offset ) {
 
 		if ( array === undefined ) array = [];
 		if ( offset === undefined ) offset = 0;
@@ -1006,9 +995,9 @@ Object.assign( Vector2.prototype, {
 
 		return array;
 
-	},
+	}
 
-	fromBufferAttribute: function ( attribute, index, offset ) {
+	fromBufferAttribute( attribute, index, offset ) {
 
 		if ( offset !== undefined ) {
 
@@ -1021,9 +1010,9 @@ Object.assign( Vector2.prototype, {
 
 		return this;
 
-	},
+	}
 
-	rotateAround: function ( center, angle ) {
+	rotateAround( center, angle ) {
 
 		const c = Math.cos( angle ), s = Math.sin( angle );
 
@@ -1035,9 +1024,9 @@ Object.assign( Vector2.prototype, {
 
 		return this;
 
-	},
+	}
 
-	random: function () {
+	random() {
 
 		this.x = Math.random();
 		this.y = Math.random();
@@ -1046,31 +1035,31 @@ Object.assign( Vector2.prototype, {
 
 	}
 
-} );
+}
 
-function Matrix3() {
+class Matrix3 {
 
-	this.elements = [
+	constructor() {
 
-		1, 0, 0,
-		0, 1, 0,
-		0, 0, 1
+		Object.defineProperty( this, 'isMatrix3', { value: true } );
 
-	];
+		this.elements = [
 
-	if ( arguments.length > 0 ) {
+			1, 0, 0,
+			0, 1, 0,
+			0, 0, 1
 
-		console.error( 'THREE.Matrix3: the constructor no longer reads arguments. use .set() instead.' );
+		];
+
+		if ( arguments.length > 0 ) {
+
+			console.error( 'THREE.Matrix3: the constructor no longer reads arguments. use .set() instead.' );
+
+		}
 
 	}
 
-}
-
-Object.assign( Matrix3.prototype, {
-
-	isMatrix3: true,
-
-	set: function ( n11, n12, n13, n21, n22, n23, n31, n32, n33 ) {
+	set( n11, n12, n13, n21, n22, n23, n31, n32, n33 ) {
 
 		const te = this.elements;
 
@@ -1080,9 +1069,9 @@ Object.assign( Matrix3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	identity: function () {
+	identity() {
 
 		this.set(
 
@@ -1094,15 +1083,15 @@ Object.assign( Matrix3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	clone: function () {
+	clone() {
 
 		return new this.constructor().fromArray( this.elements );
 
-	},
+	}
 
-	copy: function ( m ) {
+	copy( m ) {
 
 		const te = this.elements;
 		const me = m.elements;
@@ -1113,9 +1102,9 @@ Object.assign( Matrix3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	extractBasis: function ( xAxis, yAxis, zAxis ) {
+	extractBasis( xAxis, yAxis, zAxis ) {
 
 		xAxis.setFromMatrix3Column( this, 0 );
 		yAxis.setFromMatrix3Column( this, 1 );
@@ -1123,9 +1112,9 @@ Object.assign( Matrix3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setFromMatrix4: function ( m ) {
+	setFromMatrix4( m ) {
 
 		const me = m.elements;
 
@@ -1139,21 +1128,21 @@ Object.assign( Matrix3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	multiply: function ( m ) {
+	multiply( m ) {
 
 		return this.multiplyMatrices( this, m );
 
-	},
+	}
 
-	premultiply: function ( m ) {
+	premultiply( m ) {
 
 		return this.multiplyMatrices( m, this );
 
-	},
+	}
 
-	multiplyMatrices: function ( a, b ) {
+	multiplyMatrices( a, b ) {
 
 		const ae = a.elements;
 		const be = b.elements;
@@ -1181,9 +1170,9 @@ Object.assign( Matrix3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	multiplyScalar: function ( s ) {
+	multiplyScalar( s ) {
 
 		const te = this.elements;
 
@@ -1193,9 +1182,9 @@ Object.assign( Matrix3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	determinant: function () {
+	determinant() {
 
 		const te = this.elements;
 
@@ -1205,9 +1194,9 @@ Object.assign( Matrix3.prototype, {
 
 		return a * e * i - a * f * h - b * d * i + b * f * g + c * d * h - c * e * g;
 
-	},
+	}
 
-	getInverse: function ( matrix, throwOnDegenerate ) {
+	getInverse( matrix, throwOnDegenerate ) {
 
 		if ( throwOnDegenerate !== undefined ) {
 
@@ -1246,9 +1235,9 @@ Object.assign( Matrix3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	transpose: function () {
+	transpose() {
 
 		let tmp;
 		const m = this.elements;
@@ -1259,15 +1248,15 @@ Object.assign( Matrix3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	getNormalMatrix: function ( matrix4 ) {
+	getNormalMatrix( matrix4 ) {
 
 		return this.setFromMatrix4( matrix4 ).getInverse( this ).transpose();
 
-	},
+	}
 
-	transposeIntoArray: function ( r ) {
+	transposeIntoArray( r ) {
 
 		const m = this.elements;
 
@@ -1283,9 +1272,9 @@ Object.assign( Matrix3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setUvTransform: function ( tx, ty, sx, sy, rotation, cx, cy ) {
+	setUvTransform( tx, ty, sx, sy, rotation, cx, cy ) {
 
 		const c = Math.cos( rotation );
 		const s = Math.sin( rotation );
@@ -1296,9 +1285,9 @@ Object.assign( Matrix3.prototype, {
 			0, 0, 1
 		);
 
-	},
+	}
 
-	scale: function ( sx, sy ) {
+	scale( sx, sy ) {
 
 		const te = this.elements;
 
@@ -1307,9 +1296,9 @@ Object.assign( Matrix3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	rotate: function ( theta ) {
+	rotate( theta ) {
 
 		const c = Math.cos( theta );
 		const s = Math.sin( theta );
@@ -1329,9 +1318,9 @@ Object.assign( Matrix3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	translate: function ( tx, ty ) {
+	translate( tx, ty ) {
 
 		const te = this.elements;
 
@@ -1340,9 +1329,9 @@ Object.assign( Matrix3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	equals: function ( matrix ) {
+	equals( matrix ) {
 
 		const te = this.elements;
 		const me = matrix.elements;
@@ -1355,9 +1344,9 @@ Object.assign( Matrix3.prototype, {
 
 		return true;
 
-	},
+	}
 
-	fromArray: function ( array, offset ) {
+	fromArray( array, offset ) {
 
 		if ( offset === undefined ) offset = 0;
 
@@ -1369,9 +1358,9 @@ Object.assign( Matrix3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	toArray: function ( array, offset ) {
+	toArray( array, offset ) {
 
 		if ( array === undefined ) array = [];
 		if ( offset === undefined ) offset = 0;
@@ -1394,7 +1383,7 @@ Object.assign( Matrix3.prototype, {
 
 	}
 
-} );
+}
 
 let _canvas;
 
@@ -1768,56 +1757,44 @@ Object.defineProperty( Texture.prototype, "needsUpdate", {
 
 } );
 
-function Vector4( x = 0, y = 0, z = 0, w = 1 ) {
+class Vector4 {
 
-	this.x = x;
-	this.y = y;
-	this.z = z;
-	this.w = w;
+	constructor( x = 0, y = 0, z = 0, w = 1 ) {
 
-}
+		Object.defineProperty( this, 'isVector4', { value: true } );
 
-Object.defineProperties( Vector4.prototype, {
-
-	"width": {
-
-		get: function () {
-
-			return this.z;
-
-		},
-
-		set: function ( value ) {
-
-			this.z = value;
-
-		}
-
-	},
-
-	"height": {
-
-		get: function () {
-
-			return this.w;
-
-		},
-
-		set: function ( value ) {
-
-			this.w = value;
-
-		}
+		this.x = x;
+		this.y = y;
+		this.z = z;
+		this.w = w;
 
 	}
 
-} );
+	get width() {
 
-Object.assign( Vector4.prototype, {
+		return this.z;
 
-	isVector4: true,
+	}
 
-	set: function ( x, y, z, w ) {
+	set width( value ) {
+
+		this.z = value;
+
+	}
+
+	get height() {
+
+		return this.w;
+
+	}
+
+	set height( value ) {
+
+		this.w = value;
+
+	}
+
+	set( x, y, z, w ) {
 
 		this.x = x;
 		this.y = y;
@@ -1826,9 +1803,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setScalar: function ( scalar ) {
+	setScalar( scalar ) {
 
 		this.x = scalar;
 		this.y = scalar;
@@ -1837,41 +1814,41 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setX: function ( x ) {
+	setX( x ) {
 
 		this.x = x;
 
 		return this;
 
-	},
+	}
 
-	setY: function ( y ) {
+	setY( y ) {
 
 		this.y = y;
 
 		return this;
 
-	},
+	}
 
-	setZ: function ( z ) {
+	setZ( z ) {
 
 		this.z = z;
 
 		return this;
 
-	},
+	}
 
-	setW: function ( w ) {
+	setW( w ) {
 
 		this.w = w;
 
 		return this;
 
-	},
+	}
 
-	setComponent: function ( index, value ) {
+	setComponent( index, value ) {
 
 		switch ( index ) {
 
@@ -1885,9 +1862,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	getComponent: function ( index ) {
+	getComponent( index ) {
 
 		switch ( index ) {
 
@@ -1899,15 +1876,15 @@ Object.assign( Vector4.prototype, {
 
 		}
 
-	},
+	}
 
-	clone: function () {
+	clone() {
 
 		return new this.constructor( this.x, this.y, this.z, this.w );
 
-	},
+	}
 
-	copy: function ( v ) {
+	copy( v ) {
 
 		this.x = v.x;
 		this.y = v.y;
@@ -1916,9 +1893,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	add: function ( v, w ) {
+	add( v, w ) {
 
 		if ( w !== undefined ) {
 
@@ -1934,9 +1911,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	addScalar: function ( s ) {
+	addScalar( s ) {
 
 		this.x += s;
 		this.y += s;
@@ -1945,9 +1922,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	addVectors: function ( a, b ) {
+	addVectors( a, b ) {
 
 		this.x = a.x + b.x;
 		this.y = a.y + b.y;
@@ -1956,9 +1933,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	addScaledVector: function ( v, s ) {
+	addScaledVector( v, s ) {
 
 		this.x += v.x * s;
 		this.y += v.y * s;
@@ -1967,9 +1944,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	sub: function ( v, w ) {
+	sub( v, w ) {
 
 		if ( w !== undefined ) {
 
@@ -1985,9 +1962,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	subScalar: function ( s ) {
+	subScalar( s ) {
 
 		this.x -= s;
 		this.y -= s;
@@ -1996,9 +1973,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	subVectors: function ( a, b ) {
+	subVectors( a, b ) {
 
 		this.x = a.x - b.x;
 		this.y = a.y - b.y;
@@ -2007,9 +1984,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	multiplyScalar: function ( scalar ) {
+	multiplyScalar( scalar ) {
 
 		this.x *= scalar;
 		this.y *= scalar;
@@ -2018,9 +1995,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	applyMatrix4: function ( m ) {
+	applyMatrix4( m ) {
 
 		const x = this.x, y = this.y, z = this.z, w = this.w;
 		const e = m.elements;
@@ -2032,15 +2009,15 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	divideScalar: function ( scalar ) {
+	divideScalar( scalar ) {
 
 		return this.multiplyScalar( 1 / scalar );
 
-	},
+	}
 
-	setAxisAngleFromQuaternion: function ( q ) {
+	setAxisAngleFromQuaternion( q ) {
 
 		// http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToAngle/index.htm
 
@@ -2066,9 +2043,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setAxisAngleFromRotationMatrix: function ( m ) {
+	setAxisAngleFromRotationMatrix( m ) {
 
 		// http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToAngle/index.htm
 
@@ -2196,9 +2173,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	min: function ( v ) {
+	min( v ) {
 
 		this.x = Math.min( this.x, v.x );
 		this.y = Math.min( this.y, v.y );
@@ -2207,9 +2184,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	max: function ( v ) {
+	max( v ) {
 
 		this.x = Math.max( this.x, v.x );
 		this.y = Math.max( this.y, v.y );
@@ -2218,9 +2195,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	clamp: function ( min, max ) {
+	clamp( min, max ) {
 
 		// assumes min < max, componentwise
 
@@ -2231,9 +2208,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	clampScalar: function ( minVal, maxVal ) {
+	clampScalar( minVal, maxVal ) {
 
 		this.x = Math.max( minVal, Math.min( maxVal, this.x ) );
 		this.y = Math.max( minVal, Math.min( maxVal, this.y ) );
@@ -2242,17 +2219,17 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	clampLength: function ( min, max ) {
+	clampLength( min, max ) {
 
 		const length = this.length();
 
 		return this.divideScalar( length || 1 ).multiplyScalar( Math.max( min, Math.min( max, length ) ) );
 
-	},
+	}
 
-	floor: function () {
+	floor() {
 
 		this.x = Math.floor( this.x );
 		this.y = Math.floor( this.y );
@@ -2261,9 +2238,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	ceil: function () {
+	ceil() {
 
 		this.x = Math.ceil( this.x );
 		this.y = Math.ceil( this.y );
@@ -2272,9 +2249,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	round: function () {
+	round() {
 
 		this.x = Math.round( this.x );
 		this.y = Math.round( this.y );
@@ -2283,9 +2260,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	roundToZero: function () {
+	roundToZero() {
 
 		this.x = ( this.x < 0 ) ? Math.ceil( this.x ) : Math.floor( this.x );
 		this.y = ( this.y < 0 ) ? Math.ceil( this.y ) : Math.floor( this.y );
@@ -2294,9 +2271,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	negate: function () {
+	negate() {
 
 		this.x = - this.x;
 		this.y = - this.y;
@@ -2305,45 +2282,45 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	dot: function ( v ) {
+	dot( v ) {
 
 		return this.x * v.x + this.y * v.y + this.z * v.z + this.w * v.w;
 
-	},
+	}
 
-	lengthSq: function () {
+	lengthSq() {
 
 		return this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w;
 
-	},
+	}
 
-	length: function () {
+	length() {
 
 		return Math.sqrt( this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w );
 
-	},
+	}
 
-	manhattanLength: function () {
+	manhattanLength() {
 
 		return Math.abs( this.x ) + Math.abs( this.y ) + Math.abs( this.z ) + Math.abs( this.w );
 
-	},
+	}
 
-	normalize: function () {
+	normalize() {
 
 		return this.divideScalar( this.length() || 1 );
 
-	},
+	}
 
-	setLength: function ( length ) {
+	setLength( length ) {
 
 		return this.normalize().multiplyScalar( length );
 
-	},
+	}
 
-	lerp: function ( v, alpha ) {
+	lerp( v, alpha ) {
 
 		this.x += ( v.x - this.x ) * alpha;
 		this.y += ( v.y - this.y ) * alpha;
@@ -2352,9 +2329,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	lerpVectors: function ( v1, v2, alpha ) {
+	lerpVectors( v1, v2, alpha ) {
 
 		this.x = v1.x + ( v2.x - v1.x ) * alpha;
 		this.y = v1.y + ( v2.y - v1.y ) * alpha;
@@ -2363,15 +2340,15 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	equals: function ( v ) {
+	equals( v ) {
 
 		return ( ( v.x === this.x ) && ( v.y === this.y ) && ( v.z === this.z ) && ( v.w === this.w ) );
 
-	},
+	}
 
-	fromArray: function ( array, offset ) {
+	fromArray( array, offset ) {
 
 		if ( offset === undefined ) offset = 0;
 
@@ -2382,9 +2359,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	toArray: function ( array, offset ) {
+	toArray( array, offset ) {
 
 		if ( array === undefined ) array = [];
 		if ( offset === undefined ) offset = 0;
@@ -2396,9 +2373,9 @@ Object.assign( Vector4.prototype, {
 
 		return array;
 
-	},
+	}
 
-	fromBufferAttribute: function ( attribute, index, offset ) {
+	fromBufferAttribute( attribute, index, offset ) {
 
 		if ( offset !== undefined ) {
 
@@ -2413,9 +2390,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	random: function () {
+	random() {
 
 		this.x = Math.random();
 		this.y = Math.random();
@@ -2426,7 +2403,7 @@ Object.assign( Vector4.prototype, {
 
 	}
 
-} );
+}
 
 /*
  In options, we can specify:
@@ -2455,7 +2432,7 @@ function WebGLRenderTarget( width, height, options ) {
 	this.texture.minFilter = options.minFilter !== undefined ? options.minFilter : LinearFilter;
 
 	this.depthBuffer = options.depthBuffer !== undefined ? options.depthBuffer : true;
-	this.stencilBuffer = options.stencilBuffer !== undefined ? options.stencilBuffer : true;
+	this.stencilBuffer = options.stencilBuffer !== undefined ? options.stencilBuffer : false;
 	this.depthTexture = options.depthTexture !== undefined ? options.depthTexture : null;
 
 }
@@ -2542,24 +2519,26 @@ WebGLMultisampleRenderTarget.prototype = Object.assign( Object.create( WebGLRend
 
 } );
 
-function Quaternion( x = 0, y = 0, z = 0, w = 1 ) {
+class Quaternion {
 
-	this._x = x;
-	this._y = y;
-	this._z = z;
-	this._w = w;
+	constructor( x = 0, y = 0, z = 0, w = 1 ) {
 
-}
+		Object.defineProperty( this, 'isQuaternion', { value: true } );
 
-Object.assign( Quaternion, {
+		this._x = x;
+		this._y = y;
+		this._z = z;
+		this._w = w;
 
-	slerp: function ( qa, qb, qm, t ) {
+	}
+
+	static slerp( qa, qb, qm, t ) {
 
 		return qm.copy( qa ).slerp( qb, t );
 
-	},
+	}
 
-	slerpFlat: function ( dst, dstOffset, src0, srcOffset0, src1, srcOffset1, t ) {
+	static slerpFlat( dst, dstOffset, src0, srcOffset0, src1, srcOffset1, t ) {
 
 		// fuzz-free, array-based Quaternion SLERP operation
 
@@ -2575,10 +2554,8 @@ Object.assign( Quaternion, {
 
 		if ( w0 !== w1 || x0 !== x1 || y0 !== y1 || z0 !== z1 ) {
 
-			let s = 1 - t,
-
-				cos = x0 * x1 + y0 * y1 + z0 * z1 + w0 * w1,
-
+			let s = 1 - t;
+			const cos = x0 * x1 + y0 * y1 + z0 * z1 + w0 * w1,
 				dir = ( cos >= 0 ? 1 : - 1 ),
 				sqrSin = 1 - cos * cos;
 
@@ -2619,9 +2596,9 @@ Object.assign( Quaternion, {
 		dst[ dstOffset + 2 ] = z0;
 		dst[ dstOffset + 3 ] = w0;
 
-	},
+	}
 
-	multiplyQuaternionsFlat: function ( dst, dstOffset, src0, srcOffset0, src1, srcOffset1 ) {
+	static multiplyQuaternionsFlat( dst, dstOffset, src0, srcOffset0, src1, srcOffset1 ) {
 
 		const x0 = src0[ srcOffset0 ];
 		const y0 = src0[ srcOffset0 + 1 ];
@@ -2642,85 +2619,59 @@ Object.assign( Quaternion, {
 
 	}
 
-} );
+	get x() {
 
-Object.defineProperties( Quaternion.prototype, {
-
-	x: {
-
-		get: function () {
-
-			return this._x;
-
-		},
-
-		set: function ( value ) {
-
-			this._x = value;
-			this._onChangeCallback();
-
-		}
-
-	},
-
-	y: {
-
-		get: function () {
-
-			return this._y;
-
-		},
-
-		set: function ( value ) {
-
-			this._y = value;
-			this._onChangeCallback();
-
-		}
-
-	},
-
-	z: {
-
-		get: function () {
-
-			return this._z;
-
-		},
-
-		set: function ( value ) {
-
-			this._z = value;
-			this._onChangeCallback();
-
-		}
-
-	},
-
-	w: {
-
-		get: function () {
-
-			return this._w;
-
-		},
-
-		set: function ( value ) {
-
-			this._w = value;
-			this._onChangeCallback();
-
-		}
+		return this._x;
 
 	}
 
-} );
+	set x( value ) {
 
-Object.assign( Quaternion.prototype, {
+		this._x = value;
+		this._onChangeCallback();
 
-	isQuaternion: true,
+	}
 
-	set: function ( x, y, z, w ) {
+	get y() {
+
+		return this._y;
+
+	}
+
+	set y( value ) {
+
+		this._y = value;
+		this._onChangeCallback();
+
+	}
+
+	get z() {
+
+		return this._z;
+
+	}
+
+	set z( value ) {
+
+		this._z = value;
+		this._onChangeCallback();
+
+	}
+
+	get w() {
+
+		return this._w;
+
+	}
+
+	set w( value ) {
+
+		this._w = value;
+		this._onChangeCallback();
+
+	}
+
+	set( x, y, z, w ) {
 
 		this._x = x;
 		this._y = y;
@@ -2731,15 +2682,15 @@ Object.assign( Quaternion.prototype, {
 
 		return this;
 
-	},
+	}
 
-	clone: function () {
+	clone() {
 
 		return new this.constructor( this._x, this._y, this._z, this._w );
 
-	},
+	}
 
-	copy: function ( quaternion ) {
+	copy( quaternion ) {
 
 		this._x = quaternion.x;
 		this._y = quaternion.y;
@@ -2750,9 +2701,9 @@ Object.assign( Quaternion.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setFromEuler: function ( euler, update ) {
+	setFromEuler( euler, update ) {
 
 		if ( ! ( euler && euler.isEuler ) ) {
 
@@ -2760,7 +2711,7 @@ Object.assign( Quaternion.prototype, {
 
 		}
 
-		const x = euler._x, y = euler._y, z = euler._z, order = euler.order;
+		const x = euler._x, y = euler._y, z = euler._z, order = euler._order;
 
 		// http://www.mathworks.com/matlabcentral/fileexchange/
 		// 	20696-function-to-convert-between-dcm-euler-angles-quaternions-and-euler-vectors/
@@ -2830,9 +2781,9 @@ Object.assign( Quaternion.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setFromAxisAngle: function ( axis, angle ) {
+	setFromAxisAngle( axis, angle ) {
 
 		// http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToQuaternion/index.htm
 
@@ -2849,9 +2800,9 @@ Object.assign( Quaternion.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setFromRotationMatrix: function ( m ) {
+	setFromRotationMatrix( m ) {
 
 		// http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/index.htm
 
@@ -2907,9 +2858,9 @@ Object.assign( Quaternion.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setFromUnitVectors: function ( vFrom, vTo ) {
+	setFromUnitVectors( vFrom, vTo ) {
 
 		// assumes direction vectors vFrom and vTo are normalized
 
@@ -2950,15 +2901,15 @@ Object.assign( Quaternion.prototype, {
 
 		return this.normalize();
 
-	},
+	}
 
-	angleTo: function ( q ) {
+	angleTo( q ) {
 
 		return 2 * Math.acos( Math.abs( MathUtils.clamp( this.dot( q ), - 1, 1 ) ) );
 
-	},
+	}
 
-	rotateTowards: function ( q, step ) {
+	rotateTowards( q, step ) {
 
 		const angle = this.angleTo( q );
 
@@ -2970,23 +2921,23 @@ Object.assign( Quaternion.prototype, {
 
 		return this;
 
-	},
+	}
 
-	identity: function () {
+	identity() {
 
 		return this.set( 0, 0, 0, 1 );
 
-	},
+	}
 
-	inverse: function () {
+	inverse() {
 
 		// quaternion is assumed to have unit length
 
 		return this.conjugate();
 
-	},
+	}
 
-	conjugate: function () {
+	conjugate() {
 
 		this._x *= - 1;
 		this._y *= - 1;
@@ -2996,27 +2947,27 @@ Object.assign( Quaternion.prototype, {
 
 		return this;
 
-	},
+	}
 
-	dot: function ( v ) {
+	dot( v ) {
 
 		return this._x * v._x + this._y * v._y + this._z * v._z + this._w * v._w;
 
-	},
+	}
 
-	lengthSq: function () {
+	lengthSq() {
 
 		return this._x * this._x + this._y * this._y + this._z * this._z + this._w * this._w;
 
-	},
+	}
 
-	length: function () {
+	length() {
 
 		return Math.sqrt( this._x * this._x + this._y * this._y + this._z * this._z + this._w * this._w );
 
-	},
+	}
 
-	normalize: function () {
+	normalize() {
 
 		let l = this.length();
 
@@ -3042,9 +2993,9 @@ Object.assign( Quaternion.prototype, {
 
 		return this;
 
-	},
+	}
 
-	multiply: function ( q, p ) {
+	multiply( q, p ) {
 
 		if ( p !== undefined ) {
 
@@ -3055,15 +3006,15 @@ Object.assign( Quaternion.prototype, {
 
 		return this.multiplyQuaternions( this, q );
 
-	},
+	}
 
-	premultiply: function ( q ) {
+	premultiply( q ) {
 
 		return this.multiplyQuaternions( q, this );
 
-	},
+	}
 
-	multiplyQuaternions: function ( a, b ) {
+	multiplyQuaternions( a, b ) {
 
 		// from http://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/code/index.htm
 
@@ -3079,9 +3030,9 @@ Object.assign( Quaternion.prototype, {
 
 		return this;
 
-	},
+	}
 
-	slerp: function ( qb, t ) {
+	slerp( qb, t ) {
 
 		if ( t === 0 ) return this;
 		if ( t === 1 ) return this.copy( qb );
@@ -3149,15 +3100,15 @@ Object.assign( Quaternion.prototype, {
 
 		return this;
 
-	},
+	}
 
-	equals: function ( quaternion ) {
+	equals( quaternion ) {
 
 		return ( quaternion._x === this._x ) && ( quaternion._y === this._y ) && ( quaternion._z === this._z ) && ( quaternion._w === this._w );
 
-	},
+	}
 
-	fromArray: function ( array, offset ) {
+	fromArray( array, offset ) {
 
 		if ( offset === undefined ) offset = 0;
 
@@ -3170,9 +3121,9 @@ Object.assign( Quaternion.prototype, {
 
 		return this;
 
-	},
+	}
 
-	toArray: function ( array, offset ) {
+	toArray( array, offset ) {
 
 		if ( array === undefined ) array = [];
 		if ( offset === undefined ) offset = 0;
@@ -3184,9 +3135,9 @@ Object.assign( Quaternion.prototype, {
 
 		return array;
 
-	},
+	}
 
-	fromBufferAttribute: function ( attribute, index ) {
+	fromBufferAttribute( attribute, index ) {
 
 		this._x = attribute.getX( index );
 		this._y = attribute.getY( index );
@@ -3195,36 +3146,33 @@ Object.assign( Quaternion.prototype, {
 
 		return this;
 
-	},
+	}
 
-	_onChange: function ( callback ) {
+	_onChange( callback ) {
 
 		this._onChangeCallback = callback;
 
 		return this;
 
-	},
+	}
 
-	_onChangeCallback: function () {}
-
-} );
-
-const _vector = new Vector3();
-const _quaternion = new Quaternion();
-
-function Vector3( x = 0, y = 0, z = 0 ) {
-
-	this.x = x;
-	this.y = y;
-	this.z = z;
+	_onChangeCallback() {}
 
 }
 
-Object.assign( Vector3.prototype, {
+class Vector3 {
 
-	isVector3: true,
+	constructor( x = 0, y = 0, z = 0 ) {
 
-	set: function ( x, y, z ) {
+		Object.defineProperty( this, 'isVector3', { value: true } );
+
+		this.x = x;
+		this.y = y;
+		this.z = z;
+
+	}
+
+	set( x, y, z ) {
 
 		if ( z === undefined ) z = this.z; // sprite.scale.set(x,y)
 
@@ -3234,9 +3182,9 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setScalar: function ( scalar ) {
+	setScalar( scalar ) {
 
 		this.x = scalar;
 		this.y = scalar;
@@ -3244,33 +3192,33 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setX: function ( x ) {
+	setX( x ) {
 
 		this.x = x;
 
 		return this;
 
-	},
+	}
 
-	setY: function ( y ) {
+	setY( y ) {
 
 		this.y = y;
 
 		return this;
 
-	},
+	}
 
-	setZ: function ( z ) {
+	setZ( z ) {
 
 		this.z = z;
 
 		return this;
 
-	},
+	}
 
-	setComponent: function ( index, value ) {
+	setComponent( index, value ) {
 
 		switch ( index ) {
 
@@ -3283,9 +3231,9 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	getComponent: function ( index ) {
+	getComponent( index ) {
 
 		switch ( index ) {
 
@@ -3296,15 +3244,15 @@ Object.assign( Vector3.prototype, {
 
 		}
 
-	},
+	}
 
-	clone: function () {
+	clone() {
 
 		return new this.constructor( this.x, this.y, this.z );
 
-	},
+	}
 
-	copy: function ( v ) {
+	copy( v ) {
 
 		this.x = v.x;
 		this.y = v.y;
@@ -3312,9 +3260,9 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	add: function ( v, w ) {
+	add( v, w ) {
 
 		if ( w !== undefined ) {
 
@@ -3329,9 +3277,9 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	addScalar: function ( s ) {
+	addScalar( s ) {
 
 		this.x += s;
 		this.y += s;
@@ -3339,9 +3287,9 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	addVectors: function ( a, b ) {
+	addVectors( a, b ) {
 
 		this.x = a.x + b.x;
 		this.y = a.y + b.y;
@@ -3349,9 +3297,9 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	addScaledVector: function ( v, s ) {
+	addScaledVector( v, s ) {
 
 		this.x += v.x * s;
 		this.y += v.y * s;
@@ -3359,9 +3307,9 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	sub: function ( v, w ) {
+	sub( v, w ) {
 
 		if ( w !== undefined ) {
 
@@ -3376,9 +3324,9 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	subScalar: function ( s ) {
+	subScalar( s ) {
 
 		this.x -= s;
 		this.y -= s;
@@ -3386,9 +3334,9 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	subVectors: function ( a, b ) {
+	subVectors( a, b ) {
 
 		this.x = a.x - b.x;
 		this.y = a.y - b.y;
@@ -3396,9 +3344,9 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	multiply: function ( v, w ) {
+	multiply( v, w ) {
 
 		if ( w !== undefined ) {
 
@@ -3413,9 +3361,9 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	multiplyScalar: function ( scalar ) {
+	multiplyScalar( scalar ) {
 
 		this.x *= scalar;
 		this.y *= scalar;
@@ -3423,9 +3371,9 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	multiplyVectors: function ( a, b ) {
+	multiplyVectors( a, b ) {
 
 		this.x = a.x * b.x;
 		this.y = a.y * b.y;
@@ -3433,9 +3381,9 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	applyEuler: function ( euler ) {
+	applyEuler( euler ) {
 
 		if ( ! ( euler && euler.isEuler ) ) {
 
@@ -3445,15 +3393,15 @@ Object.assign( Vector3.prototype, {
 
 		return this.applyQuaternion( _quaternion.setFromEuler( euler ) );
 
-	},
+	}
 
-	applyAxisAngle: function ( axis, angle ) {
+	applyAxisAngle( axis, angle ) {
 
 		return this.applyQuaternion( _quaternion.setFromAxisAngle( axis, angle ) );
 
-	},
+	}
 
-	applyMatrix3: function ( m ) {
+	applyMatrix3( m ) {
 
 		const x = this.x, y = this.y, z = this.z;
 		const e = m.elements;
@@ -3464,15 +3412,15 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	applyNormalMatrix: function ( m ) {
+	applyNormalMatrix( m ) {
 
 		return this.applyMatrix3( m ).normalize();
 
-	},
+	}
 
-	applyMatrix4: function ( m ) {
+	applyMatrix4( m ) {
 
 		const x = this.x, y = this.y, z = this.z;
 		const e = m.elements;
@@ -3485,9 +3433,9 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	applyQuaternion: function ( q ) {
+	applyQuaternion( q ) {
 
 		const x = this.x, y = this.y, z = this.z;
 		const qx = q.x, qy = q.y, qz = q.z, qw = q.w;
@@ -3507,21 +3455,21 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	project: function ( camera ) {
+	project( camera ) {
 
 		return this.applyMatrix4( camera.matrixWorldInverse ).applyMatrix4( camera.projectionMatrix );
 
-	},
+	}
 
-	unproject: function ( camera ) {
+	unproject( camera ) {
 
 		return this.applyMatrix4( camera.projectionMatrixInverse ).applyMatrix4( camera.matrixWorld );
 
-	},
+	}
 
-	transformDirection: function ( m ) {
+	transformDirection( m ) {
 
 		// input: THREE.Matrix4 affine matrix
 		// vector interpreted as a direction
@@ -3535,9 +3483,9 @@ Object.assign( Vector3.prototype, {
 
 		return this.normalize();
 
-	},
+	}
 
-	divide: function ( v ) {
+	divide( v ) {
 
 		this.x /= v.x;
 		this.y /= v.y;
@@ -3545,15 +3493,15 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	divideScalar: function ( scalar ) {
+	divideScalar( scalar ) {
 
 		return this.multiplyScalar( 1 / scalar );
 
-	},
+	}
 
-	min: function ( v ) {
+	min( v ) {
 
 		this.x = Math.min( this.x, v.x );
 		this.y = Math.min( this.y, v.y );
@@ -3561,9 +3509,9 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	max: function ( v ) {
+	max( v ) {
 
 		this.x = Math.max( this.x, v.x );
 		this.y = Math.max( this.y, v.y );
@@ -3571,9 +3519,9 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	clamp: function ( min, max ) {
+	clamp( min, max ) {
 
 		// assumes min < max, componentwise
 
@@ -3583,9 +3531,9 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	clampScalar: function ( minVal, maxVal ) {
+	clampScalar( minVal, maxVal ) {
 
 		this.x = Math.max( minVal, Math.min( maxVal, this.x ) );
 		this.y = Math.max( minVal, Math.min( maxVal, this.y ) );
@@ -3593,17 +3541,17 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	clampLength: function ( min, max ) {
+	clampLength( min, max ) {
 
 		const length = this.length();
 
 		return this.divideScalar( length || 1 ).multiplyScalar( Math.max( min, Math.min( max, length ) ) );
 
-	},
+	}
 
-	floor: function () {
+	floor() {
 
 		this.x = Math.floor( this.x );
 		this.y = Math.floor( this.y );
@@ -3611,9 +3559,9 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	ceil: function () {
+	ceil() {
 
 		this.x = Math.ceil( this.x );
 		this.y = Math.ceil( this.y );
@@ -3621,9 +3569,9 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	round: function () {
+	round() {
 
 		this.x = Math.round( this.x );
 		this.y = Math.round( this.y );
@@ -3631,9 +3579,9 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	roundToZero: function () {
+	roundToZero() {
 
 		this.x = ( this.x < 0 ) ? Math.ceil( this.x ) : Math.floor( this.x );
 		this.y = ( this.y < 0 ) ? Math.ceil( this.y ) : Math.floor( this.y );
@@ -3641,9 +3589,9 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	negate: function () {
+	negate() {
 
 		this.x = - this.x;
 		this.y = - this.y;
@@ -3651,47 +3599,47 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	dot: function ( v ) {
+	dot( v ) {
 
 		return this.x * v.x + this.y * v.y + this.z * v.z;
 
-	},
+	}
 
 	// TODO lengthSquared?
 
-	lengthSq: function () {
+	lengthSq() {
 
 		return this.x * this.x + this.y * this.y + this.z * this.z;
 
-	},
+	}
 
-	length: function () {
+	length() {
 
 		return Math.sqrt( this.x * this.x + this.y * this.y + this.z * this.z );
 
-	},
+	}
 
-	manhattanLength: function () {
+	manhattanLength() {
 
 		return Math.abs( this.x ) + Math.abs( this.y ) + Math.abs( this.z );
 
-	},
+	}
 
-	normalize: function () {
+	normalize() {
 
 		return this.divideScalar( this.length() || 1 );
 
-	},
+	}
 
-	setLength: function ( length ) {
+	setLength( length ) {
 
 		return this.normalize().multiplyScalar( length );
 
-	},
+	}
 
-	lerp: function ( v, alpha ) {
+	lerp( v, alpha ) {
 
 		this.x += ( v.x - this.x ) * alpha;
 		this.y += ( v.y - this.y ) * alpha;
@@ -3699,9 +3647,9 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	lerpVectors: function ( v1, v2, alpha ) {
+	lerpVectors( v1, v2, alpha ) {
 
 		this.x = v1.x + ( v2.x - v1.x ) * alpha;
 		this.y = v1.y + ( v2.y - v1.y ) * alpha;
@@ -3709,9 +3657,9 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	cross: function ( v, w ) {
+	cross( v, w ) {
 
 		if ( w !== undefined ) {
 
@@ -3722,9 +3670,9 @@ Object.assign( Vector3.prototype, {
 
 		return this.crossVectors( this, v );
 
-	},
+	}
 
-	crossVectors: function ( a, b ) {
+	crossVectors( a, b ) {
 
 		const ax = a.x, ay = a.y, az = a.z;
 		const bx = b.x, by = b.y, bz = b.z;
@@ -3735,9 +3683,9 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	projectOnVector: function ( v ) {
+	projectOnVector( v ) {
 
 		const denominator = v.lengthSq();
 
@@ -3747,26 +3695,26 @@ Object.assign( Vector3.prototype, {
 
 		return this.copy( v ).multiplyScalar( scalar );
 
-	},
+	}
 
-	projectOnPlane: function ( planeNormal ) {
+	projectOnPlane( planeNormal ) {
 
 		_vector.copy( this ).projectOnVector( planeNormal );
 
 		return this.sub( _vector );
 
-	},
+	}
 
-	reflect: function ( normal ) {
+	reflect( normal ) {
 
 		// reflect incident vector off plane orthogonal to normal
 		// normal is assumed to have unit length
 
 		return this.sub( _vector.copy( normal ).multiplyScalar( 2 * this.dot( normal ) ) );
 
-	},
+	}
 
-	angleTo: function ( v ) {
+	angleTo( v ) {
 
 		const denominator = Math.sqrt( this.lengthSq() * v.lengthSq() );
 
@@ -3778,35 +3726,35 @@ Object.assign( Vector3.prototype, {
 
 		return Math.acos( MathUtils.clamp( theta, - 1, 1 ) );
 
-	},
+	}
 
-	distanceTo: function ( v ) {
+	distanceTo( v ) {
 
 		return Math.sqrt( this.distanceToSquared( v ) );
 
-	},
+	}
 
-	distanceToSquared: function ( v ) {
+	distanceToSquared( v ) {
 
 		const dx = this.x - v.x, dy = this.y - v.y, dz = this.z - v.z;
 
 		return dx * dx + dy * dy + dz * dz;
 
-	},
+	}
 
-	manhattanDistanceTo: function ( v ) {
+	manhattanDistanceTo( v ) {
 
 		return Math.abs( this.x - v.x ) + Math.abs( this.y - v.y ) + Math.abs( this.z - v.z );
 
-	},
+	}
 
-	setFromSpherical: function ( s ) {
+	setFromSpherical( s ) {
 
 		return this.setFromSphericalCoords( s.radius, s.phi, s.theta );
 
-	},
+	}
 
-	setFromSphericalCoords: function ( radius, phi, theta ) {
+	setFromSphericalCoords( radius, phi, theta ) {
 
 		const sinPhiRadius = Math.sin( phi ) * radius;
 
@@ -3816,15 +3764,15 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setFromCylindrical: function ( c ) {
+	setFromCylindrical( c ) {
 
 		return this.setFromCylindricalCoords( c.radius, c.theta, c.y );
 
-	},
+	}
 
-	setFromCylindricalCoords: function ( radius, theta, y ) {
+	setFromCylindricalCoords( radius, theta, y ) {
 
 		this.x = radius * Math.sin( theta );
 		this.y = y;
@@ -3832,9 +3780,9 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setFromMatrixPosition: function ( m ) {
+	setFromMatrixPosition( m ) {
 
 		const e = m.elements;
 
@@ -3844,9 +3792,9 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setFromMatrixScale: function ( m ) {
+	setFromMatrixScale( m ) {
 
 		const sx = this.setFromMatrixColumn( m, 0 ).length();
 		const sy = this.setFromMatrixColumn( m, 1 ).length();
@@ -3858,27 +3806,27 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setFromMatrixColumn: function ( m, index ) {
+	setFromMatrixColumn( m, index ) {
 
 		return this.fromArray( m.elements, index * 4 );
 
-	},
+	}
 
-	setFromMatrix3Column: function ( m, index ) {
+	setFromMatrix3Column( m, index ) {
 
 		return this.fromArray( m.elements, index * 3 );
 
-	},
+	}
 
-	equals: function ( v ) {
+	equals( v ) {
 
 		return ( ( v.x === this.x ) && ( v.y === this.y ) && ( v.z === this.z ) );
 
-	},
+	}
 
-	fromArray: function ( array, offset ) {
+	fromArray( array, offset ) {
 
 		if ( offset === undefined ) offset = 0;
 
@@ -3888,9 +3836,9 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	toArray: function ( array, offset ) {
+	toArray( array, offset ) {
 
 		if ( array === undefined ) array = [];
 		if ( offset === undefined ) offset = 0;
@@ -3901,9 +3849,9 @@ Object.assign( Vector3.prototype, {
 
 		return array;
 
-	},
+	}
 
-	fromBufferAttribute: function ( attribute, index, offset ) {
+	fromBufferAttribute( attribute, index, offset ) {
 
 		if ( offset !== undefined ) {
 
@@ -3917,9 +3865,9 @@ Object.assign( Vector3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	random: function () {
+	random() {
 
 		this.x = Math.random();
 		this.y = Math.random();
@@ -3929,40 +3877,1275 @@ Object.assign( Vector3.prototype, {
 
 	}
 
-} );
+}
 
-const _v1 = new Vector3();
-const _m1 = new Matrix4();
-const _zero = new Vector3( 0, 0, 0 );
-const _one = new Vector3( 1, 1, 1 );
-const _x = new Vector3();
-const _y = new Vector3();
-const _z = new Vector3();
+const _vector = new Vector3();
+const _quaternion = new Quaternion();
 
-function Matrix4() {
+class Box3 {
 
-	this.elements = [
+	constructor( min, max ) {
 
-		1, 0, 0, 0,
-		0, 1, 0, 0,
-		0, 0, 1, 0,
-		0, 0, 0, 1
+		Object.defineProperty( this, 'isBox3', { value: true } );
 
-	];
+		this.min = ( min !== undefined ) ? min : new Vector3( + Infinity, + Infinity, + Infinity );
+		this.max = ( max !== undefined ) ? max : new Vector3( - Infinity, - Infinity, - Infinity );
 
-	if ( arguments.length > 0 ) {
+	}
 
-		console.error( 'THREE.Matrix4: the constructor no longer reads arguments. use .set() instead.' );
+	set( min, max ) {
+
+		this.min.copy( min );
+		this.max.copy( max );
+
+		return this;
+
+	}
+
+	setFromArray( array ) {
+
+		let minX = + Infinity;
+		let minY = + Infinity;
+		let minZ = + Infinity;
+
+		let maxX = - Infinity;
+		let maxY = - Infinity;
+		let maxZ = - Infinity;
+
+		for ( let i = 0, l = array.length; i < l; i += 3 ) {
+
+			const x = array[ i ];
+			const y = array[ i + 1 ];
+			const z = array[ i + 2 ];
+
+			if ( x < minX ) minX = x;
+			if ( y < minY ) minY = y;
+			if ( z < minZ ) minZ = z;
+
+			if ( x > maxX ) maxX = x;
+			if ( y > maxY ) maxY = y;
+			if ( z > maxZ ) maxZ = z;
+
+		}
+
+		this.min.set( minX, minY, minZ );
+		this.max.set( maxX, maxY, maxZ );
+
+		return this;
+
+	}
+
+	setFromBufferAttribute( attribute ) {
+
+		let minX = + Infinity;
+		let minY = + Infinity;
+		let minZ = + Infinity;
+
+		let maxX = - Infinity;
+		let maxY = - Infinity;
+		let maxZ = - Infinity;
+
+		for ( let i = 0, l = attribute.count; i < l; i ++ ) {
+
+			const x = attribute.getX( i );
+			const y = attribute.getY( i );
+			const z = attribute.getZ( i );
+
+			if ( x < minX ) minX = x;
+			if ( y < minY ) minY = y;
+			if ( z < minZ ) minZ = z;
+
+			if ( x > maxX ) maxX = x;
+			if ( y > maxY ) maxY = y;
+			if ( z > maxZ ) maxZ = z;
+
+		}
+
+		this.min.set( minX, minY, minZ );
+		this.max.set( maxX, maxY, maxZ );
+
+		return this;
+
+	}
+
+	setFromPoints( points ) {
+
+		this.makeEmpty();
+
+		for ( let i = 0, il = points.length; i < il; i ++ ) {
+
+			this.expandByPoint( points[ i ] );
+
+		}
+
+		return this;
+
+	}
+
+	setFromCenterAndSize( center, size ) {
+
+		const halfSize = _vector$1.copy( size ).multiplyScalar( 0.5 );
+
+		this.min.copy( center ).sub( halfSize );
+		this.max.copy( center ).add( halfSize );
+
+		return this;
+
+	}
+
+	setFromObject( object ) {
+
+		this.makeEmpty();
+
+		return this.expandByObject( object );
+
+	}
+
+	clone() {
+
+		return new this.constructor().copy( this );
+
+	}
+
+	copy( box ) {
+
+		this.min.copy( box.min );
+		this.max.copy( box.max );
+
+		return this;
+
+	}
+
+	makeEmpty() {
+
+		this.min.x = this.min.y = this.min.z = + Infinity;
+		this.max.x = this.max.y = this.max.z = - Infinity;
+
+		return this;
+
+	}
+
+	isEmpty() {
+
+		// this is a more robust check for empty than ( volume <= 0 ) because volume can get positive with two negative axes
+
+		return ( this.max.x < this.min.x ) || ( this.max.y < this.min.y ) || ( this.max.z < this.min.z );
+
+	}
+
+	getCenter( target ) {
+
+		if ( target === undefined ) {
+
+			console.warn( 'THREE.Box3: .getCenter() target is now required' );
+			target = new Vector3();
+
+		}
+
+		return this.isEmpty() ? target.set( 0, 0, 0 ) : target.addVectors( this.min, this.max ).multiplyScalar( 0.5 );
+
+	}
+
+	getSize( target ) {
+
+		if ( target === undefined ) {
+
+			console.warn( 'THREE.Box3: .getSize() target is now required' );
+			target = new Vector3();
+
+		}
+
+		return this.isEmpty() ? target.set( 0, 0, 0 ) : target.subVectors( this.max, this.min );
+
+	}
+
+	expandByPoint( point ) {
+
+		this.min.min( point );
+		this.max.max( point );
+
+		return this;
+
+	}
+
+	expandByVector( vector ) {
+
+		this.min.sub( vector );
+		this.max.add( vector );
+
+		return this;
+
+	}
+
+	expandByScalar( scalar ) {
+
+		this.min.addScalar( - scalar );
+		this.max.addScalar( scalar );
+
+		return this;
+
+	}
+
+	expandByObject( object ) {
+
+		// Computes the world-axis-aligned bounding box of an object (including its children),
+		// accounting for both the object's, and children's, world transforms
+
+		object.updateWorldMatrix( false, false );
+
+		const geometry = object.geometry;
+
+		if ( geometry !== undefined ) {
+
+			if ( geometry.boundingBox === null ) {
+
+				geometry.computeBoundingBox();
+
+			}
+
+			_box.copy( geometry.boundingBox );
+			_box.applyMatrix4( object.matrixWorld );
+
+			this.union( _box );
+
+		}
+
+		const children = object.children;
+
+		for ( let i = 0, l = children.length; i < l; i ++ ) {
+
+			this.expandByObject( children[ i ] );
+
+		}
+
+		return this;
+
+	}
+
+	containsPoint( point ) {
+
+		return point.x < this.min.x || point.x > this.max.x ||
+			point.y < this.min.y || point.y > this.max.y ||
+			point.z < this.min.z || point.z > this.max.z ? false : true;
+
+	}
+
+	containsBox( box ) {
+
+		return this.min.x <= box.min.x && box.max.x <= this.max.x &&
+			this.min.y <= box.min.y && box.max.y <= this.max.y &&
+			this.min.z <= box.min.z && box.max.z <= this.max.z;
+
+	}
+
+	getParameter( point, target ) {
+
+		// This can potentially have a divide by zero if the box
+		// has a size dimension of 0.
+
+		if ( target === undefined ) {
+
+			console.warn( 'THREE.Box3: .getParameter() target is now required' );
+			target = new Vector3();
+
+		}
+
+		return target.set(
+			( point.x - this.min.x ) / ( this.max.x - this.min.x ),
+			( point.y - this.min.y ) / ( this.max.y - this.min.y ),
+			( point.z - this.min.z ) / ( this.max.z - this.min.z )
+		);
+
+	}
+
+	intersectsBox( box ) {
+
+		// using 6 splitting planes to rule out intersections.
+		return box.max.x < this.min.x || box.min.x > this.max.x ||
+			box.max.y < this.min.y || box.min.y > this.max.y ||
+			box.max.z < this.min.z || box.min.z > this.max.z ? false : true;
+
+	}
+
+	intersectsSphere( sphere ) {
+
+		// Find the point on the AABB closest to the sphere center.
+		this.clampPoint( sphere.center, _vector$1 );
+
+		// If that point is inside the sphere, the AABB and sphere intersect.
+		return _vector$1.distanceToSquared( sphere.center ) <= ( sphere.radius * sphere.radius );
+
+	}
+
+	intersectsPlane( plane ) {
+
+		// We compute the minimum and maximum dot product values. If those values
+		// are on the same side (back or front) of the plane, then there is no intersection.
+
+		let min, max;
+
+		if ( plane.normal.x > 0 ) {
+
+			min = plane.normal.x * this.min.x;
+			max = plane.normal.x * this.max.x;
+
+		} else {
+
+			min = plane.normal.x * this.max.x;
+			max = plane.normal.x * this.min.x;
+
+		}
+
+		if ( plane.normal.y > 0 ) {
+
+			min += plane.normal.y * this.min.y;
+			max += plane.normal.y * this.max.y;
+
+		} else {
+
+			min += plane.normal.y * this.max.y;
+			max += plane.normal.y * this.min.y;
+
+		}
+
+		if ( plane.normal.z > 0 ) {
+
+			min += plane.normal.z * this.min.z;
+			max += plane.normal.z * this.max.z;
+
+		} else {
+
+			min += plane.normal.z * this.max.z;
+			max += plane.normal.z * this.min.z;
+
+		}
+
+		return ( min <= - plane.constant && max >= - plane.constant );
+
+	}
+
+	intersectsTriangle( triangle ) {
+
+		if ( this.isEmpty() ) {
+
+			return false;
+
+		}
+
+		// compute box center and extents
+		this.getCenter( _center );
+		_extents.subVectors( this.max, _center );
+
+		// translate triangle to aabb origin
+		_v0.subVectors( triangle.a, _center );
+		_v1.subVectors( triangle.b, _center );
+		_v2.subVectors( triangle.c, _center );
+
+		// compute edge vectors for triangle
+		_f0.subVectors( _v1, _v0 );
+		_f1.subVectors( _v2, _v1 );
+		_f2.subVectors( _v0, _v2 );
+
+		// test against axes that are given by cross product combinations of the edges of the triangle and the edges of the aabb
+		// make an axis testing of each of the 3 sides of the aabb against each of the 3 sides of the triangle = 9 axis of separation
+		// axis_ij = u_i x f_j (u0, u1, u2 = face normals of aabb = x,y,z axes vectors since aabb is axis aligned)
+		let axes = [
+			0, - _f0.z, _f0.y, 0, - _f1.z, _f1.y, 0, - _f2.z, _f2.y,
+			_f0.z, 0, - _f0.x, _f1.z, 0, - _f1.x, _f2.z, 0, - _f2.x,
+			- _f0.y, _f0.x, 0, - _f1.y, _f1.x, 0, - _f2.y, _f2.x, 0
+		];
+		if ( ! satForAxes( axes, _v0, _v1, _v2, _extents ) ) {
+
+			return false;
+
+		}
+
+		// test 3 face normals from the aabb
+		axes = [ 1, 0, 0, 0, 1, 0, 0, 0, 1 ];
+		if ( ! satForAxes( axes, _v0, _v1, _v2, _extents ) ) {
+
+			return false;
+
+		}
+
+		// finally testing the face normal of the triangle
+		// use already existing triangle edge vectors here
+		_triangleNormal.crossVectors( _f0, _f1 );
+		axes = [ _triangleNormal.x, _triangleNormal.y, _triangleNormal.z ];
+
+		return satForAxes( axes, _v0, _v1, _v2, _extents );
+
+	}
+
+	clampPoint( point, target ) {
+
+		if ( target === undefined ) {
+
+			console.warn( 'THREE.Box3: .clampPoint() target is now required' );
+			target = new Vector3();
+
+		}
+
+		return target.copy( point ).clamp( this.min, this.max );
+
+	}
+
+	distanceToPoint( point ) {
+
+		const clampedPoint = _vector$1.copy( point ).clamp( this.min, this.max );
+
+		return clampedPoint.sub( point ).length();
+
+	}
+
+	getBoundingSphere( target ) {
+
+		if ( target === undefined ) {
+
+			console.error( 'THREE.Box3: .getBoundingSphere() target is now required' );
+			//target = new Sphere(); // removed to avoid cyclic dependency
+
+		}
+
+		this.getCenter( target.center );
+
+		target.radius = this.getSize( _vector$1 ).length() * 0.5;
+
+		return target;
+
+	}
+
+	intersect( box ) {
+
+		this.min.max( box.min );
+		this.max.min( box.max );
+
+		// ensure that if there is no overlap, the result is fully empty, not slightly empty with non-inf/+inf values that will cause subsequence intersects to erroneously return valid values.
+		if ( this.isEmpty() ) this.makeEmpty();
+
+		return this;
+
+	}
+
+	union( box ) {
+
+		this.min.min( box.min );
+		this.max.max( box.max );
+
+		return this;
+
+	}
+
+	applyMatrix4( matrix ) {
+
+		// transform of empty box is an empty box.
+		if ( this.isEmpty() ) return this;
+
+		// NOTE: I am using a binary pattern to specify all 2^3 combinations below
+		_points[ 0 ].set( this.min.x, this.min.y, this.min.z ).applyMatrix4( matrix ); // 000
+		_points[ 1 ].set( this.min.x, this.min.y, this.max.z ).applyMatrix4( matrix ); // 001
+		_points[ 2 ].set( this.min.x, this.max.y, this.min.z ).applyMatrix4( matrix ); // 010
+		_points[ 3 ].set( this.min.x, this.max.y, this.max.z ).applyMatrix4( matrix ); // 011
+		_points[ 4 ].set( this.max.x, this.min.y, this.min.z ).applyMatrix4( matrix ); // 100
+		_points[ 5 ].set( this.max.x, this.min.y, this.max.z ).applyMatrix4( matrix ); // 101
+		_points[ 6 ].set( this.max.x, this.max.y, this.min.z ).applyMatrix4( matrix ); // 110
+		_points[ 7 ].set( this.max.x, this.max.y, this.max.z ).applyMatrix4( matrix ); // 111
+
+		this.setFromPoints( _points );
+
+		return this;
+
+	}
+
+	translate( offset ) {
+
+		this.min.add( offset );
+		this.max.add( offset );
+
+		return this;
+
+	}
+
+	equals( box ) {
+
+		return box.min.equals( this.min ) && box.max.equals( this.max );
 
 	}
 
 }
 
-Object.assign( Matrix4.prototype, {
+function satForAxes( axes, v0, v1, v2, extents ) {
 
-	isMatrix4: true,
+	for ( let i = 0, j = axes.length - 3; i <= j; i += 3 ) {
 
-	set: function ( n11, n12, n13, n14, n21, n22, n23, n24, n31, n32, n33, n34, n41, n42, n43, n44 ) {
+		_testAxis.fromArray( axes, i );
+		// project the aabb onto the seperating axis
+		const r = extents.x * Math.abs( _testAxis.x ) + extents.y * Math.abs( _testAxis.y ) + extents.z * Math.abs( _testAxis.z );
+		// project all 3 vertices of the triangle onto the seperating axis
+		const p0 = v0.dot( _testAxis );
+		const p1 = v1.dot( _testAxis );
+		const p2 = v2.dot( _testAxis );
+		// actual test, basically see if either of the most extreme of the triangle points intersects r
+		if ( Math.max( - Math.max( p0, p1, p2 ), Math.min( p0, p1, p2 ) ) > r ) {
+
+			// points of the projected triangle are outside the projected half-length of the aabb
+			// the axis is seperating and we can exit
+			return false;
+
+		}
+
+	}
+
+	return true;
+
+}
+
+const _points = [
+	new Vector3(),
+	new Vector3(),
+	new Vector3(),
+	new Vector3(),
+	new Vector3(),
+	new Vector3(),
+	new Vector3(),
+	new Vector3()
+];
+
+const _vector$1 = new Vector3();
+
+const _box = new Box3();
+
+// triangle centered vertices
+
+const _v0 = new Vector3();
+const _v1 = new Vector3();
+const _v2 = new Vector3();
+
+// triangle edge vectors
+
+const _f0 = new Vector3();
+const _f1 = new Vector3();
+const _f2 = new Vector3();
+
+const _center = new Vector3();
+const _extents = new Vector3();
+const _triangleNormal = new Vector3();
+const _testAxis = new Vector3();
+
+const _box$1 = new Box3();
+
+class Sphere {
+
+	constructor( center, radius ) {
+
+		this.center = ( center !== undefined ) ? center : new Vector3();
+		this.radius = ( radius !== undefined ) ? radius : - 1;
+
+	}
+
+	set( center, radius ) {
+
+		this.center.copy( center );
+		this.radius = radius;
+
+		return this;
+
+	}
+
+	setFromPoints( points, optionalCenter ) {
+
+		const center = this.center;
+
+		if ( optionalCenter !== undefined ) {
+
+			center.copy( optionalCenter );
+
+		} else {
+
+			_box$1.setFromPoints( points ).getCenter( center );
+
+		}
+
+		let maxRadiusSq = 0;
+
+		for ( let i = 0, il = points.length; i < il; i ++ ) {
+
+			maxRadiusSq = Math.max( maxRadiusSq, center.distanceToSquared( points[ i ] ) );
+
+		}
+
+		this.radius = Math.sqrt( maxRadiusSq );
+
+		return this;
+
+	}
+
+	clone() {
+
+		return new this.constructor().copy( this );
+
+	}
+
+	copy( sphere ) {
+
+		this.center.copy( sphere.center );
+		this.radius = sphere.radius;
+
+		return this;
+
+	}
+
+	isEmpty() {
+
+		return ( this.radius < 0 );
+
+	}
+
+	makeEmpty() {
+
+		this.center.set( 0, 0, 0 );
+		this.radius = - 1;
+
+		return this;
+
+	}
+
+	containsPoint( point ) {
+
+		return ( point.distanceToSquared( this.center ) <= ( this.radius * this.radius ) );
+
+	}
+
+	distanceToPoint( point ) {
+
+		return ( point.distanceTo( this.center ) - this.radius );
+
+	}
+
+	intersectsSphere( sphere ) {
+
+		const radiusSum = this.radius + sphere.radius;
+
+		return sphere.center.distanceToSquared( this.center ) <= ( radiusSum * radiusSum );
+
+	}
+
+	intersectsBox( box ) {
+
+		return box.intersectsSphere( this );
+
+	}
+
+	intersectsPlane( plane ) {
+
+		return Math.abs( plane.distanceToPoint( this.center ) ) <= this.radius;
+
+	}
+
+	clampPoint( point, target ) {
+
+		const deltaLengthSq = this.center.distanceToSquared( point );
+
+		if ( target === undefined ) {
+
+			console.warn( 'THREE.Sphere: .clampPoint() target is now required' );
+			target = new Vector3();
+
+		}
+
+		target.copy( point );
+
+		if ( deltaLengthSq > ( this.radius * this.radius ) ) {
+
+			target.sub( this.center ).normalize();
+			target.multiplyScalar( this.radius ).add( this.center );
+
+		}
+
+		return target;
+
+	}
+
+	getBoundingBox( target ) {
+
+		if ( target === undefined ) {
+
+			console.warn( 'THREE.Sphere: .getBoundingBox() target is now required' );
+			target = new Box3();
+
+		}
+
+		if ( this.isEmpty() ) {
+
+			// Empty sphere produces empty bounding box
+			target.makeEmpty();
+			return target;
+
+		}
+
+		target.set( this.center, this.center );
+		target.expandByScalar( this.radius );
+
+		return target;
+
+	}
+
+	applyMatrix4( matrix ) {
+
+		this.center.applyMatrix4( matrix );
+		this.radius = this.radius * matrix.getMaxScaleOnAxis();
+
+		return this;
+
+	}
+
+	translate( offset ) {
+
+		this.center.add( offset );
+
+		return this;
+
+	}
+
+	equals( sphere ) {
+
+		return sphere.center.equals( this.center ) && ( sphere.radius === this.radius );
+
+	}
+
+}
+
+const _vector$2 = new Vector3();
+const _segCenter = new Vector3();
+const _segDir = new Vector3();
+const _diff = new Vector3();
+
+const _edge1 = new Vector3();
+const _edge2 = new Vector3();
+const _normal = new Vector3();
+
+class Ray {
+
+	constructor( origin, direction ) {
+
+		this.origin = ( origin !== undefined ) ? origin : new Vector3();
+		this.direction = ( direction !== undefined ) ? direction : new Vector3( 0, 0, - 1 );
+
+	}
+
+	set( origin, direction ) {
+
+		this.origin.copy( origin );
+		this.direction.copy( direction );
+
+		return this;
+
+	}
+
+	clone() {
+
+		return new this.constructor().copy( this );
+
+	}
+
+	copy( ray ) {
+
+		this.origin.copy( ray.origin );
+		this.direction.copy( ray.direction );
+
+		return this;
+
+	}
+
+	at( t, target ) {
+
+		if ( target === undefined ) {
+
+			console.warn( 'THREE.Ray: .at() target is now required' );
+			target = new Vector3();
+
+		}
+
+		return target.copy( this.direction ).multiplyScalar( t ).add( this.origin );
+
+	}
+
+	lookAt( v ) {
+
+		this.direction.copy( v ).sub( this.origin ).normalize();
+
+		return this;
+
+	}
+
+	recast( t ) {
+
+		this.origin.copy( this.at( t, _vector$2 ) );
+
+		return this;
+
+	}
+
+	closestPointToPoint( point, target ) {
+
+		if ( target === undefined ) {
+
+			console.warn( 'THREE.Ray: .closestPointToPoint() target is now required' );
+			target = new Vector3();
+
+		}
+
+		target.subVectors( point, this.origin );
+
+		const directionDistance = target.dot( this.direction );
+
+		if ( directionDistance < 0 ) {
+
+			return target.copy( this.origin );
+
+		}
+
+		return target.copy( this.direction ).multiplyScalar( directionDistance ).add( this.origin );
+
+	}
+
+	distanceToPoint( point ) {
+
+		return Math.sqrt( this.distanceSqToPoint( point ) );
+
+	}
+
+	distanceSqToPoint( point ) {
+
+		const directionDistance = _vector$2.subVectors( point, this.origin ).dot( this.direction );
+
+		// point behind the ray
+
+		if ( directionDistance < 0 ) {
+
+			return this.origin.distanceToSquared( point );
+
+		}
+
+		_vector$2.copy( this.direction ).multiplyScalar( directionDistance ).add( this.origin );
+
+		return _vector$2.distanceToSquared( point );
+
+	}
+
+	distanceSqToSegment( v0, v1, optionalPointOnRay, optionalPointOnSegment ) {
+
+		// from http://www.geometrictools.com/GTEngine/Include/Mathematics/GteDistRaySegment.h
+		// It returns the min distance between the ray and the segment
+		// defined by v0 and v1
+		// It can also set two optional targets :
+		// - The closest point on the ray
+		// - The closest point on the segment
+
+		_segCenter.copy( v0 ).add( v1 ).multiplyScalar( 0.5 );
+		_segDir.copy( v1 ).sub( v0 ).normalize();
+		_diff.copy( this.origin ).sub( _segCenter );
+
+		const segExtent = v0.distanceTo( v1 ) * 0.5;
+		const a01 = - this.direction.dot( _segDir );
+		const b0 = _diff.dot( this.direction );
+		const b1 = - _diff.dot( _segDir );
+		const c = _diff.lengthSq();
+		const det = Math.abs( 1 - a01 * a01 );
+		let s0, s1, sqrDist, extDet;
+
+		if ( det > 0 ) {
+
+			// The ray and segment are not parallel.
+
+			s0 = a01 * b1 - b0;
+			s1 = a01 * b0 - b1;
+			extDet = segExtent * det;
+
+			if ( s0 >= 0 ) {
+
+				if ( s1 >= - extDet ) {
+
+					if ( s1 <= extDet ) {
+
+						// region 0
+						// Minimum at interior points of ray and segment.
+
+						const invDet = 1 / det;
+						s0 *= invDet;
+						s1 *= invDet;
+						sqrDist = s0 * ( s0 + a01 * s1 + 2 * b0 ) + s1 * ( a01 * s0 + s1 + 2 * b1 ) + c;
+
+					} else {
+
+						// region 1
+
+						s1 = segExtent;
+						s0 = Math.max( 0, - ( a01 * s1 + b0 ) );
+						sqrDist = - s0 * s0 + s1 * ( s1 + 2 * b1 ) + c;
+
+					}
+
+				} else {
+
+					// region 5
+
+					s1 = - segExtent;
+					s0 = Math.max( 0, - ( a01 * s1 + b0 ) );
+					sqrDist = - s0 * s0 + s1 * ( s1 + 2 * b1 ) + c;
+
+				}
+
+			} else {
+
+				if ( s1 <= - extDet ) {
+
+					// region 4
+
+					s0 = Math.max( 0, - ( - a01 * segExtent + b0 ) );
+					s1 = ( s0 > 0 ) ? - segExtent : Math.min( Math.max( - segExtent, - b1 ), segExtent );
+					sqrDist = - s0 * s0 + s1 * ( s1 + 2 * b1 ) + c;
+
+				} else if ( s1 <= extDet ) {
+
+					// region 3
+
+					s0 = 0;
+					s1 = Math.min( Math.max( - segExtent, - b1 ), segExtent );
+					sqrDist = s1 * ( s1 + 2 * b1 ) + c;
+
+				} else {
+
+					// region 2
+
+					s0 = Math.max( 0, - ( a01 * segExtent + b0 ) );
+					s1 = ( s0 > 0 ) ? segExtent : Math.min( Math.max( - segExtent, - b1 ), segExtent );
+					sqrDist = - s0 * s0 + s1 * ( s1 + 2 * b1 ) + c;
+
+				}
+
+			}
+
+		} else {
+
+			// Ray and segment are parallel.
+
+			s1 = ( a01 > 0 ) ? - segExtent : segExtent;
+			s0 = Math.max( 0, - ( a01 * s1 + b0 ) );
+			sqrDist = - s0 * s0 + s1 * ( s1 + 2 * b1 ) + c;
+
+		}
+
+		if ( optionalPointOnRay ) {
+
+			optionalPointOnRay.copy( this.direction ).multiplyScalar( s0 ).add( this.origin );
+
+		}
+
+		if ( optionalPointOnSegment ) {
+
+			optionalPointOnSegment.copy( _segDir ).multiplyScalar( s1 ).add( _segCenter );
+
+		}
+
+		return sqrDist;
+
+	}
+
+	intersectSphere( sphere, target ) {
+
+		_vector$2.subVectors( sphere.center, this.origin );
+		const tca = _vector$2.dot( this.direction );
+		const d2 = _vector$2.dot( _vector$2 ) - tca * tca;
+		const radius2 = sphere.radius * sphere.radius;
+
+		if ( d2 > radius2 ) return null;
+
+		const thc = Math.sqrt( radius2 - d2 );
+
+		// t0 = first intersect point - entrance on front of sphere
+		const t0 = tca - thc;
+
+		// t1 = second intersect point - exit point on back of sphere
+		const t1 = tca + thc;
+
+		// test to see if both t0 and t1 are behind the ray - if so, return null
+		if ( t0 < 0 && t1 < 0 ) return null;
+
+		// test to see if t0 is behind the ray:
+		// if it is, the ray is inside the sphere, so return the second exit point scaled by t1,
+		// in order to always return an intersect point that is in front of the ray.
+		if ( t0 < 0 ) return this.at( t1, target );
+
+		// else t0 is in front of the ray, so return the first collision point scaled by t0
+		return this.at( t0, target );
+
+	}
+
+	intersectsSphere( sphere ) {
+
+		return this.distanceSqToPoint( sphere.center ) <= ( sphere.radius * sphere.radius );
+
+	}
+
+	distanceToPlane( plane ) {
+
+		const denominator = plane.normal.dot( this.direction );
+
+		if ( denominator === 0 ) {
+
+			// line is coplanar, return origin
+			if ( plane.distanceToPoint( this.origin ) === 0 ) {
+
+				return 0;
+
+			}
+
+			// Null is preferable to undefined since undefined means.... it is undefined
+
+			return null;
+
+		}
+
+		const t = - ( this.origin.dot( plane.normal ) + plane.constant ) / denominator;
+
+		// Return if the ray never intersects the plane
+
+		return t >= 0 ? t : null;
+
+	}
+
+	intersectPlane( plane, target ) {
+
+		const t = this.distanceToPlane( plane );
+
+		if ( t === null ) {
+
+			return null;
+
+		}
+
+		return this.at( t, target );
+
+	}
+
+	intersectsPlane( plane ) {
+
+		// check if the ray lies on the plane first
+
+		const distToPoint = plane.distanceToPoint( this.origin );
+
+		if ( distToPoint === 0 ) {
+
+			return true;
+
+		}
+
+		const denominator = plane.normal.dot( this.direction );
+
+		if ( denominator * distToPoint < 0 ) {
+
+			return true;
+
+		}
+
+		// ray origin is behind the plane (and is pointing behind it)
+
+		return false;
+
+	}
+
+	intersectBox( box, target ) {
+
+		let tmin, tmax, tymin, tymax, tzmin, tzmax;
+
+		const invdirx = 1 / this.direction.x,
+			invdiry = 1 / this.direction.y,
+			invdirz = 1 / this.direction.z;
+
+		const origin = this.origin;
+
+		if ( invdirx >= 0 ) {
+
+			tmin = ( box.min.x - origin.x ) * invdirx;
+			tmax = ( box.max.x - origin.x ) * invdirx;
+
+		} else {
+
+			tmin = ( box.max.x - origin.x ) * invdirx;
+			tmax = ( box.min.x - origin.x ) * invdirx;
+
+		}
+
+		if ( invdiry >= 0 ) {
+
+			tymin = ( box.min.y - origin.y ) * invdiry;
+			tymax = ( box.max.y - origin.y ) * invdiry;
+
+		} else {
+
+			tymin = ( box.max.y - origin.y ) * invdiry;
+			tymax = ( box.min.y - origin.y ) * invdiry;
+
+		}
+
+		if ( ( tmin > tymax ) || ( tymin > tmax ) ) return null;
+
+		// These lines also handle the case where tmin or tmax is NaN
+		// (result of 0 * Infinity). x !== x returns true if x is NaN
+
+		if ( tymin > tmin || tmin !== tmin ) tmin = tymin;
+
+		if ( tymax < tmax || tmax !== tmax ) tmax = tymax;
+
+		if ( invdirz >= 0 ) {
+
+			tzmin = ( box.min.z - origin.z ) * invdirz;
+			tzmax = ( box.max.z - origin.z ) * invdirz;
+
+		} else {
+
+			tzmin = ( box.max.z - origin.z ) * invdirz;
+			tzmax = ( box.min.z - origin.z ) * invdirz;
+
+		}
+
+		if ( ( tmin > tzmax ) || ( tzmin > tmax ) ) return null;
+
+		if ( tzmin > tmin || tmin !== tmin ) tmin = tzmin;
+
+		if ( tzmax < tmax || tmax !== tmax ) tmax = tzmax;
+
+		//return point closest to the ray (positive side)
+
+		if ( tmax < 0 ) return null;
+
+		return this.at( tmin >= 0 ? tmin : tmax, target );
+
+	}
+
+	intersectsBox( box ) {
+
+		return this.intersectBox( box, _vector$2 ) !== null;
+
+	}
+
+	intersectTriangle( a, b, c, backfaceCulling, target ) {
+
+		// Compute the offset origin, edges, and normal.
+
+		// from http://www.geometrictools.com/GTEngine/Include/Mathematics/GteIntrRay3Triangle3.h
+
+		_edge1.subVectors( b, a );
+		_edge2.subVectors( c, a );
+		_normal.crossVectors( _edge1, _edge2 );
+
+		// Solve Q + t*D = b1*E1 + b2*E2 (Q = kDiff, D = ray direction,
+		// E1 = kEdge1, E2 = kEdge2, N = Cross(E1,E2)) by
+		//   |Dot(D,N)|*b1 = sign(Dot(D,N))*Dot(D,Cross(Q,E2))
+		//   |Dot(D,N)|*b2 = sign(Dot(D,N))*Dot(D,Cross(E1,Q))
+		//   |Dot(D,N)|*t = -sign(Dot(D,N))*Dot(Q,N)
+		let DdN = this.direction.dot( _normal );
+		let sign;
+
+		if ( DdN > 0 ) {
+
+			if ( backfaceCulling ) return null;
+			sign = 1;
+
+		} else if ( DdN < 0 ) {
+
+			sign = - 1;
+			DdN = - DdN;
+
+		} else {
+
+			return null;
+
+		}
+
+		_diff.subVectors( this.origin, a );
+		const DdQxE2 = sign * this.direction.dot( _edge2.crossVectors( _diff, _edge2 ) );
+
+		// b1 < 0, no intersection
+		if ( DdQxE2 < 0 ) {
+
+			return null;
+
+		}
+
+		const DdE1xQ = sign * this.direction.dot( _edge1.cross( _diff ) );
+
+		// b2 < 0, no intersection
+		if ( DdE1xQ < 0 ) {
+
+			return null;
+
+		}
+
+		// b1+b2 > 1, no intersection
+		if ( DdQxE2 + DdE1xQ > DdN ) {
+
+			return null;
+
+		}
+
+		// Line intersects triangle, check if ray does.
+		const QdN = - sign * _diff.dot( _normal );
+
+		// t < 0, no intersection
+		if ( QdN < 0 ) {
+
+			return null;
+
+		}
+
+		// Ray intersects triangle.
+		return this.at( QdN / DdN, target );
+
+	}
+
+	applyMatrix4( matrix4 ) {
+
+		this.origin.applyMatrix4( matrix4 );
+		this.direction.transformDirection( matrix4 );
+
+		return this;
+
+	}
+
+	equals( ray ) {
+
+		return ray.origin.equals( this.origin ) && ray.direction.equals( this.direction );
+
+	}
+
+}
+
+class Matrix4 {
+
+	constructor() {
+
+		Object.defineProperty( this, 'isMatrix4', { value: true } );
+
+		this.elements = [
+
+			1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1
+
+		];
+
+		if ( arguments.length > 0 ) {
+
+			console.error( 'THREE.Matrix4: the constructor no longer reads arguments. use .set() instead.' );
+
+		}
+
+	}
+
+	set( n11, n12, n13, n14, n21, n22, n23, n24, n31, n32, n33, n34, n41, n42, n43, n44 ) {
 
 		const te = this.elements;
 
@@ -3973,9 +5156,9 @@ Object.assign( Matrix4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	identity: function () {
+	identity() {
 
 		this.set(
 
@@ -3988,15 +5171,15 @@ Object.assign( Matrix4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	clone: function () {
+	clone() {
 
 		return new Matrix4().fromArray( this.elements );
 
-	},
+	}
 
-	copy: function ( m ) {
+	copy( m ) {
 
 		const te = this.elements;
 		const me = m.elements;
@@ -4008,9 +5191,9 @@ Object.assign( Matrix4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	copyPosition: function ( m ) {
+	copyPosition( m ) {
 
 		const te = this.elements, me = m.elements;
 
@@ -4020,9 +5203,9 @@ Object.assign( Matrix4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	extractBasis: function ( xAxis, yAxis, zAxis ) {
+	extractBasis( xAxis, yAxis, zAxis ) {
 
 		xAxis.setFromMatrixColumn( this, 0 );
 		yAxis.setFromMatrixColumn( this, 1 );
@@ -4030,9 +5213,9 @@ Object.assign( Matrix4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	makeBasis: function ( xAxis, yAxis, zAxis ) {
+	makeBasis( xAxis, yAxis, zAxis ) {
 
 		this.set(
 			xAxis.x, yAxis.x, zAxis.x, 0,
@@ -4043,18 +5226,18 @@ Object.assign( Matrix4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	extractRotation: function ( m ) {
+	extractRotation( m ) {
 
 		// this method does not support reflection matrices
 
 		const te = this.elements;
 		const me = m.elements;
 
-		const scaleX = 1 / _v1.setFromMatrixColumn( m, 0 ).length();
-		const scaleY = 1 / _v1.setFromMatrixColumn( m, 1 ).length();
-		const scaleZ = 1 / _v1.setFromMatrixColumn( m, 2 ).length();
+		const scaleX = 1 / _v1$1.setFromMatrixColumn( m, 0 ).length();
+		const scaleY = 1 / _v1$1.setFromMatrixColumn( m, 1 ).length();
+		const scaleZ = 1 / _v1$1.setFromMatrixColumn( m, 2 ).length();
 
 		te[ 0 ] = me[ 0 ] * scaleX;
 		te[ 1 ] = me[ 1 ] * scaleX;
@@ -4078,9 +5261,9 @@ Object.assign( Matrix4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	makeRotationFromEuler: function ( euler ) {
+	makeRotationFromEuler( euler ) {
 
 		if ( ! ( euler && euler.isEuler ) ) {
 
@@ -4206,15 +5389,15 @@ Object.assign( Matrix4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	makeRotationFromQuaternion: function ( q ) {
+	makeRotationFromQuaternion( q ) {
 
 		return this.compose( _zero, q, _one );
 
-	},
+	}
 
-	lookAt: function ( eye, target, up ) {
+	lookAt( eye, target, up ) {
 
 		const te = this.elements;
 
@@ -4259,9 +5442,9 @@ Object.assign( Matrix4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	multiply: function ( m, n ) {
+	multiply( m, n ) {
 
 		if ( n !== undefined ) {
 
@@ -4272,15 +5455,15 @@ Object.assign( Matrix4.prototype, {
 
 		return this.multiplyMatrices( this, m );
 
-	},
+	}
 
-	premultiply: function ( m ) {
+	premultiply( m ) {
 
 		return this.multiplyMatrices( m, this );
 
-	},
+	}
 
-	multiplyMatrices: function ( a, b ) {
+	multiplyMatrices( a, b ) {
 
 		const ae = a.elements;
 		const be = b.elements;
@@ -4318,9 +5501,9 @@ Object.assign( Matrix4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	multiplyScalar: function ( s ) {
+	multiplyScalar( s ) {
 
 		const te = this.elements;
 
@@ -4331,9 +5514,9 @@ Object.assign( Matrix4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	determinant: function () {
+	determinant() {
 
 		const te = this.elements;
 
@@ -4381,9 +5564,9 @@ Object.assign( Matrix4.prototype, {
 
 		);
 
-	},
+	}
 
-	transpose: function () {
+	transpose() {
 
 		const te = this.elements;
 		let tmp;
@@ -4398,9 +5581,9 @@ Object.assign( Matrix4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setPosition: function ( x, y, z ) {
+	setPosition( x, y, z ) {
 
 		const te = this.elements;
 
@@ -4420,9 +5603,9 @@ Object.assign( Matrix4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	getInverse: function ( m, throwOnDegenerate ) {
+	getInverse( m, throwOnDegenerate ) {
 
 		if ( throwOnDegenerate !== undefined ) {
 
@@ -4472,9 +5655,9 @@ Object.assign( Matrix4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	scale: function ( v ) {
+	scale( v ) {
 
 		const te = this.elements;
 		const x = v.x, y = v.y, z = v.z;
@@ -4486,9 +5669,9 @@ Object.assign( Matrix4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	getMaxScaleOnAxis: function () {
+	getMaxScaleOnAxis() {
 
 		const te = this.elements;
 
@@ -4498,9 +5681,9 @@ Object.assign( Matrix4.prototype, {
 
 		return Math.sqrt( Math.max( scaleXSq, scaleYSq, scaleZSq ) );
 
-	},
+	}
 
-	makeTranslation: function ( x, y, z ) {
+	makeTranslation( x, y, z ) {
 
 		this.set(
 
@@ -4513,9 +5696,9 @@ Object.assign( Matrix4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	makeRotationX: function ( theta ) {
+	makeRotationX( theta ) {
 
 		const c = Math.cos( theta ), s = Math.sin( theta );
 
@@ -4530,9 +5713,9 @@ Object.assign( Matrix4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	makeRotationY: function ( theta ) {
+	makeRotationY( theta ) {
 
 		const c = Math.cos( theta ), s = Math.sin( theta );
 
@@ -4547,9 +5730,9 @@ Object.assign( Matrix4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	makeRotationZ: function ( theta ) {
+	makeRotationZ( theta ) {
 
 		const c = Math.cos( theta ), s = Math.sin( theta );
 
@@ -4564,9 +5747,9 @@ Object.assign( Matrix4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	makeRotationAxis: function ( axis, angle ) {
+	makeRotationAxis( axis, angle ) {
 
 		// Based on http://www.gamedev.net/reference/articles/article1199.asp
 
@@ -4585,11 +5768,11 @@ Object.assign( Matrix4.prototype, {
 
 		);
 
-		 return this;
+		return this;
 
-	},
+	}
 
-	makeScale: function ( x, y, z ) {
+	makeScale( x, y, z ) {
 
 		this.set(
 
@@ -4602,9 +5785,9 @@ Object.assign( Matrix4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	makeShear: function ( x, y, z ) {
+	makeShear( x, y, z ) {
 
 		this.set(
 
@@ -4617,9 +5800,9 @@ Object.assign( Matrix4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	compose: function ( position, quaternion, scale ) {
+	compose( position, quaternion, scale ) {
 
 		const te = this.elements;
 
@@ -4653,15 +5836,15 @@ Object.assign( Matrix4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	decompose: function ( position, quaternion, scale ) {
+	decompose( position, quaternion, scale ) {
 
 		const te = this.elements;
 
-		let sx = _v1.set( te[ 0 ], te[ 1 ], te[ 2 ] ).length();
-		let sy = _v1.set( te[ 4 ], te[ 5 ], te[ 6 ] ).length();
-		let sz = _v1.set( te[ 8 ], te[ 9 ], te[ 10 ] ).length();
+		let sx = _v1$1.set( te[ 0 ], te[ 1 ], te[ 2 ] ).length();
+		const sy = _v1$1.set( te[ 4 ], te[ 5 ], te[ 6 ] ).length();
+		const sz = _v1$1.set( te[ 8 ], te[ 9 ], te[ 10 ] ).length();
 
 		// if determine is negative, we need to invert one scale
 		const det = this.determinant();
@@ -4698,9 +5881,9 @@ Object.assign( Matrix4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	makePerspective: function ( left, right, top, bottom, near, far ) {
+	makePerspective( left, right, top, bottom, near, far ) {
 
 		if ( far === undefined ) {
 
@@ -4724,9 +5907,9 @@ Object.assign( Matrix4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	makeOrthographic: function ( left, right, top, bottom, near, far ) {
+	makeOrthographic( left, right, top, bottom, near, far ) {
 
 		const te = this.elements;
 		const w = 1.0 / ( right - left );
@@ -4744,9 +5927,9 @@ Object.assign( Matrix4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	equals: function ( matrix ) {
+	equals( matrix ) {
 
 		const te = this.elements;
 		const me = matrix.elements;
@@ -4759,9 +5942,9 @@ Object.assign( Matrix4.prototype, {
 
 		return true;
 
-	},
+	}
 
-	fromArray: function ( array, offset ) {
+	fromArray( array, offset ) {
 
 		if ( offset === undefined ) offset = 0;
 
@@ -4773,9 +5956,9 @@ Object.assign( Matrix4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	toArray: function ( array, offset ) {
+	toArray( array, offset ) {
 
 		if ( array === undefined ) array = [];
 		if ( offset === undefined ) offset = 0;
@@ -4806,101 +5989,82 @@ Object.assign( Matrix4.prototype, {
 
 	}
 
-} );
-
-const _matrix = new Matrix4();
-const _quaternion$1 = new Quaternion();
-
-function Euler( x = 0, y = 0, z = 0, order = Euler.DefaultOrder ) {
-
-	this._x = x;
-	this._y = y;
-	this._z = z;
-	this._order = order;
-
 }
 
-Euler.RotationOrders = [ 'XYZ', 'YZX', 'ZXY', 'XZY', 'YXZ', 'ZYX' ];
+const _v1$1 = new Vector3();
+const _m1 = new Matrix4();
+const _zero = new Vector3( 0, 0, 0 );
+const _one = new Vector3( 1, 1, 1 );
+const _x = new Vector3();
+const _y = new Vector3();
+const _z = new Vector3();
 
-Euler.DefaultOrder = 'XYZ';
+class Euler {
 
-Object.defineProperties( Euler.prototype, {
+	constructor( x = 0, y = 0, z = 0, order = Euler.DefaultOrder ) {
 
-	x: {
+		Object.defineProperty( this, 'isEuler', { value: true } );
 
-		get: function () {
-
-			return this._x;
-
-		},
-
-		set: function ( value ) {
-
-			this._x = value;
-			this._onChangeCallback();
-
-		}
-
-	},
-
-	y: {
-
-		get: function () {
-
-			return this._y;
-
-		},
-
-		set: function ( value ) {
-
-			this._y = value;
-			this._onChangeCallback();
-
-		}
-
-	},
-
-	z: {
-
-		get: function () {
-
-			return this._z;
-
-		},
-
-		set: function ( value ) {
-
-			this._z = value;
-			this._onChangeCallback();
-
-		}
-
-	},
-
-	order: {
-
-		get: function () {
-
-			return this._order;
-
-		},
-
-		set: function ( value ) {
-
-			this._order = value;
-			this._onChangeCallback();
-
-		}
+		this._x = x;
+		this._y = y;
+		this._z = z;
+		this._order = order;
 
 	}
 
-} );
+	get x() {
 
-Object.assign( Euler.prototype, {
+		return this._x;
 
-	isEuler: true,
+	}
 
-	set: function ( x, y, z, order ) {
+	set x( value ) {
+
+		this._x = value;
+		this._onChangeCallback();
+
+	}
+
+	get y() {
+
+		return this._y;
+
+	}
+
+	set y( value ) {
+
+		this._y = value;
+		this._onChangeCallback();
+
+	}
+
+	get z() {
+
+		return this._z;
+
+	}
+
+	set z( value ) {
+
+		this._z = value;
+		this._onChangeCallback();
+
+	}
+
+	get order() {
+
+		return this._order;
+
+	}
+
+	set order( value ) {
+
+		this._order = value;
+		this._onChangeCallback();
+
+	}
+
+	set( x, y, z, order ) {
 
 		this._x = x;
 		this._y = y;
@@ -4911,15 +6075,15 @@ Object.assign( Euler.prototype, {
 
 		return this;
 
-	},
+	}
 
-	clone: function () {
+	clone() {
 
 		return new this.constructor( this._x, this._y, this._z, this._order );
 
-	},
+	}
 
-	copy: function ( euler ) {
+	copy( euler ) {
 
 		this._x = euler._x;
 		this._y = euler._y;
@@ -4930,9 +6094,9 @@ Object.assign( Euler.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setFromRotationMatrix: function ( m, order, update ) {
+	setFromRotationMatrix( m, order, update ) {
 
 		const clamp = MathUtils.clamp;
 
@@ -5067,23 +6231,23 @@ Object.assign( Euler.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setFromQuaternion: function ( q, order, update ) {
+	setFromQuaternion( q, order, update ) {
 
 		_matrix.makeRotationFromQuaternion( q );
 
 		return this.setFromRotationMatrix( _matrix, order, update );
 
-	},
+	}
 
-	setFromVector3: function ( v, order ) {
+	setFromVector3( v, order ) {
 
 		return this.set( v.x, v.y, v.z, order || this._order );
 
-	},
+	}
 
-	reorder: function ( newOrder ) {
+	reorder( newOrder ) {
 
 		// WARNING: this discards revolution information -bhouston
 
@@ -5091,15 +6255,15 @@ Object.assign( Euler.prototype, {
 
 		return this.setFromQuaternion( _quaternion$1, newOrder );
 
-	},
+	}
 
-	equals: function ( euler ) {
+	equals( euler ) {
 
 		return ( euler._x === this._x ) && ( euler._y === this._y ) && ( euler._z === this._z ) && ( euler._order === this._order );
 
-	},
+	}
 
-	fromArray: function ( array ) {
+	fromArray( array ) {
 
 		this._x = array[ 0 ];
 		this._y = array[ 1 ];
@@ -5110,9 +6274,9 @@ Object.assign( Euler.prototype, {
 
 		return this;
 
-	},
+	}
 
-	toArray: function ( array, offset ) {
+	toArray( array, offset ) {
 
 		if ( array === undefined ) array = [];
 		if ( offset === undefined ) offset = 0;
@@ -5124,9 +6288,9 @@ Object.assign( Euler.prototype, {
 
 		return array;
 
-	},
+	}
 
-	toVector3: function ( optionalResult ) {
+	toVector3( optionalResult ) {
 
 		if ( optionalResult ) {
 
@@ -5138,75 +6302,81 @@ Object.assign( Euler.prototype, {
 
 		}
 
-	},
+	}
 
-	_onChange: function ( callback ) {
+	_onChange( callback ) {
 
 		this._onChangeCallback = callback;
 
 		return this;
 
-	},
+	}
 
-	_onChangeCallback: function () {}
-
-} );
-
-function Layers() {
-
-	this.mask = 1 | 0;
+	_onChangeCallback() {}
 
 }
 
-Object.assign( Layers.prototype, {
+Euler.DefaultOrder = 'XYZ';
+Euler.RotationOrders = [ 'XYZ', 'YZX', 'ZXY', 'XZY', 'YXZ', 'ZYX' ];
 
-	set: function ( channel ) {
+const _matrix = new Matrix4();
+const _quaternion$1 = new Quaternion();
+
+class Layers {
+
+	constructor() {
+
+		this.mask = 1 | 0;
+
+	}
+
+	set( channel ) {
 
 		this.mask = 1 << channel | 0;
 
-	},
+	}
 
-	enable: function ( channel ) {
+	enable( channel ) {
 
 		this.mask |= 1 << channel | 0;
 
-	},
+	}
 
-	enableAll: function () {
+	enableAll() {
 
 		this.mask = 0xffffffff | 0;
 
-	},
+	}
 
-	toggle: function ( channel ) {
+	toggle( channel ) {
 
 		this.mask ^= 1 << channel | 0;
 
-	},
+	}
 
-	disable: function ( channel ) {
+	disable( channel ) {
 
 		this.mask &= ~ ( 1 << channel | 0 );
 
-	},
+	}
 
-	disableAll: function () {
+	disableAll() {
 
 		this.mask = 0;
 
-	},
+	}
 
-	test: function ( layers ) {
+	test( layers ) {
 
 		return ( this.mask & layers.mask ) !== 0;
 
 	}
 
-} );
+}
 
 let _object3DId = 0;
 
-const _v1$1 = new Vector3();
+const _v1$2 = new Vector3();
 const _q1 = new Quaternion();
 const _m1$1 = new Matrix4();
 const _target = new Vector3();
@@ -5414,9 +6584,9 @@ Object3D.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 		// translate object by distance along axis in object space
 		// axis is assumed to be normalized
 
-		_v1$1.copy( axis ).applyQuaternion( this.quaternion );
+		_v1$2.copy( axis ).applyQuaternion( this.quaternion );
 
-		this.position.add( _v1$1.multiplyScalar( distance ) );
+		this.position.add( _v1$2.multiplyScalar( distance ) );
 
 		return this;
 
@@ -6050,1357 +7220,51 @@ Object3D.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 } );
 
-function Scene() {
-
-	Object3D.call( this );
-
-	this.type = 'Scene';
-
-	this.background = null;
-	this.environment = null;
-	this.fog = null;
-
-	this.overrideMaterial = null;
-
-	this.autoUpdate = true; // checked by the renderer
-
-	if ( typeof __THREE_DEVTOOLS__ !== 'undefined' ) {
-
-		__THREE_DEVTOOLS__.dispatchEvent( new CustomEvent( 'observe', { detail: this } ) ); // eslint-disable-line no-undef
-
-	}
-
-}
-
-Scene.prototype = Object.assign( Object.create( Object3D.prototype ), {
-
-	constructor: Scene,
-
-	isScene: true,
-
-	copy: function ( source, recursive ) {
-
-		Object3D.prototype.copy.call( this, source, recursive );
-
-		if ( source.background !== null ) this.background = source.background.clone();
-		if ( source.environment !== null ) this.environment = source.environment.clone();
-		if ( source.fog !== null ) this.fog = source.fog.clone();
-
-		if ( source.overrideMaterial !== null ) this.overrideMaterial = source.overrideMaterial.clone();
-
-		this.autoUpdate = source.autoUpdate;
-		this.matrixAutoUpdate = source.matrixAutoUpdate;
-
-		return this;
-
-	},
-
-	toJSON: function ( meta ) {
-
-		const data = Object3D.prototype.toJSON.call( this, meta );
-
-		if ( this.background !== null ) data.object.background = this.background.toJSON( meta );
-		if ( this.environment !== null ) data.object.environment = this.environment.toJSON( meta );
-		if ( this.fog !== null ) data.object.fog = this.fog.toJSON();
-
-		return data;
-
-	},
-
-	dispose: function () {
-
-		this.dispatchEvent( { type: 'dispose' } );
-
-	}
-
-} );
-
-const _points = [
-	new Vector3(),
-	new Vector3(),
-	new Vector3(),
-	new Vector3(),
-	new Vector3(),
-	new Vector3(),
-	new Vector3(),
-	new Vector3()
-];
-
-const _vector$1 = new Vector3();
-
-const _box = new Box3();
-
-// triangle centered vertices
-
-const _v0 = new Vector3();
-const _v1$2 = new Vector3();
-const _v2 = new Vector3();
-
-// triangle edge vectors
-
-const _f0 = new Vector3();
-const _f1 = new Vector3();
-const _f2 = new Vector3();
-
-const _center = new Vector3();
-const _extents = new Vector3();
-const _triangleNormal = new Vector3();
-const _testAxis = new Vector3();
-
-function Box3( min, max ) {
-
-	this.min = ( min !== undefined ) ? min : new Vector3( + Infinity, + Infinity, + Infinity );
-	this.max = ( max !== undefined ) ? max : new Vector3( - Infinity, - Infinity, - Infinity );
-
-}
-
-
-Object.assign( Box3.prototype, {
-
-	isBox3: true,
-
-	set: function ( min, max ) {
-
-		this.min.copy( min );
-		this.max.copy( max );
-
-		return this;
-
-	},
-
-	setFromArray: function ( array ) {
-
-		let minX = + Infinity;
-		let minY = + Infinity;
-		let minZ = + Infinity;
-
-		let maxX = - Infinity;
-		let maxY = - Infinity;
-		let maxZ = - Infinity;
-
-		for ( let i = 0, l = array.length; i < l; i += 3 ) {
-
-			const x = array[ i ];
-			const y = array[ i + 1 ];
-			const z = array[ i + 2 ];
-
-			if ( x < minX ) minX = x;
-			if ( y < minY ) minY = y;
-			if ( z < minZ ) minZ = z;
-
-			if ( x > maxX ) maxX = x;
-			if ( y > maxY ) maxY = y;
-			if ( z > maxZ ) maxZ = z;
-
-		}
-
-		this.min.set( minX, minY, minZ );
-		this.max.set( maxX, maxY, maxZ );
-
-		return this;
-
-	},
-
-	setFromBufferAttribute: function ( attribute ) {
-
-		let minX = + Infinity;
-		let minY = + Infinity;
-		let minZ = + Infinity;
-
-		let maxX = - Infinity;
-		let maxY = - Infinity;
-		let maxZ = - Infinity;
-
-		for ( let i = 0, l = attribute.count; i < l; i ++ ) {
-
-			const x = attribute.getX( i );
-			const y = attribute.getY( i );
-			const z = attribute.getZ( i );
-
-			if ( x < minX ) minX = x;
-			if ( y < minY ) minY = y;
-			if ( z < minZ ) minZ = z;
-
-			if ( x > maxX ) maxX = x;
-			if ( y > maxY ) maxY = y;
-			if ( z > maxZ ) maxZ = z;
-
-		}
-
-		this.min.set( minX, minY, minZ );
-		this.max.set( maxX, maxY, maxZ );
-
-		return this;
-
-	},
-
-	setFromPoints: function ( points ) {
-
-		this.makeEmpty();
-
-		for ( let i = 0, il = points.length; i < il; i ++ ) {
-
-			this.expandByPoint( points[ i ] );
-
-		}
-
-		return this;
-
-	},
-
-	setFromCenterAndSize: function ( center, size ) {
-
-		const halfSize = _vector$1.copy( size ).multiplyScalar( 0.5 );
-
-		this.min.copy( center ).sub( halfSize );
-		this.max.copy( center ).add( halfSize );
-
-		return this;
-
-	},
-
-	setFromObject: function ( object ) {
-
-		this.makeEmpty();
-
-		return this.expandByObject( object );
-
-	},
-
-	clone: function () {
-
-		return new this.constructor().copy( this );
-
-	},
-
-	copy: function ( box ) {
-
-		this.min.copy( box.min );
-		this.max.copy( box.max );
-
-		return this;
-
-	},
-
-	makeEmpty: function () {
-
-		this.min.x = this.min.y = this.min.z = + Infinity;
-		this.max.x = this.max.y = this.max.z = - Infinity;
-
-		return this;
-
-	},
-
-	isEmpty: function () {
-
-		// this is a more robust check for empty than ( volume <= 0 ) because volume can get positive with two negative axes
-
-		return ( this.max.x < this.min.x ) || ( this.max.y < this.min.y ) || ( this.max.z < this.min.z );
-
-	},
-
-	getCenter: function ( target ) {
-
-		if ( target === undefined ) {
-
-			console.warn( 'THREE.Box3: .getCenter() target is now required' );
-			target = new Vector3();
-
-		}
-
-		return this.isEmpty() ? target.set( 0, 0, 0 ) : target.addVectors( this.min, this.max ).multiplyScalar( 0.5 );
-
-	},
-
-	getSize: function ( target ) {
-
-		if ( target === undefined ) {
-
-			console.warn( 'THREE.Box3: .getSize() target is now required' );
-			target = new Vector3();
-
-		}
-
-		return this.isEmpty() ? target.set( 0, 0, 0 ) : target.subVectors( this.max, this.min );
-
-	},
-
-	expandByPoint: function ( point ) {
-
-		this.min.min( point );
-		this.max.max( point );
-
-		return this;
-
-	},
-
-	expandByVector: function ( vector ) {
-
-		this.min.sub( vector );
-		this.max.add( vector );
-
-		return this;
-
-	},
-
-	expandByScalar: function ( scalar ) {
-
-		this.min.addScalar( - scalar );
-		this.max.addScalar( scalar );
-
-		return this;
-
-	},
-
-	expandByObject: function ( object ) {
-
-		// Computes the world-axis-aligned bounding box of an object (including its children),
-		// accounting for both the object's, and children's, world transforms
-
-		object.updateWorldMatrix( false, false );
-
-		const geometry = object.geometry;
-
-		if ( geometry !== undefined ) {
-
-			if ( geometry.boundingBox === null ) {
-
-				geometry.computeBoundingBox();
-
-			}
-
-			_box.copy( geometry.boundingBox );
-			_box.applyMatrix4( object.matrixWorld );
-
-			this.union( _box );
-
-		}
-
-		const children = object.children;
-
-		for ( let i = 0, l = children.length; i < l; i ++ ) {
-
-			this.expandByObject( children[ i ] );
-
-		}
-
-		return this;
-
-	},
-
-	containsPoint: function ( point ) {
-
-		return point.x < this.min.x || point.x > this.max.x ||
-			point.y < this.min.y || point.y > this.max.y ||
-			point.z < this.min.z || point.z > this.max.z ? false : true;
-
-	},
-
-	containsBox: function ( box ) {
-
-		return this.min.x <= box.min.x && box.max.x <= this.max.x &&
-			this.min.y <= box.min.y && box.max.y <= this.max.y &&
-			this.min.z <= box.min.z && box.max.z <= this.max.z;
-
-	},
-
-	getParameter: function ( point, target ) {
-
-		// This can potentially have a divide by zero if the box
-		// has a size dimension of 0.
-
-		if ( target === undefined ) {
-
-			console.warn( 'THREE.Box3: .getParameter() target is now required' );
-			target = new Vector3();
-
-		}
-
-		return target.set(
-			( point.x - this.min.x ) / ( this.max.x - this.min.x ),
-			( point.y - this.min.y ) / ( this.max.y - this.min.y ),
-			( point.z - this.min.z ) / ( this.max.z - this.min.z )
-		);
-
-	},
-
-	intersectsBox: function ( box ) {
-
-		// using 6 splitting planes to rule out intersections.
-		return box.max.x < this.min.x || box.min.x > this.max.x ||
-			box.max.y < this.min.y || box.min.y > this.max.y ||
-			box.max.z < this.min.z || box.min.z > this.max.z ? false : true;
-
-	},
-
-	intersectsSphere: function ( sphere ) {
-
-		// Find the point on the AABB closest to the sphere center.
-		this.clampPoint( sphere.center, _vector$1 );
-
-		// If that point is inside the sphere, the AABB and sphere intersect.
-		return _vector$1.distanceToSquared( sphere.center ) <= ( sphere.radius * sphere.radius );
-
-	},
-
-	intersectsPlane: function ( plane ) {
-
-		// We compute the minimum and maximum dot product values. If those values
-		// are on the same side (back or front) of the plane, then there is no intersection.
-
-		let min, max;
-
-		if ( plane.normal.x > 0 ) {
-
-			min = plane.normal.x * this.min.x;
-			max = plane.normal.x * this.max.x;
-
-		} else {
-
-			min = plane.normal.x * this.max.x;
-			max = plane.normal.x * this.min.x;
-
-		}
-
-		if ( plane.normal.y > 0 ) {
-
-			min += plane.normal.y * this.min.y;
-			max += plane.normal.y * this.max.y;
-
-		} else {
-
-			min += plane.normal.y * this.max.y;
-			max += plane.normal.y * this.min.y;
-
-		}
-
-		if ( plane.normal.z > 0 ) {
-
-			min += plane.normal.z * this.min.z;
-			max += plane.normal.z * this.max.z;
-
-		} else {
-
-			min += plane.normal.z * this.max.z;
-			max += plane.normal.z * this.min.z;
-
-		}
-
-		return ( min <= - plane.constant && max >= - plane.constant );
-
-	},
-
-	intersectsTriangle: function ( triangle ) {
-
-		if ( this.isEmpty() ) {
-
-			return false;
-
-		}
-
-		// compute box center and extents
-		this.getCenter( _center );
-		_extents.subVectors( this.max, _center );
-
-		// translate triangle to aabb origin
-		_v0.subVectors( triangle.a, _center );
-		_v1$2.subVectors( triangle.b, _center );
-		_v2.subVectors( triangle.c, _center );
-
-		// compute edge vectors for triangle
-		_f0.subVectors( _v1$2, _v0 );
-		_f1.subVectors( _v2, _v1$2 );
-		_f2.subVectors( _v0, _v2 );
-
-		// test against axes that are given by cross product combinations of the edges of the triangle and the edges of the aabb
-		// make an axis testing of each of the 3 sides of the aabb against each of the 3 sides of the triangle = 9 axis of separation
-		// axis_ij = u_i x f_j (u0, u1, u2 = face normals of aabb = x,y,z axes vectors since aabb is axis aligned)
-		let axes = [
-			0, - _f0.z, _f0.y, 0, - _f1.z, _f1.y, 0, - _f2.z, _f2.y,
-			_f0.z, 0, - _f0.x, _f1.z, 0, - _f1.x, _f2.z, 0, - _f2.x,
-			- _f0.y, _f0.x, 0, - _f1.y, _f1.x, 0, - _f2.y, _f2.x, 0
-		];
-		if ( ! satForAxes( axes, _v0, _v1$2, _v2, _extents ) ) {
-
-			return false;
-
-		}
-
-		// test 3 face normals from the aabb
-		axes = [ 1, 0, 0, 0, 1, 0, 0, 0, 1 ];
-		if ( ! satForAxes( axes, _v0, _v1$2, _v2, _extents ) ) {
-
-			return false;
-
-		}
-
-		// finally testing the face normal of the triangle
-		// use already existing triangle edge vectors here
-		_triangleNormal.crossVectors( _f0, _f1 );
-		axes = [ _triangleNormal.x, _triangleNormal.y, _triangleNormal.z ];
-
-		return satForAxes( axes, _v0, _v1$2, _v2, _extents );
-
-	},
-
-	clampPoint: function ( point, target ) {
-
-		if ( target === undefined ) {
-
-			console.warn( 'THREE.Box3: .clampPoint() target is now required' );
-			target = new Vector3();
-
-		}
-
-		return target.copy( point ).clamp( this.min, this.max );
-
-	},
-
-	distanceToPoint: function ( point ) {
-
-		const clampedPoint = _vector$1.copy( point ).clamp( this.min, this.max );
-
-		return clampedPoint.sub( point ).length();
-
-	},
-
-	getBoundingSphere: function ( target ) {
-
-		if ( target === undefined ) {
-
-			console.error( 'THREE.Box3: .getBoundingSphere() target is now required' );
-			//target = new Sphere(); // removed to avoid cyclic dependency
-
-		}
-
-		this.getCenter( target.center );
-
-		target.radius = this.getSize( _vector$1 ).length() * 0.5;
-
-		return target;
-
-	},
-
-	intersect: function ( box ) {
-
-		this.min.max( box.min );
-		this.max.min( box.max );
-
-		// ensure that if there is no overlap, the result is fully empty, not slightly empty with non-inf/+inf values that will cause subsequence intersects to erroneously return valid values.
-		if ( this.isEmpty() ) this.makeEmpty();
-
-		return this;
-
-	},
-
-	union: function ( box ) {
-
-		this.min.min( box.min );
-		this.max.max( box.max );
-
-		return this;
-
-	},
-
-	applyMatrix4: function ( matrix ) {
-
-		// transform of empty box is an empty box.
-		if ( this.isEmpty() ) return this;
-
-		// NOTE: I am using a binary pattern to specify all 2^3 combinations below
-		_points[ 0 ].set( this.min.x, this.min.y, this.min.z ).applyMatrix4( matrix ); // 000
-		_points[ 1 ].set( this.min.x, this.min.y, this.max.z ).applyMatrix4( matrix ); // 001
-		_points[ 2 ].set( this.min.x, this.max.y, this.min.z ).applyMatrix4( matrix ); // 010
-		_points[ 3 ].set( this.min.x, this.max.y, this.max.z ).applyMatrix4( matrix ); // 011
-		_points[ 4 ].set( this.max.x, this.min.y, this.min.z ).applyMatrix4( matrix ); // 100
-		_points[ 5 ].set( this.max.x, this.min.y, this.max.z ).applyMatrix4( matrix ); // 101
-		_points[ 6 ].set( this.max.x, this.max.y, this.min.z ).applyMatrix4( matrix ); // 110
-		_points[ 7 ].set( this.max.x, this.max.y, this.max.z ).applyMatrix4( matrix ); // 111
-
-		this.setFromPoints( _points );
-
-		return this;
-
-	},
-
-	translate: function ( offset ) {
-
-		this.min.add( offset );
-		this.max.add( offset );
-
-		return this;
-
-	},
-
-	equals: function ( box ) {
-
-		return box.min.equals( this.min ) && box.max.equals( this.max );
-
-	}
-
-} );
-
-function satForAxes( axes, v0, v1, v2, extents ) {
-
-	for ( let i = 0, j = axes.length - 3; i <= j; i += 3 ) {
-
-		_testAxis.fromArray( axes, i );
-		// project the aabb onto the seperating axis
-		const r = extents.x * Math.abs( _testAxis.x ) + extents.y * Math.abs( _testAxis.y ) + extents.z * Math.abs( _testAxis.z );
-		// project all 3 vertices of the triangle onto the seperating axis
-		const p0 = v0.dot( _testAxis );
-		const p1 = v1.dot( _testAxis );
-		const p2 = v2.dot( _testAxis );
-		// actual test, basically see if either of the most extreme of the triangle points intersects r
-		if ( Math.max( - Math.max( p0, p1, p2 ), Math.min( p0, p1, p2 ) ) > r ) {
-
-			// points of the projected triangle are outside the projected half-length of the aabb
-			// the axis is seperating and we can exit
-			return false;
-
-		}
-
-	}
-
-	return true;
-
-}
-
-const _box$1 = new Box3();
-
-function Sphere( center, radius ) {
-
-	this.center = ( center !== undefined ) ? center : new Vector3();
-	this.radius = ( radius !== undefined ) ? radius : - 1;
-
-}
-
-Object.assign( Sphere.prototype, {
-
-	set: function ( center, radius ) {
-
-		this.center.copy( center );
-		this.radius = radius;
-
-		return this;
-
-	},
-
-	setFromPoints: function ( points, optionalCenter ) {
-
-		const center = this.center;
-
-		if ( optionalCenter !== undefined ) {
-
-			center.copy( optionalCenter );
-
-		} else {
-
-			_box$1.setFromPoints( points ).getCenter( center );
-
-		}
-
-		let maxRadiusSq = 0;
-
-		for ( let i = 0, il = points.length; i < il; i ++ ) {
-
-			maxRadiusSq = Math.max( maxRadiusSq, center.distanceToSquared( points[ i ] ) );
-
-		}
-
-		this.radius = Math.sqrt( maxRadiusSq );
-
-		return this;
-
-	},
-
-	clone: function () {
-
-		return new this.constructor().copy( this );
-
-	},
-
-	copy: function ( sphere ) {
-
-		this.center.copy( sphere.center );
-		this.radius = sphere.radius;
-
-		return this;
-
-	},
-
-	isEmpty: function () {
-
-		return ( this.radius < 0 );
-
-	},
-
-	makeEmpty: function () {
-
-		this.center.set( 0, 0, 0 );
-		this.radius = - 1;
-
-		return this;
-
-	},
-
-	containsPoint: function ( point ) {
-
-		return ( point.distanceToSquared( this.center ) <= ( this.radius * this.radius ) );
-
-	},
-
-	distanceToPoint: function ( point ) {
-
-		return ( point.distanceTo( this.center ) - this.radius );
-
-	},
-
-	intersectsSphere: function ( sphere ) {
-
-		const radiusSum = this.radius + sphere.radius;
-
-		return sphere.center.distanceToSquared( this.center ) <= ( radiusSum * radiusSum );
-
-	},
-
-	intersectsBox: function ( box ) {
-
-		return box.intersectsSphere( this );
-
-	},
-
-	intersectsPlane: function ( plane ) {
-
-		return Math.abs( plane.distanceToPoint( this.center ) ) <= this.radius;
-
-	},
-
-	clampPoint: function ( point, target ) {
-
-		const deltaLengthSq = this.center.distanceToSquared( point );
-
-		if ( target === undefined ) {
-
-			console.warn( 'THREE.Sphere: .clampPoint() target is now required' );
-			target = new Vector3();
-
-		}
-
-		target.copy( point );
-
-		if ( deltaLengthSq > ( this.radius * this.radius ) ) {
-
-			target.sub( this.center ).normalize();
-			target.multiplyScalar( this.radius ).add( this.center );
-
-		}
-
-		return target;
-
-	},
-
-	getBoundingBox: function ( target ) {
-
-		if ( target === undefined ) {
-
-			console.warn( 'THREE.Sphere: .getBoundingBox() target is now required' );
-			target = new Box3();
-
-		}
-
-		if ( this.isEmpty() ) {
-
-			// Empty sphere produces empty bounding box
-			target.makeEmpty();
-			return target;
-
-		}
-
-		target.set( this.center, this.center );
-		target.expandByScalar( this.radius );
-
-		return target;
-
-	},
-
-	applyMatrix4: function ( matrix ) {
-
-		this.center.applyMatrix4( matrix );
-		this.radius = this.radius * matrix.getMaxScaleOnAxis();
-
-		return this;
-
-	},
-
-	translate: function ( offset ) {
-
-		this.center.add( offset );
-
-		return this;
-
-	},
-
-	equals: function ( sphere ) {
-
-		return sphere.center.equals( this.center ) && ( sphere.radius === this.radius );
-
-	}
-
-} );
-
-const _vector$2 = new Vector3();
-const _segCenter = new Vector3();
-const _segDir = new Vector3();
-const _diff = new Vector3();
-
-const _edge1 = new Vector3();
-const _edge2 = new Vector3();
-const _normal = new Vector3();
-
-function Ray( origin, direction ) {
-
-	this.origin = ( origin !== undefined ) ? origin : new Vector3();
-	this.direction = ( direction !== undefined ) ? direction : new Vector3( 0, 0, - 1 );
-
-}
-
-Object.assign( Ray.prototype, {
-
-	set: function ( origin, direction ) {
-
-		this.origin.copy( origin );
-		this.direction.copy( direction );
-
-		return this;
-
-	},
-
-	clone: function () {
-
-		return new this.constructor().copy( this );
-
-	},
-
-	copy: function ( ray ) {
-
-		this.origin.copy( ray.origin );
-		this.direction.copy( ray.direction );
-
-		return this;
-
-	},
-
-	at: function ( t, target ) {
-
-		if ( target === undefined ) {
-
-			console.warn( 'THREE.Ray: .at() target is now required' );
-			target = new Vector3();
-
-		}
-
-		return target.copy( this.direction ).multiplyScalar( t ).add( this.origin );
-
-	},
-
-	lookAt: function ( v ) {
-
-		this.direction.copy( v ).sub( this.origin ).normalize();
-
-		return this;
-
-	},
-
-	recast: function ( t ) {
-
-		this.origin.copy( this.at( t, _vector$2 ) );
-
-		return this;
-
-	},
-
-	closestPointToPoint: function ( point, target ) {
-
-		if ( target === undefined ) {
-
-			console.warn( 'THREE.Ray: .closestPointToPoint() target is now required' );
-			target = new Vector3();
-
-		}
-
-		target.subVectors( point, this.origin );
-
-		const directionDistance = target.dot( this.direction );
-
-		if ( directionDistance < 0 ) {
-
-			return target.copy( this.origin );
-
-		}
-
-		return target.copy( this.direction ).multiplyScalar( directionDistance ).add( this.origin );
-
-	},
-
-	distanceToPoint: function ( point ) {
-
-		return Math.sqrt( this.distanceSqToPoint( point ) );
-
-	},
-
-	distanceSqToPoint: function ( point ) {
-
-		const directionDistance = _vector$2.subVectors( point, this.origin ).dot( this.direction );
-
-		// point behind the ray
-
-		if ( directionDistance < 0 ) {
-
-			return this.origin.distanceToSquared( point );
-
-		}
-
-		_vector$2.copy( this.direction ).multiplyScalar( directionDistance ).add( this.origin );
-
-		return _vector$2.distanceToSquared( point );
-
-	},
-
-	distanceSqToSegment: function ( v0, v1, optionalPointOnRay, optionalPointOnSegment ) {
-
-		// from http://www.geometrictools.com/GTEngine/Include/Mathematics/GteDistRaySegment.h
-		// It returns the min distance between the ray and the segment
-		// defined by v0 and v1
-		// It can also set two optional targets :
-		// - The closest point on the ray
-		// - The closest point on the segment
-
-		_segCenter.copy( v0 ).add( v1 ).multiplyScalar( 0.5 );
-		_segDir.copy( v1 ).sub( v0 ).normalize();
-		_diff.copy( this.origin ).sub( _segCenter );
-
-		const segExtent = v0.distanceTo( v1 ) * 0.5;
-		const a01 = - this.direction.dot( _segDir );
-		const b0 = _diff.dot( this.direction );
-		const b1 = - _diff.dot( _segDir );
-		const c = _diff.lengthSq();
-		const det = Math.abs( 1 - a01 * a01 );
-		let s0, s1, sqrDist, extDet;
-
-		if ( det > 0 ) {
-
-			// The ray and segment are not parallel.
-
-			s0 = a01 * b1 - b0;
-			s1 = a01 * b0 - b1;
-			extDet = segExtent * det;
-
-			if ( s0 >= 0 ) {
-
-				if ( s1 >= - extDet ) {
-
-					if ( s1 <= extDet ) {
-
-						// region 0
-						// Minimum at interior points of ray and segment.
-
-						const invDet = 1 / det;
-						s0 *= invDet;
-						s1 *= invDet;
-						sqrDist = s0 * ( s0 + a01 * s1 + 2 * b0 ) + s1 * ( a01 * s0 + s1 + 2 * b1 ) + c;
-
-					} else {
-
-						// region 1
-
-						s1 = segExtent;
-						s0 = Math.max( 0, - ( a01 * s1 + b0 ) );
-						sqrDist = - s0 * s0 + s1 * ( s1 + 2 * b1 ) + c;
-
-					}
-
-				} else {
-
-					// region 5
-
-					s1 = - segExtent;
-					s0 = Math.max( 0, - ( a01 * s1 + b0 ) );
-					sqrDist = - s0 * s0 + s1 * ( s1 + 2 * b1 ) + c;
-
-				}
-
-			} else {
-
-				if ( s1 <= - extDet ) {
-
-					// region 4
-
-					s0 = Math.max( 0, - ( - a01 * segExtent + b0 ) );
-					s1 = ( s0 > 0 ) ? - segExtent : Math.min( Math.max( - segExtent, - b1 ), segExtent );
-					sqrDist = - s0 * s0 + s1 * ( s1 + 2 * b1 ) + c;
-
-				} else if ( s1 <= extDet ) {
-
-					// region 3
-
-					s0 = 0;
-					s1 = Math.min( Math.max( - segExtent, - b1 ), segExtent );
-					sqrDist = s1 * ( s1 + 2 * b1 ) + c;
-
-				} else {
-
-					// region 2
-
-					s0 = Math.max( 0, - ( a01 * segExtent + b0 ) );
-					s1 = ( s0 > 0 ) ? segExtent : Math.min( Math.max( - segExtent, - b1 ), segExtent );
-					sqrDist = - s0 * s0 + s1 * ( s1 + 2 * b1 ) + c;
-
-				}
-
-			}
-
-		} else {
-
-			// Ray and segment are parallel.
-
-			s1 = ( a01 > 0 ) ? - segExtent : segExtent;
-			s0 = Math.max( 0, - ( a01 * s1 + b0 ) );
-			sqrDist = - s0 * s0 + s1 * ( s1 + 2 * b1 ) + c;
-
-		}
-
-		if ( optionalPointOnRay ) {
-
-			optionalPointOnRay.copy( this.direction ).multiplyScalar( s0 ).add( this.origin );
-
-		}
-
-		if ( optionalPointOnSegment ) {
-
-			optionalPointOnSegment.copy( _segDir ).multiplyScalar( s1 ).add( _segCenter );
-
-		}
-
-		return sqrDist;
-
-	},
-
-	intersectSphere: function ( sphere, target ) {
-
-		_vector$2.subVectors( sphere.center, this.origin );
-		const tca = _vector$2.dot( this.direction );
-		const d2 = _vector$2.dot( _vector$2 ) - tca * tca;
-		const radius2 = sphere.radius * sphere.radius;
-
-		if ( d2 > radius2 ) return null;
-
-		const thc = Math.sqrt( radius2 - d2 );
-
-		// t0 = first intersect point - entrance on front of sphere
-		const t0 = tca - thc;
-
-		// t1 = second intersect point - exit point on back of sphere
-		const t1 = tca + thc;
-
-		// test to see if both t0 and t1 are behind the ray - if so, return null
-		if ( t0 < 0 && t1 < 0 ) return null;
-
-		// test to see if t0 is behind the ray:
-		// if it is, the ray is inside the sphere, so return the second exit point scaled by t1,
-		// in order to always return an intersect point that is in front of the ray.
-		if ( t0 < 0 ) return this.at( t1, target );
-
-		// else t0 is in front of the ray, so return the first collision point scaled by t0
-		return this.at( t0, target );
-
-	},
-
-	intersectsSphere: function ( sphere ) {
-
-		return this.distanceSqToPoint( sphere.center ) <= ( sphere.radius * sphere.radius );
-
-	},
-
-	distanceToPlane: function ( plane ) {
-
-		const denominator = plane.normal.dot( this.direction );
-
-		if ( denominator === 0 ) {
-
-			// line is coplanar, return origin
-			if ( plane.distanceToPoint( this.origin ) === 0 ) {
-
-				return 0;
-
-			}
-
-			// Null is preferable to undefined since undefined means.... it is undefined
-
-			return null;
-
-		}
-
-		const t = - ( this.origin.dot( plane.normal ) + plane.constant ) / denominator;
-
-		// Return if the ray never intersects the plane
-
-		return t >= 0 ? t : null;
-
-	},
-
-	intersectPlane: function ( plane, target ) {
-
-		const t = this.distanceToPlane( plane );
-
-		if ( t === null ) {
-
-			return null;
-
-		}
-
-		return this.at( t, target );
-
-	},
-
-	intersectsPlane: function ( plane ) {
-
-		// check if the ray lies on the plane first
-
-		const distToPoint = plane.distanceToPoint( this.origin );
-
-		if ( distToPoint === 0 ) {
-
-			return true;
-
-		}
-
-		const denominator = plane.normal.dot( this.direction );
-
-		if ( denominator * distToPoint < 0 ) {
-
-			return true;
-
-		}
-
-		// ray origin is behind the plane (and is pointing behind it)
-
-		return false;
-
-	},
-
-	intersectBox: function ( box, target ) {
-
-		let tmin, tmax, tymin, tymax, tzmin, tzmax;
-
-		const invdirx = 1 / this.direction.x,
-			invdiry = 1 / this.direction.y,
-			invdirz = 1 / this.direction.z;
-
-		const origin = this.origin;
-
-		if ( invdirx >= 0 ) {
-
-			tmin = ( box.min.x - origin.x ) * invdirx;
-			tmax = ( box.max.x - origin.x ) * invdirx;
-
-		} else {
-
-			tmin = ( box.max.x - origin.x ) * invdirx;
-			tmax = ( box.min.x - origin.x ) * invdirx;
-
-		}
-
-		if ( invdiry >= 0 ) {
-
-			tymin = ( box.min.y - origin.y ) * invdiry;
-			tymax = ( box.max.y - origin.y ) * invdiry;
-
-		} else {
-
-			tymin = ( box.max.y - origin.y ) * invdiry;
-			tymax = ( box.min.y - origin.y ) * invdiry;
-
-		}
-
-		if ( ( tmin > tymax ) || ( tymin > tmax ) ) return null;
-
-		// These lines also handle the case where tmin or tmax is NaN
-		// (result of 0 * Infinity). x !== x returns true if x is NaN
-
-		if ( tymin > tmin || tmin !== tmin ) tmin = tymin;
-
-		if ( tymax < tmax || tmax !== tmax ) tmax = tymax;
-
-		if ( invdirz >= 0 ) {
-
-			tzmin = ( box.min.z - origin.z ) * invdirz;
-			tzmax = ( box.max.z - origin.z ) * invdirz;
-
-		} else {
-
-			tzmin = ( box.max.z - origin.z ) * invdirz;
-			tzmax = ( box.min.z - origin.z ) * invdirz;
-
-		}
-
-		if ( ( tmin > tzmax ) || ( tzmin > tmax ) ) return null;
-
-		if ( tzmin > tmin || tmin !== tmin ) tmin = tzmin;
-
-		if ( tzmax < tmax || tmax !== tmax ) tmax = tzmax;
-
-		//return point closest to the ray (positive side)
-
-		if ( tmax < 0 ) return null;
-
-		return this.at( tmin >= 0 ? tmin : tmax, target );
-
-	},
-
-	intersectsBox: function ( box ) {
-
-		return this.intersectBox( box, _vector$2 ) !== null;
-
-	},
-
-	intersectTriangle: function ( a, b, c, backfaceCulling, target ) {
-
-		// Compute the offset origin, edges, and normal.
-
-		// from http://www.geometrictools.com/GTEngine/Include/Mathematics/GteIntrRay3Triangle3.h
-
-		_edge1.subVectors( b, a );
-		_edge2.subVectors( c, a );
-		_normal.crossVectors( _edge1, _edge2 );
-
-		// Solve Q + t*D = b1*E1 + b2*E2 (Q = kDiff, D = ray direction,
-		// E1 = kEdge1, E2 = kEdge2, N = Cross(E1,E2)) by
-		//   |Dot(D,N)|*b1 = sign(Dot(D,N))*Dot(D,Cross(Q,E2))
-		//   |Dot(D,N)|*b2 = sign(Dot(D,N))*Dot(D,Cross(E1,Q))
-		//   |Dot(D,N)|*t = -sign(Dot(D,N))*Dot(Q,N)
-		let DdN = this.direction.dot( _normal );
-		let sign;
-
-		if ( DdN > 0 ) {
-
-			if ( backfaceCulling ) return null;
-			sign = 1;
-
-		} else if ( DdN < 0 ) {
-
-			sign = - 1;
-			DdN = - DdN;
-
-		} else {
-
-			return null;
-
-		}
-
-		_diff.subVectors( this.origin, a );
-		const DdQxE2 = sign * this.direction.dot( _edge2.crossVectors( _diff, _edge2 ) );
-
-		// b1 < 0, no intersection
-		if ( DdQxE2 < 0 ) {
-
-			return null;
-
-		}
-
-		const DdE1xQ = sign * this.direction.dot( _edge1.cross( _diff ) );
-
-		// b2 < 0, no intersection
-		if ( DdE1xQ < 0 ) {
-
-			return null;
-
-		}
-
-		// b1+b2 > 1, no intersection
-		if ( DdQxE2 + DdE1xQ > DdN ) {
-
-			return null;
-
-		}
-
-		// Line intersects triangle, check if ray does.
-		const QdN = - sign * _diff.dot( _normal );
-
-		// t < 0, no intersection
-		if ( QdN < 0 ) {
-
-			return null;
-
-		}
-
-		// Ray intersects triangle.
-		return this.at( QdN / DdN, target );
-
-	},
-
-	applyMatrix4: function ( matrix4 ) {
-
-		this.origin.applyMatrix4( matrix4 );
-		this.direction.transformDirection( matrix4 );
-
-		return this;
-
-	},
-
-	equals: function ( ray ) {
-
-		return ray.origin.equals( this.origin ) && ray.direction.equals( this.direction );
-
-	}
-
-} );
-
 const _vector1 = new Vector3();
 const _vector2 = new Vector3();
 const _normalMatrix = new Matrix3();
 
-function Plane( normal, constant ) {
+class Plane {
 
-	// normal is assumed to be normalized
+	constructor( normal, constant ) {
 
-	this.normal = ( normal !== undefined ) ? normal : new Vector3( 1, 0, 0 );
-	this.constant = ( constant !== undefined ) ? constant : 0;
+		Object.defineProperty( this, 'isPlane', { value: true } );
 
-}
+		// normal is assumed to be normalized
 
-Object.assign( Plane.prototype, {
+		this.normal = ( normal !== undefined ) ? normal : new Vector3( 1, 0, 0 );
+		this.constant = ( constant !== undefined ) ? constant : 0;
 
-	isPlane: true,
+	}
 
-	set: function ( normal, constant ) {
+	set( normal, constant ) {
 
 		this.normal.copy( normal );
 		this.constant = constant;
 
 		return this;
 
-	},
+	}
 
-	setComponents: function ( x, y, z, w ) {
+	setComponents( x, y, z, w ) {
 
 		this.normal.set( x, y, z );
 		this.constant = w;
 
 		return this;
 
-	},
+	}
 
-	setFromNormalAndCoplanarPoint: function ( normal, point ) {
+	setFromNormalAndCoplanarPoint( normal, point ) {
 
 		this.normal.copy( normal );
 		this.constant = - point.dot( this.normal );
 
 		return this;
 
-	},
+	}
 
-	setFromCoplanarPoints: function ( a, b, c ) {
+	setFromCoplanarPoints( a, b, c ) {
 
 		const normal = _vector1.subVectors( c, b ).cross( _vector2.subVectors( a, b ) ).normalize();
 
@@ -7410,24 +7274,24 @@ Object.assign( Plane.prototype, {
 
 		return this;
 
-	},
+	}
 
-	clone: function () {
+	clone() {
 
 		return new this.constructor().copy( this );
 
-	},
+	}
 
-	copy: function ( plane ) {
+	copy( plane ) {
 
 		this.normal.copy( plane.normal );
 		this.constant = plane.constant;
 
 		return this;
 
-	},
+	}
 
-	normalize: function () {
+	normalize() {
 
 		// Note: will lead to a divide by zero if the plane is invalid.
 
@@ -7437,30 +7301,30 @@ Object.assign( Plane.prototype, {
 
 		return this;
 
-	},
+	}
 
-	negate: function () {
+	negate() {
 
 		this.constant *= - 1;
 		this.normal.negate();
 
 		return this;
 
-	},
+	}
 
-	distanceToPoint: function ( point ) {
+	distanceToPoint( point ) {
 
 		return this.normal.dot( point ) + this.constant;
 
-	},
+	}
 
-	distanceToSphere: function ( sphere ) {
+	distanceToSphere( sphere ) {
 
 		return this.distanceToPoint( sphere.center ) - sphere.radius;
 
-	},
+	}
 
-	projectPoint: function ( point, target ) {
+	projectPoint( point, target ) {
 
 		if ( target === undefined ) {
 
@@ -7471,9 +7335,9 @@ Object.assign( Plane.prototype, {
 
 		return target.copy( this.normal ).multiplyScalar( - this.distanceToPoint( point ) ).add( point );
 
-	},
+	}
 
-	intersectLine: function ( line, target ) {
+	intersectLine( line, target ) {
 
 		if ( target === undefined ) {
 
@@ -7510,9 +7374,9 @@ Object.assign( Plane.prototype, {
 
 		return target.copy( direction ).multiplyScalar( t ).add( line.start );
 
-	},
+	}
 
-	intersectsLine: function ( line ) {
+	intersectsLine( line ) {
 
 		// Note: this tests if a line intersects the plane, not whether it (or its end-points) are coplanar with it.
 
@@ -7521,21 +7385,21 @@ Object.assign( Plane.prototype, {
 
 		return ( startSign < 0 && endSign > 0 ) || ( endSign < 0 && startSign > 0 );
 
-	},
+	}
 
-	intersectsBox: function ( box ) {
+	intersectsBox( box ) {
 
 		return box.intersectsPlane( this );
 
-	},
+	}
 
-	intersectsSphere: function ( sphere ) {
+	intersectsSphere( sphere ) {
 
 		return sphere.intersectsPlane( this );
 
-	},
+	}
 
-	coplanarPoint: function ( target ) {
+	coplanarPoint( target ) {
 
 		if ( target === undefined ) {
 
@@ -7546,9 +7410,9 @@ Object.assign( Plane.prototype, {
 
 		return target.copy( this.normal ).multiplyScalar( - this.constant );
 
-	},
+	}
 
-	applyMatrix4: function ( matrix, optionalNormalMatrix ) {
+	applyMatrix4( matrix, optionalNormalMatrix ) {
 
 		const normalMatrix = optionalNormalMatrix || _normalMatrix.getNormalMatrix( matrix );
 
@@ -7560,23 +7424,23 @@ Object.assign( Plane.prototype, {
 
 		return this;
 
-	},
+	}
 
-	translate: function ( offset ) {
+	translate( offset ) {
 
 		this.constant -= offset.dot( this.normal );
 
 		return this;
 
-	},
+	}
 
-	equals: function ( plane ) {
+	equals( plane ) {
 
 		return plane.normal.equals( this.normal ) && ( plane.constant === this.constant );
 
 	}
 
-} );
+}
 
 const _v0$1 = new Vector3();
 const _v1$3 = new Vector3();
@@ -7590,17 +7454,17 @@ const _vap = new Vector3();
 const _vbp = new Vector3();
 const _vcp = new Vector3();
 
-function Triangle( a, b, c ) {
+class Triangle {
 
-	this.a = ( a !== undefined ) ? a : new Vector3();
-	this.b = ( b !== undefined ) ? b : new Vector3();
-	this.c = ( c !== undefined ) ? c : new Vector3();
+	constructor( a, b, c ) {
 
-}
+		this.a = ( a !== undefined ) ? a : new Vector3();
+		this.b = ( b !== undefined ) ? b : new Vector3();
+		this.c = ( c !== undefined ) ? c : new Vector3();
 
-Object.assign( Triangle, {
+	}
 
-	getNormal: function ( a, b, c, target ) {
+	static getNormal( a, b, c, target ) {
 
 		if ( target === undefined ) {
 
@@ -7622,11 +7486,11 @@ Object.assign( Triangle, {
 
 		return target.set( 0, 0, 0 );
 
-	},
+	}
 
 	// static/instance method to calculate barycentric coordinates
 	// based on: http://www.blackpawn.com/texts/pointinpoly/default.html
-	getBarycoord: function ( point, a, b, c, target ) {
+	static getBarycoord( point, a, b, c, target ) {
 
 		_v0$1.subVectors( c, a );
 		_v1$3.subVectors( b, a );
@@ -7663,17 +7527,17 @@ Object.assign( Triangle, {
 		// barycentric coordinates must always sum to 1
 		return target.set( 1 - u - v, v, u );
 
-	},
+	}
 
-	containsPoint: function ( point, a, b, c ) {
+	static containsPoint( point, a, b, c ) {
 
-		Triangle.getBarycoord( point, a, b, c, _v3 );
+		this.getBarycoord( point, a, b, c, _v3 );
 
 		return ( _v3.x >= 0 ) && ( _v3.y >= 0 ) && ( ( _v3.x + _v3.y ) <= 1 );
 
-	},
+	}
 
-	getUV: function ( point, p1, p2, p3, uv1, uv2, uv3, target ) {
+	static getUV( point, p1, p2, p3, uv1, uv2, uv3, target ) {
 
 		this.getBarycoord( point, p1, p2, p3, _v3 );
 
@@ -7684,9 +7548,9 @@ Object.assign( Triangle, {
 
 		return target;
 
-	},
+	}
 
-	isFrontFacing: function ( a, b, c, direction ) {
+	static isFrontFacing( a, b, c, direction ) {
 
 		_v0$1.subVectors( c, b );
 		_v1$3.subVectors( a, b );
@@ -7696,11 +7560,7 @@ Object.assign( Triangle, {
 
 	}
 
-} );
-
-Object.assign( Triangle.prototype, {
-
-	set: function ( a, b, c ) {
+	set( a, b, c ) {
 
 		this.a.copy( a );
 		this.b.copy( b );
@@ -7708,9 +7568,9 @@ Object.assign( Triangle.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setFromPointsAndIndices: function ( points, i0, i1, i2 ) {
+	setFromPointsAndIndices( points, i0, i1, i2 ) {
 
 		this.a.copy( points[ i0 ] );
 		this.b.copy( points[ i1 ] );
@@ -7718,15 +7578,15 @@ Object.assign( Triangle.prototype, {
 
 		return this;
 
-	},
+	}
 
-	clone: function () {
+	clone() {
 
 		return new this.constructor().copy( this );
 
-	},
+	}
 
-	copy: function ( triangle ) {
+	copy( triangle ) {
 
 		this.a.copy( triangle.a );
 		this.b.copy( triangle.b );
@@ -7734,18 +7594,18 @@ Object.assign( Triangle.prototype, {
 
 		return this;
 
-	},
+	}
 
-	getArea: function () {
+	getArea() {
 
 		_v0$1.subVectors( this.c, this.b );
 		_v1$3.subVectors( this.a, this.b );
 
 		return _v0$1.cross( _v1$3 ).length() * 0.5;
 
-	},
+	}
 
-	getMidpoint: function ( target ) {
+	getMidpoint( target ) {
 
 		if ( target === undefined ) {
 
@@ -7756,15 +7616,15 @@ Object.assign( Triangle.prototype, {
 
 		return target.addVectors( this.a, this.b ).add( this.c ).multiplyScalar( 1 / 3 );
 
-	},
+	}
 
-	getNormal: function ( target ) {
+	getNormal( target ) {
 
 		return Triangle.getNormal( this.a, this.b, this.c, target );
 
-	},
+	}
 
-	getPlane: function ( target ) {
+	getPlane( target ) {
 
 		if ( target === undefined ) {
 
@@ -7775,39 +7635,39 @@ Object.assign( Triangle.prototype, {
 
 		return target.setFromCoplanarPoints( this.a, this.b, this.c );
 
-	},
+	}
 
-	getBarycoord: function ( point, target ) {
+	getBarycoord( point, target ) {
 
 		return Triangle.getBarycoord( point, this.a, this.b, this.c, target );
 
-	},
+	}
 
-	getUV: function ( point, uv1, uv2, uv3, target ) {
+	getUV( point, uv1, uv2, uv3, target ) {
 
 		return Triangle.getUV( point, this.a, this.b, this.c, uv1, uv2, uv3, target );
 
-	},
+	}
 
-	containsPoint: function ( point ) {
+	containsPoint( point ) {
 
 		return Triangle.containsPoint( point, this.a, this.b, this.c );
 
-	},
+	}
 
-	isFrontFacing: function ( direction ) {
+	isFrontFacing( direction ) {
 
 		return Triangle.isFrontFacing( this.a, this.b, this.c, direction );
 
-	},
+	}
 
-	intersectsBox: function ( box ) {
+	intersectsBox( box ) {
 
 		return box.intersectsTriangle( this );
 
-	},
+	}
 
-	closestPointToPoint: function ( p, target ) {
+	closestPointToPoint( p, target ) {
 
 		if ( target === undefined ) {
 
@@ -7893,15 +7753,15 @@ Object.assign( Triangle.prototype, {
 
 		return target.copy( a ).addScaledVector( _vab, v ).addScaledVector( _vac, w );
 
-	},
+	}
 
-	equals: function ( triangle ) {
+	equals( triangle ) {
 
 		return triangle.a.equals( this.a ) && triangle.b.equals( this.b ) && triangle.c.equals( this.c );
 
 	}
 
-} );
+}
 
 const _colorKeywords = { 'aliceblue': 0xF0F8FF, 'antiquewhite': 0xFAEBD7, 'aqua': 0x00FFFF, 'aquamarine': 0x7FFFD4, 'azure': 0xF0FFFF,
 	'beige': 0xF5F5DC, 'bisque': 0xFFE4C4, 'black': 0x000000, 'blanchedalmond': 0xFFEBCD, 'blue': 0x0000FF, 'blueviolet': 0x8A2BE2,
@@ -7931,19 +7791,6 @@ const _colorKeywords = { 'aliceblue': 0xF0F8FF, 'antiquewhite': 0xFAEBD7, 'aqua'
 const _hslA = { h: 0, s: 0, l: 0 };
 const _hslB = { h: 0, s: 0, l: 0 };
 
-function Color( r, g, b ) {
-
-	if ( g === undefined && b === undefined ) {
-
-		// r is THREE.Color, hex or string
-		return this.set( r );
-
-	}
-
-	return this.setRGB( r, g, b );
-
-}
-
 function hue2rgb( p, q, t ) {
 
 	if ( t < 0 ) t += 1;
@@ -7967,13 +7814,24 @@ function LinearToSRGB( c ) {
 
 }
 
-Object.assign( Color.prototype, {
+class Color {
 
-	isColor: true,
+	constructor( r, g, b ) {
 
-	r: 1, g: 1, b: 1,
+		Object.defineProperty( this, 'isColor', { value: true } );
 
-	set: function ( value ) {
+		if ( g === undefined && b === undefined ) {
+
+			// r is THREE.Color, hex or string
+			return this.set( r );
+
+		}
+
+		return this.setRGB( r, g, b );
+
+	}
+
+	set( value ) {
 
 		if ( value && value.isColor ) {
 
@@ -7991,9 +7849,9 @@ Object.assign( Color.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setScalar: function ( scalar ) {
+	setScalar( scalar ) {
 
 		this.r = scalar;
 		this.g = scalar;
@@ -8001,9 +7859,9 @@ Object.assign( Color.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setHex: function ( hex ) {
+	setHex( hex ) {
 
 		hex = Math.floor( hex );
 
@@ -8013,9 +7871,9 @@ Object.assign( Color.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setRGB: function ( r, g, b ) {
+	setRGB( r, g, b ) {
 
 		this.r = r;
 		this.g = g;
@@ -8023,9 +7881,9 @@ Object.assign( Color.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setHSL: function ( h, s, l ) {
+	setHSL( h, s, l ) {
 
 		// h,s,l ranges are in 0.0 - 1.0
 		h = MathUtils.euclideanModulo( h, 1 );
@@ -8049,9 +7907,9 @@ Object.assign( Color.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setStyle: function ( style ) {
+	setStyle( style ) {
 
 		function handleAlpha( string ) {
 
@@ -8166,9 +8024,9 @@ Object.assign( Color.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setColorName: function ( style ) {
+	setColorName( style ) {
 
 		// color keywords
 		const hex = _colorKeywords[ style ];
@@ -8187,15 +8045,15 @@ Object.assign( Color.prototype, {
 
 		return this;
 
-	},
+	}
 
-	clone: function () {
+	clone() {
 
 		return new this.constructor( this.r, this.g, this.b );
 
-	},
+	}
 
-	copy: function ( color ) {
+	copy( color ) {
 
 		this.r = color.r;
 		this.g = color.g;
@@ -8203,9 +8061,9 @@ Object.assign( Color.prototype, {
 
 		return this;
 
-	},
+	}
 
-	copyGammaToLinear: function ( color, gammaFactor ) {
+	copyGammaToLinear( color, gammaFactor ) {
 
 		if ( gammaFactor === undefined ) gammaFactor = 2.0;
 
@@ -8215,9 +8073,9 @@ Object.assign( Color.prototype, {
 
 		return this;
 
-	},
+	}
 
-	copyLinearToGamma: function ( color, gammaFactor ) {
+	copyLinearToGamma( color, gammaFactor ) {
 
 		if ( gammaFactor === undefined ) gammaFactor = 2.0;
 
@@ -8229,25 +8087,25 @@ Object.assign( Color.prototype, {
 
 		return this;
 
-	},
+	}
 
-	convertGammaToLinear: function ( gammaFactor ) {
+	convertGammaToLinear( gammaFactor ) {
 
 		this.copyGammaToLinear( this, gammaFactor );
 
 		return this;
 
-	},
+	}
 
-	convertLinearToGamma: function ( gammaFactor ) {
+	convertLinearToGamma( gammaFactor ) {
 
 		this.copyLinearToGamma( this, gammaFactor );
 
 		return this;
 
-	},
+	}
 
-	copySRGBToLinear: function ( color ) {
+	copySRGBToLinear( color ) {
 
 		this.r = SRGBToLinear( color.r );
 		this.g = SRGBToLinear( color.g );
@@ -8255,9 +8113,9 @@ Object.assign( Color.prototype, {
 
 		return this;
 
-	},
+	}
 
-	copyLinearToSRGB: function ( color ) {
+	copyLinearToSRGB( color ) {
 
 		this.r = LinearToSRGB( color.r );
 		this.g = LinearToSRGB( color.g );
@@ -8265,37 +8123,37 @@ Object.assign( Color.prototype, {
 
 		return this;
 
-	},
+	}
 
-	convertSRGBToLinear: function () {
+	convertSRGBToLinear() {
 
 		this.copySRGBToLinear( this );
 
 		return this;
 
-	},
+	}
 
-	convertLinearToSRGB: function () {
+	convertLinearToSRGB() {
 
 		this.copyLinearToSRGB( this );
 
 		return this;
 
-	},
+	}
 
-	getHex: function () {
+	getHex() {
 
 		return ( this.r * 255 ) << 16 ^ ( this.g * 255 ) << 8 ^ ( this.b * 255 ) << 0;
 
-	},
+	}
 
-	getHexString: function () {
+	getHexString() {
 
 		return ( '000000' + this.getHex().toString( 16 ) ).slice( - 6 );
 
-	},
+	}
 
-	getHSL: function ( target ) {
+	getHSL( target ) {
 
 		// h,s,l ranges are in 0.0 - 1.0
 
@@ -8343,15 +8201,15 @@ Object.assign( Color.prototype, {
 
 		return target;
 
-	},
+	}
 
-	getStyle: function () {
+	getStyle() {
 
 		return 'rgb(' + ( ( this.r * 255 ) | 0 ) + ',' + ( ( this.g * 255 ) | 0 ) + ',' + ( ( this.b * 255 ) | 0 ) + ')';
 
-	},
+	}
 
-	offsetHSL: function ( h, s, l ) {
+	offsetHSL( h, s, l ) {
 
 		this.getHSL( _hslA );
 
@@ -8361,9 +8219,9 @@ Object.assign( Color.prototype, {
 
 		return this;
 
-	},
+	}
 
-	add: function ( color ) {
+	add( color ) {
 
 		this.r += color.r;
 		this.g += color.g;
@@ -8371,9 +8229,9 @@ Object.assign( Color.prototype, {
 
 		return this;
 
-	},
+	}
 
-	addColors: function ( color1, color2 ) {
+	addColors( color1, color2 ) {
 
 		this.r = color1.r + color2.r;
 		this.g = color1.g + color2.g;
@@ -8381,9 +8239,9 @@ Object.assign( Color.prototype, {
 
 		return this;
 
-	},
+	}
 
-	addScalar: function ( s ) {
+	addScalar( s ) {
 
 		this.r += s;
 		this.g += s;
@@ -8391,9 +8249,9 @@ Object.assign( Color.prototype, {
 
 		return this;
 
-	},
+	}
 
-	sub: function ( color ) {
+	sub( color ) {
 
 		this.r = Math.max( 0, this.r - color.r );
 		this.g = Math.max( 0, this.g - color.g );
@@ -8401,9 +8259,9 @@ Object.assign( Color.prototype, {
 
 		return this;
 
-	},
+	}
 
-	multiply: function ( color ) {
+	multiply( color ) {
 
 		this.r *= color.r;
 		this.g *= color.g;
@@ -8411,9 +8269,9 @@ Object.assign( Color.prototype, {
 
 		return this;
 
-	},
+	}
 
-	multiplyScalar: function ( s ) {
+	multiplyScalar( s ) {
 
 		this.r *= s;
 		this.g *= s;
@@ -8421,9 +8279,9 @@ Object.assign( Color.prototype, {
 
 		return this;
 
-	},
+	}
 
-	lerp: function ( color, alpha ) {
+	lerp( color, alpha ) {
 
 		this.r += ( color.r - this.r ) * alpha;
 		this.g += ( color.g - this.g ) * alpha;
@@ -8431,9 +8289,9 @@ Object.assign( Color.prototype, {
 
 		return this;
 
-	},
+	}
 
-	lerpHSL: function ( color, alpha ) {
+	lerpHSL( color, alpha ) {
 
 		this.getHSL( _hslA );
 		color.getHSL( _hslB );
@@ -8446,15 +8304,15 @@ Object.assign( Color.prototype, {
 
 		return this;
 
-	},
+	}
 
-	equals: function ( c ) {
+	equals( c ) {
 
 		return ( c.r === this.r ) && ( c.g === this.g ) && ( c.b === this.b );
 
-	},
+	}
 
-	fromArray: function ( array, offset ) {
+	fromArray( array, offset ) {
 
 		if ( offset === undefined ) offset = 0;
 
@@ -8464,9 +8322,9 @@ Object.assign( Color.prototype, {
 
 		return this;
 
-	},
+	}
 
-	toArray: function ( array, offset ) {
+	toArray( array, offset ) {
 
 		if ( array === undefined ) array = [];
 		if ( offset === undefined ) offset = 0;
@@ -8477,9 +8335,9 @@ Object.assign( Color.prototype, {
 
 		return array;
 
-	},
+	}
 
-	fromBufferAttribute: function ( attribute, index ) {
+	fromBufferAttribute( attribute, index ) {
 
 		this.r = attribute.getX( index );
 		this.g = attribute.getY( index );
@@ -8497,43 +8355,46 @@ Object.assign( Color.prototype, {
 
 		return this;
 
-	},
+	}
 
-	toJSON: function () {
+	toJSON() {
 
 		return this.getHex();
 
 	}
 
-} );
-
-Color.NAMES = _colorKeywords;
-
-function Face3( a, b, c, normal, color, materialIndex ) {
-
-	this.a = a;
-	this.b = b;
-	this.c = c;
-
-	this.normal = ( normal && normal.isVector3 ) ? normal : new Vector3();
-	this.vertexNormals = Array.isArray( normal ) ? normal : [];
-
-	this.color = ( color && color.isColor ) ? color : new Color();
-	this.vertexColors = Array.isArray( color ) ? color : [];
-
-	this.materialIndex = materialIndex !== undefined ? materialIndex : 0;
-
 }
 
-Object.assign( Face3.prototype, {
+Color.NAMES = _colorKeywords;
+Color.prototype.r = 1;
+Color.prototype.g = 1;
+Color.prototype.b = 1;
 
-	clone: function () {
+class Face3 {
+
+	constructor( a, b, c, normal, color, materialIndex ) {
+
+		this.a = a;
+		this.b = b;
+		this.c = c;
+
+		this.normal = ( normal && normal.isVector3 ) ? normal : new Vector3();
+		this.vertexNormals = Array.isArray( normal ) ? normal : [];
+
+		this.color = ( color && color.isColor ) ? color : new Color();
+		this.vertexColors = Array.isArray( color ) ? color : [];
+
+		this.materialIndex = materialIndex !== undefined ? materialIndex : 0;
+
+	}
+
+	clone() {
 
 		return new this.constructor().copy( this );
 
-	},
+	}
 
-	copy: function ( source ) {
+	copy( source ) {
 
 		this.a = source.a;
 		this.b = source.b;
@@ -8560,7 +8421,7 @@ Object.assign( Face3.prototype, {
 
 	}
 
-} );
+}
 
 let materialId = 0;
 
@@ -9609,39 +9470,39 @@ function Float64BufferAttribute( array, itemSize, normalized ) {
 Float64BufferAttribute.prototype = Object.create( BufferAttribute.prototype );
 Float64BufferAttribute.prototype.constructor = Float64BufferAttribute;
 
-function DirectGeometry() {
+class DirectGeometry {
 
-	this.vertices = [];
-	this.normals = [];
-	this.colors = [];
-	this.uvs = [];
-	this.uvs2 = [];
+	constructor() {
 
-	this.groups = [];
+		this.vertices = [];
+		this.normals = [];
+		this.colors = [];
+		this.uvs = [];
+		this.uvs2 = [];
 
-	this.morphTargets = {};
+		this.groups = [];
 
-	this.skinWeights = [];
-	this.skinIndices = [];
+		this.morphTargets = {};
 
-	// this.lineDistances = [];
+		this.skinWeights = [];
+		this.skinIndices = [];
 
-	this.boundingBox = null;
-	this.boundingSphere = null;
+		// this.lineDistances = [];
 
-	// update flags
+		this.boundingBox = null;
+		this.boundingSphere = null;
 
-	this.verticesNeedUpdate = false;
-	this.normalsNeedUpdate = false;
-	this.colorsNeedUpdate = false;
-	this.uvsNeedUpdate = false;
-	this.groupsNeedUpdate = false;
+		// update flags
 
-}
+		this.verticesNeedUpdate = false;
+		this.normalsNeedUpdate = false;
+		this.colorsNeedUpdate = false;
+		this.uvsNeedUpdate = false;
+		this.groupsNeedUpdate = false;
 
-Object.assign( DirectGeometry.prototype, {
+	}
 
-	computeGroups: function ( geometry ) {
+	computeGroups( geometry ) {
 
 		const groups = [];
 
@@ -9685,9 +9546,9 @@ Object.assign( DirectGeometry.prototype, {
 
 		this.groups = groups;
 
-	},
+	}
 
-	fromGeometry: function ( geometry ) {
+	fromGeometry( geometry ) {
 
 		const faces = geometry.faces;
 		const vertices = geometry.vertices;
@@ -9886,7 +9747,7 @@ Object.assign( DirectGeometry.prototype, {
 
 	}
 
-} );
+}
 
 function arrayMax( array ) {
 
@@ -10448,6 +10309,19 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 		const position = this.attributes.position;
 		const morphAttributesPosition = this.morphAttributes.position;
 
+		if ( position && position.isGLBufferAttribute ) {
+
+			console.error( 'THREE.BufferGeometry.computeBoundingBox(): GLBufferAttribute requires a manual bounding box. Alternatively set "mesh.frustumCulled" to "false".', this );
+
+			this.boundingBox.set(
+				new Vector3( - Infinity, - Infinity, - Infinity ),
+				new Vector3( + Infinity, + Infinity, + Infinity )
+			);
+
+			return;
+
+		}
+
 		if ( position !== undefined ) {
 
 			this.boundingBox.setFromBufferAttribute( position );
@@ -10488,7 +10362,7 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 		if ( isNaN( this.boundingBox.min.x ) || isNaN( this.boundingBox.min.y ) || isNaN( this.boundingBox.min.z ) ) {
 
-			console.error( 'THREE.BufferGeometry.computeBoundingBox: Computed min/max have NaN values. The "position" attribute is likely to have NaN values.', this );
+			console.error( 'THREE.BufferGeometry.computeBoundingBox(): Computed min/max have NaN values. The "position" attribute is likely to have NaN values.', this );
 
 		}
 
@@ -10504,6 +10378,16 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 		const position = this.attributes.position;
 		const morphAttributesPosition = this.morphAttributes.position;
+
+		if ( position && position.isGLBufferAttribute ) {
+
+			console.error( 'THREE.BufferGeometry.computeBoundingSphere(): GLBufferAttribute requires a manual bounding sphere. Alternatively set "mesh.frustumCulled" to "false".', this );
+
+			this.boundingSphere.set( new Vector3(), Infinity );
+
+			return;
+
+		}
 
 		if ( position ) {
 
@@ -12186,8 +12070,8 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 		}
 
-		let normalMatrix,
-			vertexOffset = this.vertices.length,
+		let normalMatrix;
+		const vertexOffset = this.vertices.length,
 			vertices1 = this.vertices,
 			vertices2 = geometry.vertices,
 			faces1 = this.faces,
@@ -12229,11 +12113,12 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 		for ( let i = 0, il = faces2.length; i < il; i ++ ) {
 
-			let face = faces2[ i ], faceCopy, normal, color,
-				faceVertexNormals = face.vertexNormals,
+			const face = faces2[ i ];
+			let normal, color;
+			const faceVertexNormals = face.vertexNormals,
 				faceVertexColors = face.vertexColors;
 
-			faceCopy = new Face3( face.a + vertexOffset, face.b + vertexOffset, face.c + vertexOffset );
+			const faceCopy = new Face3( face.a + vertexOffset, face.b + vertexOffset, face.c + vertexOffset );
 			faceCopy.normal.copy( face.normal );
 
 			if ( normalMatrix !== undefined ) {
@@ -13241,6 +13126,8 @@ function ShaderMaterial( parameters ) {
 	this.index0AttributeName = undefined;
 	this.uniformsNeedUpdate = false;
 
+	this.glslVersion = null;
+
 	if ( parameters !== undefined ) {
 
 		if ( parameters.attributes !== undefined ) {
@@ -13284,6 +13171,8 @@ ShaderMaterial.prototype.copy = function ( source ) {
 
 	this.extensions = Object.assign( {}, source.extensions );
 
+	this.glslVersion = source.glslVersion;
+
 	return this;
 
 };
@@ -13292,6 +13181,7 @@ ShaderMaterial.prototype.toJSON = function ( meta ) {
 
 	const data = Material.prototype.toJSON.call( this, meta );
 
+	data.glslVersion = this.glslVersion;
 	data.uniforms = {};
 
 	for ( const name in this.uniforms ) {
@@ -13631,12 +13521,12 @@ PerspectiveCamera.prototype = Object.assign( Object.create( Camera.prototype ), 
 
 	updateProjectionMatrix: function () {
 
-		let near = this.near,
-			top = near * Math.tan( MathUtils.DEG2RAD * 0.5 * this.fov ) / this.zoom,
-			height = 2 * top,
-			width = this.aspect * height,
-			left = - 0.5 * width,
-			view = this.view;
+		const near = this.near;
+		let top = near * Math.tan( MathUtils.DEG2RAD * 0.5 * this.fov ) / this.zoom;
+		let height = 2 * top;
+		let width = this.aspect * height;
+		let left = - 0.5 * width;
+		const view = this.view;
 
 		if ( this.view !== null && this.view.enabled ) {
 
@@ -13808,6 +13698,8 @@ function WebGLCubeRenderTarget( size, options, dummy ) {
 
 	WebGLRenderTarget.call( this, size, size, options );
 
+	this.texture.isWebGLCubeRenderTargetTexture = true; // HACK Why is texture not a CubeTexture?
+
 }
 
 WebGLCubeRenderTarget.prototype = Object.create( WebGLRenderTarget.prototype );
@@ -13824,8 +13716,6 @@ WebGLCubeRenderTarget.prototype.fromEquirectangularTexture = function ( renderer
 	this.texture.generateMipmaps = texture.generateMipmaps;
 	this.texture.minFilter = texture.minFilter;
 	this.texture.magFilter = texture.magFilter;
-
-	const scene = new Scene();
 
 	const shader = {
 
@@ -13873,6 +13763,8 @@ WebGLCubeRenderTarget.prototype.fromEquirectangularTexture = function ( renderer
 		`
 	};
 
+	const geometry = new BoxBufferGeometry( 5, 5, 5 );
+
 	const material = new ShaderMaterial( {
 
 		name: 'CubemapFromEquirect',
@@ -13887,12 +13779,17 @@ WebGLCubeRenderTarget.prototype.fromEquirectangularTexture = function ( renderer
 
 	material.uniforms.tEquirect.value = texture;
 
-	const mesh = new Mesh( new BoxBufferGeometry( 5, 5, 5 ), material );
+	const mesh = new Mesh( geometry, material );
 
-	scene.add( mesh );
+	const currentMinFilter = texture.minFilter;
+
+	// Avoid blurred poles
+	if ( texture.minFilter === LinearMipmapLinearFilter ) texture.minFilter = LinearFilter;
 
 	const camera = new CubeCamera( 1, 10, this );
-	camera.update( renderer, scene );
+	camera.update( renderer, mesh );
+
+	texture.minFilter = currentMinFilter;
 
 	mesh.geometry.dispose();
 	mesh.material.dispose();
@@ -13926,24 +13823,24 @@ DataTexture.prototype.isDataTexture = true;
 const _sphere$1 = new Sphere();
 const _vector$5 = new Vector3();
 
-function Frustum( p0, p1, p2, p3, p4, p5 ) {
+class Frustum {
 
-	this.planes = [
+	constructor( p0, p1, p2, p3, p4, p5 ) {
 
-		( p0 !== undefined ) ? p0 : new Plane(),
-		( p1 !== undefined ) ? p1 : new Plane(),
-		( p2 !== undefined ) ? p2 : new Plane(),
-		( p3 !== undefined ) ? p3 : new Plane(),
-		( p4 !== undefined ) ? p4 : new Plane(),
-		( p5 !== undefined ) ? p5 : new Plane()
+		this.planes = [
 
-	];
+			( p0 !== undefined ) ? p0 : new Plane(),
+			( p1 !== undefined ) ? p1 : new Plane(),
+			( p2 !== undefined ) ? p2 : new Plane(),
+			( p3 !== undefined ) ? p3 : new Plane(),
+			( p4 !== undefined ) ? p4 : new Plane(),
+			( p5 !== undefined ) ? p5 : new Plane()
 
-}
+		];
 
-Object.assign( Frustum.prototype, {
+	}
 
-	set: function ( p0, p1, p2, p3, p4, p5 ) {
+	set( p0, p1, p2, p3, p4, p5 ) {
 
 		const planes = this.planes;
 
@@ -13956,15 +13853,15 @@ Object.assign( Frustum.prototype, {
 
 		return this;
 
-	},
+	}
 
-	clone: function () {
+	clone() {
 
 		return new this.constructor().copy( this );
 
-	},
+	}
 
-	copy: function ( frustum ) {
+	copy( frustum ) {
 
 		const planes = this.planes;
 
@@ -13976,9 +13873,9 @@ Object.assign( Frustum.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setFromProjectionMatrix: function ( m ) {
+	setFromProjectionMatrix( m ) {
 
 		const planes = this.planes;
 		const me = m.elements;
@@ -13996,9 +13893,9 @@ Object.assign( Frustum.prototype, {
 
 		return this;
 
-	},
+	}
 
-	intersectsObject: function ( object ) {
+	intersectsObject( object ) {
 
 		const geometry = object.geometry;
 
@@ -14008,9 +13905,9 @@ Object.assign( Frustum.prototype, {
 
 		return this.intersectsSphere( _sphere$1 );
 
-	},
+	}
 
-	intersectsSprite: function ( sprite ) {
+	intersectsSprite( sprite ) {
 
 		_sphere$1.center.set( 0, 0, 0 );
 		_sphere$1.radius = 0.7071067811865476;
@@ -14018,9 +13915,9 @@ Object.assign( Frustum.prototype, {
 
 		return this.intersectsSphere( _sphere$1 );
 
-	},
+	}
 
-	intersectsSphere: function ( sphere ) {
+	intersectsSphere( sphere ) {
 
 		const planes = this.planes;
 		const center = sphere.center;
@@ -14040,9 +13937,9 @@ Object.assign( Frustum.prototype, {
 
 		return true;
 
-	},
+	}
 
-	intersectsBox: function ( box ) {
+	intersectsBox( box ) {
 
 		const planes = this.planes;
 
@@ -14066,9 +13963,9 @@ Object.assign( Frustum.prototype, {
 
 		return true;
 
-	},
+	}
 
-	containsPoint: function ( point ) {
+	containsPoint( point ) {
 
 		const planes = this.planes;
 
@@ -14086,213 +13983,7 @@ Object.assign( Frustum.prototype, {
 
 	}
 
-} );
-
-/**
- * Uniforms library for shared webgl shaders
- */
-
-const UniformsLib = {
-
-	common: {
-
-		diffuse: { value: new Color( 0xeeeeee ) },
-		opacity: { value: 1.0 },
-
-		map: { value: null },
-		uvTransform: { value: new Matrix3() },
-		uv2Transform: { value: new Matrix3() },
-
-		alphaMap: { value: null },
-
-	},
-
-	specularmap: {
-
-		specularMap: { value: null },
-
-	},
-
-	envmap: {
-
-		envMap: { value: null },
-		flipEnvMap: { value: - 1 },
-		reflectivity: { value: 1.0 },
-		refractionRatio: { value: 0.98 },
-		maxMipLevel: { value: 0 }
-
-	},
-
-	aomap: {
-
-		aoMap: { value: null },
-		aoMapIntensity: { value: 1 }
-
-	},
-
-	lightmap: {
-
-		lightMap: { value: null },
-		lightMapIntensity: { value: 1 }
-
-	},
-
-	emissivemap: {
-
-		emissiveMap: { value: null }
-
-	},
-
-	bumpmap: {
-
-		bumpMap: { value: null },
-		bumpScale: { value: 1 }
-
-	},
-
-	normalmap: {
-
-		normalMap: { value: null },
-		normalScale: { value: new Vector2( 1, 1 ) }
-
-	},
-
-	displacementmap: {
-
-		displacementMap: { value: null },
-		displacementScale: { value: 1 },
-		displacementBias: { value: 0 }
-
-	},
-
-	roughnessmap: {
-
-		roughnessMap: { value: null }
-
-	},
-
-	metalnessmap: {
-
-		metalnessMap: { value: null }
-
-	},
-
-	gradientmap: {
-
-		gradientMap: { value: null }
-
-	},
-
-	fog: {
-
-		fogDensity: { value: 0.00025 },
-		fogNear: { value: 1 },
-		fogFar: { value: 2000 },
-		fogColor: { value: new Color( 0xffffff ) }
-
-	},
-
-	lights: {
-
-		ambientLightColor: { value: [] },
-
-		lightProbe: { value: [] },
-
-		directionalLights: { value: [], properties: {
-			direction: {},
-			color: {}
-		} },
-
-		directionalLightShadows: { value: [], properties: {
-			shadowBias: {},
-			shadowNormalBias: {},
-			shadowRadius: {},
-			shadowMapSize: {}
-		} },
-
-		directionalShadowMap: { value: [] },
-		directionalShadowMatrix: { value: [] },
-
-		spotLights: { value: [], properties: {
-			color: {},
-			position: {},
-			direction: {},
-			distance: {},
-			coneCos: {},
-			penumbraCos: {},
-			decay: {}
-		} },
-
-		spotLightShadows: { value: [], properties: {
-			shadowBias: {},
-			shadowNormalBias: {},
-			shadowRadius: {},
-			shadowMapSize: {}
-		} },
-
-		spotShadowMap: { value: [] },
-		spotShadowMatrix: { value: [] },
-
-		pointLights: { value: [], properties: {
-			color: {},
-			position: {},
-			decay: {},
-			distance: {}
-		} },
-
-		pointLightShadows: { value: [], properties: {
-			shadowBias: {},
-			shadowNormalBias: {},
-			shadowRadius: {},
-			shadowMapSize: {},
-			shadowCameraNear: {},
-			shadowCameraFar: {}
-		} },
-
-		pointShadowMap: { value: [] },
-		pointShadowMatrix: { value: [] },
-
-		hemisphereLights: { value: [], properties: {
-			direction: {},
-			skyColor: {},
-			groundColor: {}
-		} },
-
-		// TODO (abelnation): RectAreaLight BRDF data needs to be moved from example to main src
-		rectAreaLights: { value: [], properties: {
-			color: {},
-			position: {},
-			width: {},
-			height: {}
-		} }
-
-	},
-
-	points: {
-
-		diffuse: { value: new Color( 0xeeeeee ) },
-		opacity: { value: 1.0 },
-		size: { value: 1.0 },
-		scale: { value: 1.0 },
-		map: { value: null },
-		alphaMap: { value: null },
-		uvTransform: { value: new Matrix3() }
-
-	},
-
-	sprite: {
-
-		diffuse: { value: new Color( 0xeeeeee ) },
-		opacity: { value: 1.0 },
-		center: { value: new Vector2( 0.5, 0.5 ) },
-		rotation: { value: 0.0 },
-		map: { value: null },
-		alphaMap: { value: null },
-		uvTransform: { value: new Matrix3() }
-
-	}
-
-};
+}
 
 function WebGLAnimation() {
 
@@ -14470,6 +14161,25 @@ function WebGLAttributes( gl, capabilities ) {
 
 	function update( attribute, bufferType ) {
 
+		if ( attribute.isGLBufferAttribute ) {
+
+			var cached = buffers.get( attribute );
+
+			if ( ! cached || cached.version < attribute.version ) {
+
+				buffers.set( attribute, {
+					buffer: attribute.buffer,
+					type: attribute.type,
+					bytesPerElement: attribute.elementSize,
+					version: attribute.version
+				} );
+
+			}
+
+			return;
+
+		}
+
 		if ( attribute.isInterleavedBufferAttribute ) attribute = attribute.data;
 
 		const data = buffers.get( attribute );
@@ -14500,116 +14210,117 @@ function WebGLAttributes( gl, capabilities ) {
 
 // PlaneGeometry
 
-function PlaneGeometry( width, height, widthSegments, heightSegments ) {
+class PlaneGeometry extends Geometry {
 
-	Geometry.call( this );
+	constructor( width, height, widthSegments, heightSegments ) {
 
-	this.type = 'PlaneGeometry';
+		super();
 
-	this.parameters = {
-		width: width,
-		height: height,
-		widthSegments: widthSegments,
-		heightSegments: heightSegments
-	};
+		this.type = 'PlaneGeometry';
 
-	this.fromBufferGeometry( new PlaneBufferGeometry( width, height, widthSegments, heightSegments ) );
-	this.mergeVertices();
+		this.parameters = {
+			width: width,
+			height: height,
+			widthSegments: widthSegments,
+			heightSegments: heightSegments
+		};
+
+		this.fromBufferGeometry( new PlaneBufferGeometry( width, height, widthSegments, heightSegments ) );
+		this.mergeVertices();
+
+	}
 
 }
-
-PlaneGeometry.prototype = Object.create( Geometry.prototype );
-PlaneGeometry.prototype.constructor = PlaneGeometry;
 
 // PlaneBufferGeometry
 
-function PlaneBufferGeometry( width, height, widthSegments, heightSegments ) {
+class PlaneBufferGeometry extends BufferGeometry {
 
-	BufferGeometry.call( this );
+	constructor( width, height, widthSegments, heightSegments ) {
 
-	this.type = 'PlaneBufferGeometry';
+		super();
+		this.type = 'PlaneBufferGeometry';
 
-	this.parameters = {
-		width: width,
-		height: height,
-		widthSegments: widthSegments,
-		heightSegments: heightSegments
-	};
+		this.parameters = {
+			width: width,
+			height: height,
+			widthSegments: widthSegments,
+			heightSegments: heightSegments
+		};
 
-	width = width || 1;
-	height = height || 1;
+		width = width || 1;
+		height = height || 1;
 
-	const width_half = width / 2;
-	const height_half = height / 2;
+		const width_half = width / 2;
+		const height_half = height / 2;
 
-	const gridX = Math.floor( widthSegments ) || 1;
-	const gridY = Math.floor( heightSegments ) || 1;
+		const gridX = Math.floor( widthSegments ) || 1;
+		const gridY = Math.floor( heightSegments ) || 1;
 
-	const gridX1 = gridX + 1;
-	const gridY1 = gridY + 1;
+		const gridX1 = gridX + 1;
+		const gridY1 = gridY + 1;
 
-	const segment_width = width / gridX;
-	const segment_height = height / gridY;
+		const segment_width = width / gridX;
+		const segment_height = height / gridY;
 
-	// buffers
+		// buffers
 
-	const indices = [];
-	const vertices = [];
-	const normals = [];
-	const uvs = [];
+		const indices = [];
+		const vertices = [];
+		const normals = [];
+		const uvs = [];
 
-	// generate vertices, normals and uvs
+		// generate vertices, normals and uvs
 
-	for ( let iy = 0; iy < gridY1; iy ++ ) {
+		for ( let iy = 0; iy < gridY1; iy ++ ) {
 
-		const y = iy * segment_height - height_half;
+			const y = iy * segment_height - height_half;
 
-		for ( let ix = 0; ix < gridX1; ix ++ ) {
+			for ( let ix = 0; ix < gridX1; ix ++ ) {
 
-			const x = ix * segment_width - width_half;
+				const x = ix * segment_width - width_half;
 
-			vertices.push( x, - y, 0 );
+				vertices.push( x, - y, 0 );
 
-			normals.push( 0, 0, 1 );
+				normals.push( 0, 0, 1 );
 
-			uvs.push( ix / gridX );
-			uvs.push( 1 - ( iy / gridY ) );
+				uvs.push( ix / gridX );
+				uvs.push( 1 - ( iy / gridY ) );
 
-		}
-
-	}
-
-	// indices
-
-	for ( let iy = 0; iy < gridY; iy ++ ) {
-
-		for ( let ix = 0; ix < gridX; ix ++ ) {
-
-			const a = ix + gridX1 * iy;
-			const b = ix + gridX1 * ( iy + 1 );
-			const c = ( ix + 1 ) + gridX1 * ( iy + 1 );
-			const d = ( ix + 1 ) + gridX1 * iy;
-
-			// faces
-
-			indices.push( a, b, d );
-			indices.push( b, c, d );
+			}
 
 		}
 
+		// indices
+
+		for ( let iy = 0; iy < gridY; iy ++ ) {
+
+			for ( let ix = 0; ix < gridX; ix ++ ) {
+
+				const a = ix + gridX1 * iy;
+				const b = ix + gridX1 * ( iy + 1 );
+				const c = ( ix + 1 ) + gridX1 * ( iy + 1 );
+				const d = ( ix + 1 ) + gridX1 * iy;
+
+				// faces
+
+				indices.push( a, b, d );
+				indices.push( b, c, d );
+
+			}
+
+		}
+
+		// build geometry
+
+		this.setIndex( indices );
+		this.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
+		this.setAttribute( 'normal', new Float32BufferAttribute( normals, 3 ) );
+		this.setAttribute( 'uv', new Float32BufferAttribute( uvs, 2 ) );
+
 	}
-
-	// build geometry
-
-	this.setIndex( indices );
-	this.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
-	this.setAttribute( 'normal', new Float32BufferAttribute( normals, 3 ) );
-	this.setAttribute( 'uv', new Float32BufferAttribute( uvs, 2 ) );
 
 }
-
-PlaneBufferGeometry.prototype = Object.create( BufferGeometry.prototype );
-PlaneBufferGeometry.prototype.constructor = PlaneBufferGeometry;
 
 var alphamap_fragment = "#ifdef USE_ALPHAMAP\n\tdiffuseColor.a *= texture2D( alphaMap, vUv ).g;\n#endif";
 
@@ -14625,7 +14336,7 @@ var begin_vertex = "vec3 transformed = vec3( position );";
 
 var beginnormal_vertex = "vec3 objectNormal = vec3( normal );\n#ifdef USE_TANGENT\n\tvec3 objectTangent = vec3( tangent.xyz );\n#endif";
 
-var bsdfs = "vec2 integrateSpecularBRDF( const in float dotNV, const in float roughness ) {\n\tconst vec4 c0 = vec4( - 1, - 0.0275, - 0.572, 0.022 );\n\tconst vec4 c1 = vec4( 1, 0.0425, 1.04, - 0.04 );\n\tvec4 r = roughness * c0 + c1;\n\tfloat a004 = min( r.x * r.x, exp2( - 9.28 * dotNV ) ) * r.x + r.y;\n\treturn vec2( -1.04, 1.04 ) * a004 + r.zw;\n}\nfloat punctualLightIntensityToIrradianceFactor( const in float lightDistance, const in float cutoffDistance, const in float decayExponent ) {\n#if defined ( PHYSICALLY_CORRECT_LIGHTS )\n\tfloat distanceFalloff = 1.0 / max( pow( lightDistance, decayExponent ), 0.01 );\n\tif( cutoffDistance > 0.0 ) {\n\t\tdistanceFalloff *= pow2( saturate( 1.0 - pow4( lightDistance / cutoffDistance ) ) );\n\t}\n\treturn distanceFalloff;\n#else\n\tif( cutoffDistance > 0.0 && decayExponent > 0.0 ) {\n\t\treturn pow( saturate( -lightDistance / cutoffDistance + 1.0 ), decayExponent );\n\t}\n\treturn 1.0;\n#endif\n}\nvec3 BRDF_Diffuse_Lambert( const in vec3 diffuseColor ) {\n\treturn RECIPROCAL_PI * diffuseColor;\n}\nvec3 F_Schlick( const in vec3 specularColor, const in float dotLH ) {\n\tfloat fresnel = exp2( ( -5.55473 * dotLH - 6.98316 ) * dotLH );\n\treturn ( 1.0 - specularColor ) * fresnel + specularColor;\n}\nvec3 F_Schlick_RoughnessDependent( const in vec3 F0, const in float dotNV, const in float roughness ) {\n\tfloat fresnel = exp2( ( -5.55473 * dotNV - 6.98316 ) * dotNV );\n\tvec3 Fr = max( vec3( 1.0 - roughness ), F0 ) - F0;\n\treturn Fr * fresnel + F0;\n}\nfloat G_GGX_Smith( const in float alpha, const in float dotNL, const in float dotNV ) {\n\tfloat a2 = pow2( alpha );\n\tfloat gl = dotNL + sqrt( a2 + ( 1.0 - a2 ) * pow2( dotNL ) );\n\tfloat gv = dotNV + sqrt( a2 + ( 1.0 - a2 ) * pow2( dotNV ) );\n\treturn 1.0 / ( gl * gv );\n}\nfloat G_GGX_SmithCorrelated( const in float alpha, const in float dotNL, const in float dotNV ) {\n\tfloat a2 = pow2( alpha );\n\tfloat gv = dotNL * sqrt( a2 + ( 1.0 - a2 ) * pow2( dotNV ) );\n\tfloat gl = dotNV * sqrt( a2 + ( 1.0 - a2 ) * pow2( dotNL ) );\n\treturn 0.5 / max( gv + gl, EPSILON );\n}\nfloat D_GGX( const in float alpha, const in float dotNH ) {\n\tfloat a2 = pow2( alpha );\n\tfloat denom = pow2( dotNH ) * ( a2 - 1.0 ) + 1.0;\n\treturn RECIPROCAL_PI * a2 / pow2( denom );\n}\nvec3 BRDF_Specular_GGX( const in IncidentLight incidentLight, const in vec3 viewDir, const in vec3 normal, const in vec3 specularColor, const in float roughness ) {\n\tfloat alpha = pow2( roughness );\n\tvec3 halfDir = normalize( incidentLight.direction + viewDir );\n\tfloat dotNL = saturate( dot( normal, incidentLight.direction ) );\n\tfloat dotNV = saturate( dot( normal, viewDir ) );\n\tfloat dotNH = saturate( dot( normal, halfDir ) );\n\tfloat dotLH = saturate( dot( incidentLight.direction, halfDir ) );\n\tvec3 F = F_Schlick( specularColor, dotLH );\n\tfloat G = G_GGX_SmithCorrelated( alpha, dotNL, dotNV );\n\tfloat D = D_GGX( alpha, dotNH );\n\treturn F * ( G * D );\n}\nvec2 LTC_Uv( const in vec3 N, const in vec3 V, const in float roughness ) {\n\tconst float LUT_SIZE  = 64.0;\n\tconst float LUT_SCALE = ( LUT_SIZE - 1.0 ) / LUT_SIZE;\n\tconst float LUT_BIAS  = 0.5 / LUT_SIZE;\n\tfloat dotNV = saturate( dot( N, V ) );\n\tvec2 uv = vec2( roughness, sqrt( 1.0 - dotNV ) );\n\tuv = uv * LUT_SCALE + LUT_BIAS;\n\treturn uv;\n}\nfloat LTC_ClippedSphereFormFactor( const in vec3 f ) {\n\tfloat l = length( f );\n\treturn max( ( l * l + f.z ) / ( l + 1.0 ), 0.0 );\n}\nvec3 LTC_EdgeVectorFormFactor( const in vec3 v1, const in vec3 v2 ) {\n\tfloat x = dot( v1, v2 );\n\tfloat y = abs( x );\n\tfloat a = 0.8543985 + ( 0.4965155 + 0.0145206 * y ) * y;\n\tfloat b = 3.4175940 + ( 4.1616724 + y ) * y;\n\tfloat v = a / b;\n\tfloat theta_sintheta = ( x > 0.0 ) ? v : 0.5 * inversesqrt( max( 1.0 - x * x, 1e-7 ) ) - v;\n\treturn cross( v1, v2 ) * theta_sintheta;\n}\nvec3 LTC_Evaluate( const in vec3 N, const in vec3 V, const in vec3 P, const in mat3 mInv, const in vec3 rectCoords[ 4 ] ) {\n\tvec3 v1 = rectCoords[ 1 ] - rectCoords[ 0 ];\n\tvec3 v2 = rectCoords[ 3 ] - rectCoords[ 0 ];\n\tvec3 lightNormal = cross( v1, v2 );\n\tif( dot( lightNormal, P - rectCoords[ 0 ] ) < 0.0 ) return vec3( 0.0 );\n\tvec3 T1, T2;\n\tT1 = normalize( V - N * dot( V, N ) );\n\tT2 = - cross( N, T1 );\n\tmat3 mat = mInv * transposeMat3( mat3( T1, T2, N ) );\n\tvec3 coords[ 4 ];\n\tcoords[ 0 ] = mat * ( rectCoords[ 0 ] - P );\n\tcoords[ 1 ] = mat * ( rectCoords[ 1 ] - P );\n\tcoords[ 2 ] = mat * ( rectCoords[ 2 ] - P );\n\tcoords[ 3 ] = mat * ( rectCoords[ 3 ] - P );\n\tcoords[ 0 ] = normalize( coords[ 0 ] );\n\tcoords[ 1 ] = normalize( coords[ 1 ] );\n\tcoords[ 2 ] = normalize( coords[ 2 ] );\n\tcoords[ 3 ] = normalize( coords[ 3 ] );\n\tvec3 vectorFormFactor = vec3( 0.0 );\n\tvectorFormFactor += LTC_EdgeVectorFormFactor( coords[ 0 ], coords[ 1 ] );\n\tvectorFormFactor += LTC_EdgeVectorFormFactor( coords[ 1 ], coords[ 2 ] );\n\tvectorFormFactor += LTC_EdgeVectorFormFactor( coords[ 2 ], coords[ 3 ] );\n\tvectorFormFactor += LTC_EdgeVectorFormFactor( coords[ 3 ], coords[ 0 ] );\n\tfloat result = LTC_ClippedSphereFormFactor( vectorFormFactor );\n\treturn vec3( result );\n}\nvec3 BRDF_Specular_GGX_Environment( const in vec3 viewDir, const in vec3 normal, const in vec3 specularColor, const in float roughness ) {\n\tfloat dotNV = saturate( dot( normal, viewDir ) );\n\tvec2 brdf = integrateSpecularBRDF( dotNV, roughness );\n\treturn specularColor * brdf.x + brdf.y;\n}\nvoid BRDF_Specular_Multiscattering_Environment( const in GeometricContext geometry, const in vec3 specularColor, const in float roughness, inout vec3 singleScatter, inout vec3 multiScatter ) {\n\tfloat dotNV = saturate( dot( geometry.normal, geometry.viewDir ) );\n\tvec3 F = F_Schlick_RoughnessDependent( specularColor, dotNV, roughness );\n\tvec2 brdf = integrateSpecularBRDF( dotNV, roughness );\n\tvec3 FssEss = F * brdf.x + brdf.y;\n\tfloat Ess = brdf.x + brdf.y;\n\tfloat Ems = 1.0 - Ess;\n\tvec3 Favg = specularColor + ( 1.0 - specularColor ) * 0.047619;\tvec3 Fms = FssEss * Favg / ( 1.0 - Ems * Favg );\n\tsingleScatter += FssEss;\n\tmultiScatter += Fms * Ems;\n}\nfloat G_BlinnPhong_Implicit( ) {\n\treturn 0.25;\n}\nfloat D_BlinnPhong( const in float shininess, const in float dotNH ) {\n\treturn RECIPROCAL_PI * ( shininess * 0.5 + 1.0 ) * pow( dotNH, shininess );\n}\nvec3 BRDF_Specular_BlinnPhong( const in IncidentLight incidentLight, const in GeometricContext geometry, const in vec3 specularColor, const in float shininess ) {\n\tvec3 halfDir = normalize( incidentLight.direction + geometry.viewDir );\n\tfloat dotNH = saturate( dot( geometry.normal, halfDir ) );\n\tfloat dotLH = saturate( dot( incidentLight.direction, halfDir ) );\n\tvec3 F = F_Schlick( specularColor, dotLH );\n\tfloat G = G_BlinnPhong_Implicit( );\n\tfloat D = D_BlinnPhong( shininess, dotNH );\n\treturn F * ( G * D );\n}\nfloat GGXRoughnessToBlinnExponent( const in float ggxRoughness ) {\n\treturn ( 2.0 / pow2( ggxRoughness + 0.0001 ) - 2.0 );\n}\nfloat BlinnExponentToGGXRoughness( const in float blinnExponent ) {\n\treturn sqrt( 2.0 / ( blinnExponent + 2.0 ) );\n}\n#if defined( USE_SHEEN )\nfloat D_Charlie(float roughness, float NoH) {\n\tfloat invAlpha  = 1.0 / roughness;\n\tfloat cos2h = NoH * NoH;\n\tfloat sin2h = max(1.0 - cos2h, 0.0078125);\treturn (2.0 + invAlpha) * pow(sin2h, invAlpha * 0.5) / (2.0 * PI);\n}\nfloat V_Neubelt(float NoV, float NoL) {\n\treturn saturate(1.0 / (4.0 * (NoL + NoV - NoL * NoV)));\n}\nvec3 BRDF_Specular_Sheen( const in float roughness, const in vec3 L, const in GeometricContext geometry, vec3 specularColor ) {\n\tvec3 N = geometry.normal;\n\tvec3 V = geometry.viewDir;\n\tvec3 H = normalize( V + L );\n\tfloat dotNH = saturate( dot( N, H ) );\n\treturn specularColor * D_Charlie( roughness, dotNH ) * V_Neubelt( dot(N, V), dot(N, L) );\n}\n#endif";
+var bsdfs = "vec2 integrateSpecularBRDF( const in float dotNV, const in float roughness ) {\n\tconst vec4 c0 = vec4( - 1, - 0.0275, - 0.572, 0.022 );\n\tconst vec4 c1 = vec4( 1, 0.0425, 1.04, - 0.04 );\n\tvec4 r = roughness * c0 + c1;\n\tfloat a004 = min( r.x * r.x, exp2( - 9.28 * dotNV ) ) * r.x + r.y;\n\treturn vec2( -1.04, 1.04 ) * a004 + r.zw;\n}\nfloat punctualLightIntensityToIrradianceFactor( const in float lightDistance, const in float cutoffDistance, const in float decayExponent ) {\n#if defined ( PHYSICALLY_CORRECT_LIGHTS )\n\tfloat distanceFalloff = 1.0 / max( pow( lightDistance, decayExponent ), 0.01 );\n\tif( cutoffDistance > 0.0 ) {\n\t\tdistanceFalloff *= pow2( saturate( 1.0 - pow4( lightDistance / cutoffDistance ) ) );\n\t}\n\treturn distanceFalloff;\n#else\n\tif( cutoffDistance > 0.0 && decayExponent > 0.0 ) {\n\t\treturn pow( saturate( -lightDistance / cutoffDistance + 1.0 ), decayExponent );\n\t}\n\treturn 1.0;\n#endif\n}\nvec3 BRDF_Diffuse_Lambert( const in vec3 diffuseColor ) {\n\treturn RECIPROCAL_PI * diffuseColor;\n}\nvec3 F_Schlick( const in vec3 specularColor, const in float dotLH ) {\n\tfloat fresnel = exp2( ( -5.55473 * dotLH - 6.98316 ) * dotLH );\n\treturn ( 1.0 - specularColor ) * fresnel + specularColor;\n}\nvec3 F_Schlick_RoughnessDependent( const in vec3 F0, const in float dotNV, const in float roughness ) {\n\tfloat fresnel = exp2( ( -5.55473 * dotNV - 6.98316 ) * dotNV );\n\tvec3 Fr = max( vec3( 1.0 - roughness ), F0 ) - F0;\n\treturn Fr * fresnel + F0;\n}\nfloat G_GGX_Smith( const in float alpha, const in float dotNL, const in float dotNV ) {\n\tfloat a2 = pow2( alpha );\n\tfloat gl = dotNL + sqrt( a2 + ( 1.0 - a2 ) * pow2( dotNL ) );\n\tfloat gv = dotNV + sqrt( a2 + ( 1.0 - a2 ) * pow2( dotNV ) );\n\treturn 1.0 / ( gl * gv );\n}\nfloat G_GGX_SmithCorrelated( const in float alpha, const in float dotNL, const in float dotNV ) {\n\tfloat a2 = pow2( alpha );\n\tfloat gv = dotNL * sqrt( a2 + ( 1.0 - a2 ) * pow2( dotNV ) );\n\tfloat gl = dotNV * sqrt( a2 + ( 1.0 - a2 ) * pow2( dotNL ) );\n\treturn 0.5 / max( gv + gl, EPSILON );\n}\nfloat D_GGX( const in float alpha, const in float dotNH ) {\n\tfloat a2 = pow2( alpha );\n\tfloat denom = pow2( dotNH ) * ( a2 - 1.0 ) + 1.0;\n\treturn RECIPROCAL_PI * a2 / pow2( denom );\n}\nvec3 BRDF_Specular_GGX( const in IncidentLight incidentLight, const in vec3 viewDir, const in vec3 normal, const in vec3 specularColor, const in float roughness ) {\n\tfloat alpha = pow2( roughness );\n\tvec3 halfDir = normalize( incidentLight.direction + viewDir );\n\tfloat dotNL = saturate( dot( normal, incidentLight.direction ) );\n\tfloat dotNV = saturate( dot( normal, viewDir ) );\n\tfloat dotNH = saturate( dot( normal, halfDir ) );\n\tfloat dotLH = saturate( dot( incidentLight.direction, halfDir ) );\n\tvec3 F = F_Schlick( specularColor, dotLH );\n\tfloat G = G_GGX_SmithCorrelated( alpha, dotNL, dotNV );\n\tfloat D = D_GGX( alpha, dotNH );\n\treturn F * ( G * D );\n}\nvec2 LTC_Uv( const in vec3 N, const in vec3 V, const in float roughness ) {\n\tconst float LUT_SIZE = 64.0;\n\tconst float LUT_SCALE = ( LUT_SIZE - 1.0 ) / LUT_SIZE;\n\tconst float LUT_BIAS = 0.5 / LUT_SIZE;\n\tfloat dotNV = saturate( dot( N, V ) );\n\tvec2 uv = vec2( roughness, sqrt( 1.0 - dotNV ) );\n\tuv = uv * LUT_SCALE + LUT_BIAS;\n\treturn uv;\n}\nfloat LTC_ClippedSphereFormFactor( const in vec3 f ) {\n\tfloat l = length( f );\n\treturn max( ( l * l + f.z ) / ( l + 1.0 ), 0.0 );\n}\nvec3 LTC_EdgeVectorFormFactor( const in vec3 v1, const in vec3 v2 ) {\n\tfloat x = dot( v1, v2 );\n\tfloat y = abs( x );\n\tfloat a = 0.8543985 + ( 0.4965155 + 0.0145206 * y ) * y;\n\tfloat b = 3.4175940 + ( 4.1616724 + y ) * y;\n\tfloat v = a / b;\n\tfloat theta_sintheta = ( x > 0.0 ) ? v : 0.5 * inversesqrt( max( 1.0 - x * x, 1e-7 ) ) - v;\n\treturn cross( v1, v2 ) * theta_sintheta;\n}\nvec3 LTC_Evaluate( const in vec3 N, const in vec3 V, const in vec3 P, const in mat3 mInv, const in vec3 rectCoords[ 4 ] ) {\n\tvec3 v1 = rectCoords[ 1 ] - rectCoords[ 0 ];\n\tvec3 v2 = rectCoords[ 3 ] - rectCoords[ 0 ];\n\tvec3 lightNormal = cross( v1, v2 );\n\tif( dot( lightNormal, P - rectCoords[ 0 ] ) < 0.0 ) return vec3( 0.0 );\n\tvec3 T1, T2;\n\tT1 = normalize( V - N * dot( V, N ) );\n\tT2 = - cross( N, T1 );\n\tmat3 mat = mInv * transposeMat3( mat3( T1, T2, N ) );\n\tvec3 coords[ 4 ];\n\tcoords[ 0 ] = mat * ( rectCoords[ 0 ] - P );\n\tcoords[ 1 ] = mat * ( rectCoords[ 1 ] - P );\n\tcoords[ 2 ] = mat * ( rectCoords[ 2 ] - P );\n\tcoords[ 3 ] = mat * ( rectCoords[ 3 ] - P );\n\tcoords[ 0 ] = normalize( coords[ 0 ] );\n\tcoords[ 1 ] = normalize( coords[ 1 ] );\n\tcoords[ 2 ] = normalize( coords[ 2 ] );\n\tcoords[ 3 ] = normalize( coords[ 3 ] );\n\tvec3 vectorFormFactor = vec3( 0.0 );\n\tvectorFormFactor += LTC_EdgeVectorFormFactor( coords[ 0 ], coords[ 1 ] );\n\tvectorFormFactor += LTC_EdgeVectorFormFactor( coords[ 1 ], coords[ 2 ] );\n\tvectorFormFactor += LTC_EdgeVectorFormFactor( coords[ 2 ], coords[ 3 ] );\n\tvectorFormFactor += LTC_EdgeVectorFormFactor( coords[ 3 ], coords[ 0 ] );\n\tfloat result = LTC_ClippedSphereFormFactor( vectorFormFactor );\n\treturn vec3( result );\n}\nvec3 BRDF_Specular_GGX_Environment( const in vec3 viewDir, const in vec3 normal, const in vec3 specularColor, const in float roughness ) {\n\tfloat dotNV = saturate( dot( normal, viewDir ) );\n\tvec2 brdf = integrateSpecularBRDF( dotNV, roughness );\n\treturn specularColor * brdf.x + brdf.y;\n}\nvoid BRDF_Specular_Multiscattering_Environment( const in GeometricContext geometry, const in vec3 specularColor, const in float roughness, inout vec3 singleScatter, inout vec3 multiScatter ) {\n\tfloat dotNV = saturate( dot( geometry.normal, geometry.viewDir ) );\n\tvec3 F = F_Schlick_RoughnessDependent( specularColor, dotNV, roughness );\n\tvec2 brdf = integrateSpecularBRDF( dotNV, roughness );\n\tvec3 FssEss = F * brdf.x + brdf.y;\n\tfloat Ess = brdf.x + brdf.y;\n\tfloat Ems = 1.0 - Ess;\n\tvec3 Favg = specularColor + ( 1.0 - specularColor ) * 0.047619;\tvec3 Fms = FssEss * Favg / ( 1.0 - Ems * Favg );\n\tsingleScatter += FssEss;\n\tmultiScatter += Fms * Ems;\n}\nfloat G_BlinnPhong_Implicit( ) {\n\treturn 0.25;\n}\nfloat D_BlinnPhong( const in float shininess, const in float dotNH ) {\n\treturn RECIPROCAL_PI * ( shininess * 0.5 + 1.0 ) * pow( dotNH, shininess );\n}\nvec3 BRDF_Specular_BlinnPhong( const in IncidentLight incidentLight, const in GeometricContext geometry, const in vec3 specularColor, const in float shininess ) {\n\tvec3 halfDir = normalize( incidentLight.direction + geometry.viewDir );\n\tfloat dotNH = saturate( dot( geometry.normal, halfDir ) );\n\tfloat dotLH = saturate( dot( incidentLight.direction, halfDir ) );\n\tvec3 F = F_Schlick( specularColor, dotLH );\n\tfloat G = G_BlinnPhong_Implicit( );\n\tfloat D = D_BlinnPhong( shininess, dotNH );\n\treturn F * ( G * D );\n}\nfloat GGXRoughnessToBlinnExponent( const in float ggxRoughness ) {\n\treturn ( 2.0 / pow2( ggxRoughness + 0.0001 ) - 2.0 );\n}\nfloat BlinnExponentToGGXRoughness( const in float blinnExponent ) {\n\treturn sqrt( 2.0 / ( blinnExponent + 2.0 ) );\n}\n#if defined( USE_SHEEN )\nfloat D_Charlie(float roughness, float NoH) {\n\tfloat invAlpha = 1.0 / roughness;\n\tfloat cos2h = NoH * NoH;\n\tfloat sin2h = max(1.0 - cos2h, 0.0078125);\treturn (2.0 + invAlpha) * pow(sin2h, invAlpha * 0.5) / (2.0 * PI);\n}\nfloat V_Neubelt(float NoV, float NoL) {\n\treturn saturate(1.0 / (4.0 * (NoL + NoV - NoL * NoV)));\n}\nvec3 BRDF_Specular_Sheen( const in float roughness, const in vec3 L, const in GeometricContext geometry, vec3 specularColor ) {\n\tvec3 N = geometry.normal;\n\tvec3 V = geometry.viewDir;\n\tvec3 H = normalize( V + L );\n\tfloat dotNH = saturate( dot( N, H ) );\n\treturn specularColor * D_Charlie( roughness, dotNH ) * V_Neubelt( dot(N, V), dot(N, L) );\n}\n#endif";
 
 var bumpmap_pars_fragment = "#ifdef USE_BUMPMAP\n\tuniform sampler2D bumpMap;\n\tuniform float bumpScale;\n\tvec2 dHdxy_fwd() {\n\t\tvec2 dSTdx = dFdx( vUv );\n\t\tvec2 dSTdy = dFdy( vUv );\n\t\tfloat Hll = bumpScale * texture2D( bumpMap, vUv ).x;\n\t\tfloat dBx = bumpScale * texture2D( bumpMap, vUv + dSTdx ).x - Hll;\n\t\tfloat dBy = bumpScale * texture2D( bumpMap, vUv + dSTdy ).x - Hll;\n\t\treturn vec2( dBx, dBy );\n\t}\n\tvec3 perturbNormalArb( vec3 surf_pos, vec3 surf_norm, vec2 dHdxy ) {\n\t\tvec3 vSigmaX = vec3( dFdx( surf_pos.x ), dFdx( surf_pos.y ), dFdx( surf_pos.z ) );\n\t\tvec3 vSigmaY = vec3( dFdy( surf_pos.x ), dFdy( surf_pos.y ), dFdy( surf_pos.z ) );\n\t\tvec3 vN = surf_norm;\n\t\tvec3 R1 = cross( vSigmaY, vN );\n\t\tvec3 R2 = cross( vN, vSigmaX );\n\t\tfloat fDet = dot( vSigmaX, R1 );\n\t\tfDet *= ( float( gl_FrontFacing ) * 2.0 - 1.0 );\n\t\tvec3 vGrad = sign( fDet ) * ( dHdxy.x * R1 + dHdxy.y * R2 );\n\t\treturn normalize( abs( fDet ) * surf_norm - vGrad );\n\t}\n#endif";
 
@@ -14641,13 +14352,13 @@ var color_fragment = "#ifdef USE_COLOR\n\tdiffuseColor.rgb *= vColor;\n#endif";
 
 var color_pars_fragment = "#ifdef USE_COLOR\n\tvarying vec3 vColor;\n#endif";
 
-var color_pars_vertex = "#ifdef USE_COLOR\n\tvarying vec3 vColor;\n#endif";
+var color_pars_vertex = "#if defined( USE_COLOR ) || defined( USE_INSTANCING_COLOR )\n\tvarying vec3 vColor;\n#endif";
 
-var color_vertex = "#ifdef USE_COLOR\n\tvColor.xyz = color.xyz;\n#endif";
+var color_vertex = "#if defined( USE_COLOR ) || defined( USE_INSTANCING_COLOR )\n\tvColor = vec3( 1.0 );\n#endif\n#ifdef USE_COLOR\n\tvColor.xyz *= color.xyz;\n#endif\n#ifdef USE_INSTANCING_COLOR\n\tvColor.xyz *= instanceColor.xyz;\n#endif";
 
 var common = "#define PI 3.141592653589793\n#define PI2 6.283185307179586\n#define PI_HALF 1.5707963267948966\n#define RECIPROCAL_PI 0.3183098861837907\n#define RECIPROCAL_PI2 0.15915494309189535\n#define EPSILON 1e-6\n#ifndef saturate\n#define saturate(a) clamp( a, 0.0, 1.0 )\n#endif\n#define whiteComplement(a) ( 1.0 - saturate( a ) )\nfloat pow2( const in float x ) { return x*x; }\nfloat pow3( const in float x ) { return x*x*x; }\nfloat pow4( const in float x ) { float x2 = x*x; return x2*x2; }\nfloat average( const in vec3 color ) { return dot( color, vec3( 0.3333 ) ); }\nhighp float rand( const in vec2 uv ) {\n\tconst highp float a = 12.9898, b = 78.233, c = 43758.5453;\n\thighp float dt = dot( uv.xy, vec2( a,b ) ), sn = mod( dt, PI );\n\treturn fract(sin(sn) * c);\n}\n#ifdef HIGH_PRECISION\n\tfloat precisionSafeLength( vec3 v ) { return length( v ); }\n#else\n\tfloat max3( vec3 v ) { return max( max( v.x, v.y ), v.z ); }\n\tfloat precisionSafeLength( vec3 v ) {\n\t\tfloat maxComponent = max3( abs( v ) );\n\t\treturn length( v / maxComponent ) * maxComponent;\n\t}\n#endif\nstruct IncidentLight {\n\tvec3 color;\n\tvec3 direction;\n\tbool visible;\n};\nstruct ReflectedLight {\n\tvec3 directDiffuse;\n\tvec3 directSpecular;\n\tvec3 indirectDiffuse;\n\tvec3 indirectSpecular;\n};\nstruct GeometricContext {\n\tvec3 position;\n\tvec3 normal;\n\tvec3 viewDir;\n#ifdef CLEARCOAT\n\tvec3 clearcoatNormal;\n#endif\n};\nvec3 transformDirection( in vec3 dir, in mat4 matrix ) {\n\treturn normalize( ( matrix * vec4( dir, 0.0 ) ).xyz );\n}\nvec3 inverseTransformDirection( in vec3 dir, in mat4 matrix ) {\n\treturn normalize( ( vec4( dir, 0.0 ) * matrix ).xyz );\n}\nvec3 projectOnPlane(in vec3 point, in vec3 pointOnPlane, in vec3 planeNormal ) {\n\tfloat distance = dot( planeNormal, point - pointOnPlane );\n\treturn - distance * planeNormal + point;\n}\nfloat sideOfPlane( in vec3 point, in vec3 pointOnPlane, in vec3 planeNormal ) {\n\treturn sign( dot( point - pointOnPlane, planeNormal ) );\n}\nvec3 linePlaneIntersect( in vec3 pointOnLine, in vec3 lineDirection, in vec3 pointOnPlane, in vec3 planeNormal ) {\n\treturn lineDirection * ( dot( planeNormal, pointOnPlane - pointOnLine ) / dot( planeNormal, lineDirection ) ) + pointOnLine;\n}\nmat3 transposeMat3( const in mat3 m ) {\n\tmat3 tmp;\n\ttmp[ 0 ] = vec3( m[ 0 ].x, m[ 1 ].x, m[ 2 ].x );\n\ttmp[ 1 ] = vec3( m[ 0 ].y, m[ 1 ].y, m[ 2 ].y );\n\ttmp[ 2 ] = vec3( m[ 0 ].z, m[ 1 ].z, m[ 2 ].z );\n\treturn tmp;\n}\nfloat linearToRelativeLuminance( const in vec3 color ) {\n\tvec3 weights = vec3( 0.2126, 0.7152, 0.0722 );\n\treturn dot( weights, color.rgb );\n}\nbool isPerspectiveMatrix( mat4 m ) {\n\treturn m[ 2 ][ 3 ] == - 1.0;\n}\nvec2 equirectUv( in vec3 dir ) {\n\tfloat u = atan( dir.z, dir.x ) * RECIPROCAL_PI2 + 0.5;\n\tfloat v = asin( clamp( dir.y, - 1.0, 1.0 ) ) * RECIPROCAL_PI + 0.5;\n\treturn vec2( u, v );\n}";
 
-var cube_uv_reflection_fragment = "#ifdef ENVMAP_TYPE_CUBE_UV\n#define cubeUV_maxMipLevel 8.0\n#define cubeUV_minMipLevel 4.0\n#define cubeUV_maxTileSize 256.0\n#define cubeUV_minTileSize 16.0\nfloat getFace(vec3 direction) {\n    vec3 absDirection = abs(direction);\n    float face = -1.0;\n    if (absDirection.x > absDirection.z) {\n      if (absDirection.x > absDirection.y)\n        face = direction.x > 0.0 ? 0.0 : 3.0;\n      else\n        face = direction.y > 0.0 ? 1.0 : 4.0;\n    } else {\n      if (absDirection.z > absDirection.y)\n        face = direction.z > 0.0 ? 2.0 : 5.0;\n      else\n        face = direction.y > 0.0 ? 1.0 : 4.0;\n    }\n    return face;\n}\nvec2 getUV(vec3 direction, float face) {\n    vec2 uv;\n    if (face == 0.0) {\n      uv = vec2(direction.z, direction.y) / abs(direction.x);    } else if (face == 1.0) {\n      uv = vec2(-direction.x, -direction.z) / abs(direction.y);    } else if (face == 2.0) {\n      uv = vec2(-direction.x, direction.y) / abs(direction.z);    } else if (face == 3.0) {\n      uv = vec2(-direction.z, direction.y) / abs(direction.x);    } else if (face == 4.0) {\n      uv = vec2(-direction.x, direction.z) / abs(direction.y);    } else {\n      uv = vec2(direction.x, direction.y) / abs(direction.z);    }\n    return 0.5 * (uv + 1.0);\n}\nvec3 bilinearCubeUV(sampler2D envMap, vec3 direction, float mipInt) {\n  float face = getFace(direction);\n  float filterInt = max(cubeUV_minMipLevel - mipInt, 0.0);\n  mipInt = max(mipInt, cubeUV_minMipLevel);\n  float faceSize = exp2(mipInt);\n  float texelSize = 1.0 / (3.0 * cubeUV_maxTileSize);\n  vec2 uv = getUV(direction, face) * (faceSize - 1.0);\n  vec2 f = fract(uv);\n  uv += 0.5 - f;\n  if (face > 2.0) {\n    uv.y += faceSize;\n    face -= 3.0;\n  }\n  uv.x += face * faceSize;\n  if(mipInt < cubeUV_maxMipLevel){\n    uv.y += 2.0 * cubeUV_maxTileSize;\n  }\n  uv.y += filterInt * 2.0 * cubeUV_minTileSize;\n  uv.x += 3.0 * max(0.0, cubeUV_maxTileSize - 2.0 * faceSize);\n  uv *= texelSize;\n  vec3 tl = envMapTexelToLinear(texture2D(envMap, uv)).rgb;\n  uv.x += texelSize;\n  vec3 tr = envMapTexelToLinear(texture2D(envMap, uv)).rgb;\n  uv.y += texelSize;\n  vec3 br = envMapTexelToLinear(texture2D(envMap, uv)).rgb;\n  uv.x -= texelSize;\n  vec3 bl = envMapTexelToLinear(texture2D(envMap, uv)).rgb;\n  vec3 tm = mix(tl, tr, f.x);\n  vec3 bm = mix(bl, br, f.x);\n  return mix(tm, bm, f.y);\n}\n#define r0 1.0\n#define v0 0.339\n#define m0 -2.0\n#define r1 0.8\n#define v1 0.276\n#define m1 -1.0\n#define r4 0.4\n#define v4 0.046\n#define m4 2.0\n#define r5 0.305\n#define v5 0.016\n#define m5 3.0\n#define r6 0.21\n#define v6 0.0038\n#define m6 4.0\nfloat roughnessToMip(float roughness) {\n  float mip = 0.0;\n  if (roughness >= r1) {\n    mip = (r0 - roughness) * (m1 - m0) / (r0 - r1) + m0;\n  } else if (roughness >= r4) {\n    mip = (r1 - roughness) * (m4 - m1) / (r1 - r4) + m1;\n  } else if (roughness >= r5) {\n    mip = (r4 - roughness) * (m5 - m4) / (r4 - r5) + m4;\n  } else if (roughness >= r6) {\n    mip = (r5 - roughness) * (m6 - m5) / (r5 - r6) + m5;\n  } else {\n    mip = -2.0 * log2(1.16 * roughness);  }\n  return mip;\n}\nvec4 textureCubeUV(sampler2D envMap, vec3 sampleDir, float roughness) {\n  float mip = clamp(roughnessToMip(roughness), m0, cubeUV_maxMipLevel);\n  float mipF = fract(mip);\n  float mipInt = floor(mip);\n  vec3 color0 = bilinearCubeUV(envMap, sampleDir, mipInt);\n  if (mipF == 0.0) {\n    return vec4(color0, 1.0);\n  } else {\n    vec3 color1 = bilinearCubeUV(envMap, sampleDir, mipInt + 1.0);\n    return vec4(mix(color0, color1, mipF), 1.0);\n  }\n}\n#endif";
+var cube_uv_reflection_fragment = "#ifdef ENVMAP_TYPE_CUBE_UV\n\t#define cubeUV_maxMipLevel 8.0\n\t#define cubeUV_minMipLevel 4.0\n\t#define cubeUV_maxTileSize 256.0\n\t#define cubeUV_minTileSize 16.0\n\tfloat getFace( vec3 direction ) {\n\t\tvec3 absDirection = abs( direction );\n\t\tfloat face = - 1.0;\n\t\tif ( absDirection.x > absDirection.z ) {\n\t\t\tif ( absDirection.x > absDirection.y )\n\t\t\t\tface = direction.x > 0.0 ? 0.0 : 3.0;\n\t\t\telse\n\t\t\t\tface = direction.y > 0.0 ? 1.0 : 4.0;\n\t\t} else {\n\t\t\tif ( absDirection.z > absDirection.y )\n\t\t\t\tface = direction.z > 0.0 ? 2.0 : 5.0;\n\t\t\telse\n\t\t\t\tface = direction.y > 0.0 ? 1.0 : 4.0;\n\t\t}\n\t\treturn face;\n\t}\n\tvec2 getUV( vec3 direction, float face ) {\n\t\tvec2 uv;\n\t\tif ( face == 0.0 ) {\n\t\t\tuv = vec2( direction.z, direction.y ) / abs( direction.x );\n\t\t} else if ( face == 1.0 ) {\n\t\t\tuv = vec2( - direction.x, - direction.z ) / abs( direction.y );\n\t\t} else if ( face == 2.0 ) {\n\t\t\tuv = vec2( - direction.x, direction.y ) / abs( direction.z );\n\t\t} else if ( face == 3.0 ) {\n\t\t\tuv = vec2( - direction.z, direction.y ) / abs( direction.x );\n\t\t} else if ( face == 4.0 ) {\n\t\t\tuv = vec2( - direction.x, direction.z ) / abs( direction.y );\n\t\t} else {\n\t\t\tuv = vec2( direction.x, direction.y ) / abs( direction.z );\n\t\t}\n\t\treturn 0.5 * ( uv + 1.0 );\n\t}\n\tvec3 bilinearCubeUV( sampler2D envMap, vec3 direction, float mipInt ) {\n\t\tfloat face = getFace( direction );\n\t\tfloat filterInt = max( cubeUV_minMipLevel - mipInt, 0.0 );\n\t\tmipInt = max( mipInt, cubeUV_minMipLevel );\n\t\tfloat faceSize = exp2( mipInt );\n\t\tfloat texelSize = 1.0 / ( 3.0 * cubeUV_maxTileSize );\n\t\tvec2 uv = getUV( direction, face ) * ( faceSize - 1.0 );\n\t\tvec2 f = fract( uv );\n\t\tuv += 0.5 - f;\n\t\tif ( face > 2.0 ) {\n\t\t\tuv.y += faceSize;\n\t\t\tface -= 3.0;\n\t\t}\n\t\tuv.x += face * faceSize;\n\t\tif ( mipInt < cubeUV_maxMipLevel ) {\n\t\t\tuv.y += 2.0 * cubeUV_maxTileSize;\n\t\t}\n\t\tuv.y += filterInt * 2.0 * cubeUV_minTileSize;\n\t\tuv.x += 3.0 * max( 0.0, cubeUV_maxTileSize - 2.0 * faceSize );\n\t\tuv *= texelSize;\n\t\tvec3 tl = envMapTexelToLinear( texture2D( envMap, uv ) ).rgb;\n\t\tuv.x += texelSize;\n\t\tvec3 tr = envMapTexelToLinear( texture2D( envMap, uv ) ).rgb;\n\t\tuv.y += texelSize;\n\t\tvec3 br = envMapTexelToLinear( texture2D( envMap, uv ) ).rgb;\n\t\tuv.x -= texelSize;\n\t\tvec3 bl = envMapTexelToLinear( texture2D( envMap, uv ) ).rgb;\n\t\tvec3 tm = mix( tl, tr, f.x );\n\t\tvec3 bm = mix( bl, br, f.x );\n\t\treturn mix( tm, bm, f.y );\n\t}\n\t#define r0 1.0\n\t#define v0 0.339\n\t#define m0 - 2.0\n\t#define r1 0.8\n\t#define v1 0.276\n\t#define m1 - 1.0\n\t#define r4 0.4\n\t#define v4 0.046\n\t#define m4 2.0\n\t#define r5 0.305\n\t#define v5 0.016\n\t#define m5 3.0\n\t#define r6 0.21\n\t#define v6 0.0038\n\t#define m6 4.0\n\tfloat roughnessToMip( float roughness ) {\n\t\tfloat mip = 0.0;\n\t\tif ( roughness >= r1 ) {\n\t\t\tmip = ( r0 - roughness ) * ( m1 - m0 ) / ( r0 - r1 ) + m0;\n\t\t} else if ( roughness >= r4 ) {\n\t\t\tmip = ( r1 - roughness ) * ( m4 - m1 ) / ( r1 - r4 ) + m1;\n\t\t} else if ( roughness >= r5 ) {\n\t\t\tmip = ( r4 - roughness ) * ( m5 - m4 ) / ( r4 - r5 ) + m4;\n\t\t} else if ( roughness >= r6 ) {\n\t\t\tmip = ( r5 - roughness ) * ( m6 - m5 ) / ( r5 - r6 ) + m5;\n\t\t} else {\n\t\t\tmip = - 2.0 * log2( 1.16 * roughness );\t\t}\n\t\treturn mip;\n\t}\n\tvec4 textureCubeUV( sampler2D envMap, vec3 sampleDir, float roughness ) {\n\t\tfloat mip = clamp( roughnessToMip( roughness ), m0, cubeUV_maxMipLevel );\n\t\tfloat mipF = fract( mip );\n\t\tfloat mipInt = floor( mip );\n\t\tvec3 color0 = bilinearCubeUV( envMap, sampleDir, mipInt );\n\t\tif ( mipF == 0.0 ) {\n\t\t\treturn vec4( color0, 1.0 );\n\t\t} else {\n\t\t\tvec3 color1 = bilinearCubeUV( envMap, sampleDir, mipInt + 1.0 );\n\t\t\treturn vec4( mix( color0, color1, mipF ), 1.0 );\n\t\t}\n\t}\n#endif";
 
 var defaultnormal_vertex = "vec3 transformedNormal = objectNormal;\n#ifdef USE_INSTANCING\n\tmat3 m = mat3( instanceMatrix );\n\ttransformedNormal /= vec3( dot( m[ 0 ], m[ 0 ] ), dot( m[ 1 ], m[ 1 ] ), dot( m[ 2 ], m[ 2 ] ) );\n\ttransformedNormal = m * transformedNormal;\n#endif\ntransformedNormal = normalMatrix * transformedNormal;\n#ifdef FLIP_SIDED\n\ttransformedNormal = - transformedNormal;\n#endif\n#ifdef USE_TANGENT\n\tvec3 transformedTangent = ( modelViewMatrix * vec4( objectTangent, 0.0 ) ).xyz;\n\t#ifdef FLIP_SIDED\n\t\ttransformedTangent = - transformedTangent;\n\t#endif\n#endif";
 
@@ -14661,9 +14372,9 @@ var emissivemap_pars_fragment = "#ifdef USE_EMISSIVEMAP\n\tuniform sampler2D emi
 
 var encodings_fragment = "gl_FragColor = linearToOutputTexel( gl_FragColor );";
 
-var encodings_pars_fragment = "\nvec4 LinearToLinear( in vec4 value ) {\n\treturn value;\n}\nvec4 GammaToLinear( in vec4 value, in float gammaFactor ) {\n\treturn vec4( pow( value.rgb, vec3( gammaFactor ) ), value.a );\n}\nvec4 LinearToGamma( in vec4 value, in float gammaFactor ) {\n\treturn vec4( pow( value.rgb, vec3( 1.0 / gammaFactor ) ), value.a );\n}\nvec4 sRGBToLinear( in vec4 value ) {\n\treturn vec4( mix( pow( value.rgb * 0.9478672986 + vec3( 0.0521327014 ), vec3( 2.4 ) ), value.rgb * 0.0773993808, vec3( lessThanEqual( value.rgb, vec3( 0.04045 ) ) ) ), value.a );\n}\nvec4 LinearTosRGB( in vec4 value ) {\n\treturn vec4( mix( pow( value.rgb, vec3( 0.41666 ) ) * 1.055 - vec3( 0.055 ), value.rgb * 12.92, vec3( lessThanEqual( value.rgb, vec3( 0.0031308 ) ) ) ), value.a );\n}\nvec4 RGBEToLinear( in vec4 value ) {\n\treturn vec4( value.rgb * exp2( value.a * 255.0 - 128.0 ), 1.0 );\n}\nvec4 LinearToRGBE( in vec4 value ) {\n\tfloat maxComponent = max( max( value.r, value.g ), value.b );\n\tfloat fExp = clamp( ceil( log2( maxComponent ) ), -128.0, 127.0 );\n\treturn vec4( value.rgb / exp2( fExp ), ( fExp + 128.0 ) / 255.0 );\n}\nvec4 RGBMToLinear( in vec4 value, in float maxRange ) {\n\treturn vec4( value.rgb * value.a * maxRange, 1.0 );\n}\nvec4 LinearToRGBM( in vec4 value, in float maxRange ) {\n\tfloat maxRGB = max( value.r, max( value.g, value.b ) );\n\tfloat M = clamp( maxRGB / maxRange, 0.0, 1.0 );\n\tM = ceil( M * 255.0 ) / 255.0;\n\treturn vec4( value.rgb / ( M * maxRange ), M );\n}\nvec4 RGBDToLinear( in vec4 value, in float maxRange ) {\n\treturn vec4( value.rgb * ( ( maxRange / 255.0 ) / value.a ), 1.0 );\n}\nvec4 LinearToRGBD( in vec4 value, in float maxRange ) {\n\tfloat maxRGB = max( value.r, max( value.g, value.b ) );\n\tfloat D = max( maxRange / maxRGB, 1.0 );\n\tD = clamp( floor( D ) / 255.0, 0.0, 1.0 );\n\treturn vec4( value.rgb * ( D * ( 255.0 / maxRange ) ), D );\n}\nconst mat3 cLogLuvM = mat3( 0.2209, 0.3390, 0.4184, 0.1138, 0.6780, 0.7319, 0.0102, 0.1130, 0.2969 );\nvec4 LinearToLogLuv( in vec4 value )  {\n\tvec3 Xp_Y_XYZp = cLogLuvM * value.rgb;\n\tXp_Y_XYZp = max( Xp_Y_XYZp, vec3( 1e-6, 1e-6, 1e-6 ) );\n\tvec4 vResult;\n\tvResult.xy = Xp_Y_XYZp.xy / Xp_Y_XYZp.z;\n\tfloat Le = 2.0 * log2(Xp_Y_XYZp.y) + 127.0;\n\tvResult.w = fract( Le );\n\tvResult.z = ( Le - ( floor( vResult.w * 255.0 ) ) / 255.0 ) / 255.0;\n\treturn vResult;\n}\nconst mat3 cLogLuvInverseM = mat3( 6.0014, -2.7008, -1.7996, -1.3320, 3.1029, -5.7721, 0.3008, -1.0882, 5.6268 );\nvec4 LogLuvToLinear( in vec4 value ) {\n\tfloat Le = value.z * 255.0 + value.w;\n\tvec3 Xp_Y_XYZp;\n\tXp_Y_XYZp.y = exp2( ( Le - 127.0 ) / 2.0 );\n\tXp_Y_XYZp.z = Xp_Y_XYZp.y / value.y;\n\tXp_Y_XYZp.x = value.x * Xp_Y_XYZp.z;\n\tvec3 vRGB = cLogLuvInverseM * Xp_Y_XYZp.rgb;\n\treturn vec4( max( vRGB, 0.0 ), 1.0 );\n}";
+var encodings_pars_fragment = "\nvec4 LinearToLinear( in vec4 value ) {\n\treturn value;\n}\nvec4 GammaToLinear( in vec4 value, in float gammaFactor ) {\n\treturn vec4( pow( value.rgb, vec3( gammaFactor ) ), value.a );\n}\nvec4 LinearToGamma( in vec4 value, in float gammaFactor ) {\n\treturn vec4( pow( value.rgb, vec3( 1.0 / gammaFactor ) ), value.a );\n}\nvec4 sRGBToLinear( in vec4 value ) {\n\treturn vec4( mix( pow( value.rgb * 0.9478672986 + vec3( 0.0521327014 ), vec3( 2.4 ) ), value.rgb * 0.0773993808, vec3( lessThanEqual( value.rgb, vec3( 0.04045 ) ) ) ), value.a );\n}\nvec4 LinearTosRGB( in vec4 value ) {\n\treturn vec4( mix( pow( value.rgb, vec3( 0.41666 ) ) * 1.055 - vec3( 0.055 ), value.rgb * 12.92, vec3( lessThanEqual( value.rgb, vec3( 0.0031308 ) ) ) ), value.a );\n}\nvec4 RGBEToLinear( in vec4 value ) {\n\treturn vec4( value.rgb * exp2( value.a * 255.0 - 128.0 ), 1.0 );\n}\nvec4 LinearToRGBE( in vec4 value ) {\n\tfloat maxComponent = max( max( value.r, value.g ), value.b );\n\tfloat fExp = clamp( ceil( log2( maxComponent ) ), -128.0, 127.0 );\n\treturn vec4( value.rgb / exp2( fExp ), ( fExp + 128.0 ) / 255.0 );\n}\nvec4 RGBMToLinear( in vec4 value, in float maxRange ) {\n\treturn vec4( value.rgb * value.a * maxRange, 1.0 );\n}\nvec4 LinearToRGBM( in vec4 value, in float maxRange ) {\n\tfloat maxRGB = max( value.r, max( value.g, value.b ) );\n\tfloat M = clamp( maxRGB / maxRange, 0.0, 1.0 );\n\tM = ceil( M * 255.0 ) / 255.0;\n\treturn vec4( value.rgb / ( M * maxRange ), M );\n}\nvec4 RGBDToLinear( in vec4 value, in float maxRange ) {\n\treturn vec4( value.rgb * ( ( maxRange / 255.0 ) / value.a ), 1.0 );\n}\nvec4 LinearToRGBD( in vec4 value, in float maxRange ) {\n\tfloat maxRGB = max( value.r, max( value.g, value.b ) );\n\tfloat D = max( maxRange / maxRGB, 1.0 );\n\tD = clamp( floor( D ) / 255.0, 0.0, 1.0 );\n\treturn vec4( value.rgb * ( D * ( 255.0 / maxRange ) ), D );\n}\nconst mat3 cLogLuvM = mat3( 0.2209, 0.3390, 0.4184, 0.1138, 0.6780, 0.7319, 0.0102, 0.1130, 0.2969 );\nvec4 LinearToLogLuv( in vec4 value ) {\n\tvec3 Xp_Y_XYZp = cLogLuvM * value.rgb;\n\tXp_Y_XYZp = max( Xp_Y_XYZp, vec3( 1e-6, 1e-6, 1e-6 ) );\n\tvec4 vResult;\n\tvResult.xy = Xp_Y_XYZp.xy / Xp_Y_XYZp.z;\n\tfloat Le = 2.0 * log2(Xp_Y_XYZp.y) + 127.0;\n\tvResult.w = fract( Le );\n\tvResult.z = ( Le - ( floor( vResult.w * 255.0 ) ) / 255.0 ) / 255.0;\n\treturn vResult;\n}\nconst mat3 cLogLuvInverseM = mat3( 6.0014, -2.7008, -1.7996, -1.3320, 3.1029, -5.7721, 0.3008, -1.0882, 5.6268 );\nvec4 LogLuvToLinear( in vec4 value ) {\n\tfloat Le = value.z * 255.0 + value.w;\n\tvec3 Xp_Y_XYZp;\n\tXp_Y_XYZp.y = exp2( ( Le - 127.0 ) / 2.0 );\n\tXp_Y_XYZp.z = Xp_Y_XYZp.y / value.y;\n\tXp_Y_XYZp.x = value.x * Xp_Y_XYZp.z;\n\tvec3 vRGB = cLogLuvInverseM * Xp_Y_XYZp.rgb;\n\treturn vec4( max( vRGB, 0.0 ), 1.0 );\n}";
 
-var envmap_fragment = "#ifdef USE_ENVMAP\n\t#ifdef ENV_WORLDPOS\n\t\tvec3 cameraToFrag;\n\t\t\n\t\tif ( isOrthographic ) {\n\t\t\tcameraToFrag = normalize( vec3( - viewMatrix[ 0 ][ 2 ], - viewMatrix[ 1 ][ 2 ], - viewMatrix[ 2 ][ 2 ] ) );\n\t\t}  else {\n\t\t\tcameraToFrag = normalize( vWorldPosition - cameraPosition );\n\t\t}\n\t\tvec3 worldNormal = inverseTransformDirection( normal, viewMatrix );\n\t\t#ifdef ENVMAP_MODE_REFLECTION\n\t\t\tvec3 reflectVec = reflect( cameraToFrag, worldNormal );\n\t\t#else\n\t\t\tvec3 reflectVec = refract( cameraToFrag, worldNormal, refractionRatio );\n\t\t#endif\n\t#else\n\t\tvec3 reflectVec = vReflect;\n\t#endif\n\t#ifdef ENVMAP_TYPE_CUBE\n\t\tvec4 envColor = textureCube( envMap, vec3( flipEnvMap * reflectVec.x, reflectVec.yz ) );\n\t#elif defined( ENVMAP_TYPE_CUBE_UV )\n\t\tvec4 envColor = textureCubeUV( envMap, reflectVec, 0.0 );\n\t#elif defined( ENVMAP_TYPE_EQUIREC )\n\t\treflectVec = normalize( reflectVec );\n\t\tvec2 sampleUV = equirectUv( reflectVec );\n\t\tvec4 envColor = texture2D( envMap, sampleUV );\n\t#else\n\t\tvec4 envColor = vec4( 0.0 );\n\t#endif\n\t#ifndef ENVMAP_TYPE_CUBE_UV\n\t\tenvColor = envMapTexelToLinear( envColor );\n\t#endif\n\t#ifdef ENVMAP_BLENDING_MULTIPLY\n\t\toutgoingLight = mix( outgoingLight, outgoingLight * envColor.xyz, specularStrength * reflectivity );\n\t#elif defined( ENVMAP_BLENDING_MIX )\n\t\toutgoingLight = mix( outgoingLight, envColor.xyz, specularStrength * reflectivity );\n\t#elif defined( ENVMAP_BLENDING_ADD )\n\t\toutgoingLight += envColor.xyz * specularStrength * reflectivity;\n\t#endif\n#endif";
+var envmap_fragment = "#ifdef USE_ENVMAP\n\t#ifdef ENV_WORLDPOS\n\t\tvec3 cameraToFrag;\n\t\tif ( isOrthographic ) {\n\t\t\tcameraToFrag = normalize( vec3( - viewMatrix[ 0 ][ 2 ], - viewMatrix[ 1 ][ 2 ], - viewMatrix[ 2 ][ 2 ] ) );\n\t\t} else {\n\t\t\tcameraToFrag = normalize( vWorldPosition - cameraPosition );\n\t\t}\n\t\tvec3 worldNormal = inverseTransformDirection( normal, viewMatrix );\n\t\t#ifdef ENVMAP_MODE_REFLECTION\n\t\t\tvec3 reflectVec = reflect( cameraToFrag, worldNormal );\n\t\t#else\n\t\t\tvec3 reflectVec = refract( cameraToFrag, worldNormal, refractionRatio );\n\t\t#endif\n\t#else\n\t\tvec3 reflectVec = vReflect;\n\t#endif\n\t#ifdef ENVMAP_TYPE_CUBE\n\t\tvec4 envColor = textureCube( envMap, vec3( flipEnvMap * reflectVec.x, reflectVec.yz ) );\n\t#elif defined( ENVMAP_TYPE_CUBE_UV )\n\t\tvec4 envColor = textureCubeUV( envMap, reflectVec, 0.0 );\n\t#else\n\t\tvec4 envColor = vec4( 0.0 );\n\t#endif\n\t#ifndef ENVMAP_TYPE_CUBE_UV\n\t\tenvColor = envMapTexelToLinear( envColor );\n\t#endif\n\t#ifdef ENVMAP_BLENDING_MULTIPLY\n\t\toutgoingLight = mix( outgoingLight, outgoingLight * envColor.xyz, specularStrength * reflectivity );\n\t#elif defined( ENVMAP_BLENDING_MIX )\n\t\toutgoingLight = mix( outgoingLight, envColor.xyz, specularStrength * reflectivity );\n\t#elif defined( ENVMAP_BLENDING_ADD )\n\t\toutgoingLight += envColor.xyz * specularStrength * reflectivity;\n\t#endif\n#endif";
 
 var envmap_common_pars_fragment = "#ifdef USE_ENVMAP\n\tuniform float envMapIntensity;\n\tuniform float flipEnvMap;\n\tuniform int maxMipLevel;\n\t#ifdef ENVMAP_TYPE_CUBE\n\t\tuniform samplerCube envMap;\n\t#else\n\t\tuniform sampler2D envMap;\n\t#endif\n\t\n#endif";
 
@@ -14689,9 +14400,9 @@ var lightmap_pars_fragment = "#ifdef USE_LIGHTMAP\n\tuniform sampler2D lightMap;
 
 var lights_lambert_vertex = "vec3 diffuse = vec3( 1.0 );\nGeometricContext geometry;\ngeometry.position = mvPosition.xyz;\ngeometry.normal = normalize( transformedNormal );\ngeometry.viewDir = ( isOrthographic ) ? vec3( 0, 0, 1 ) : normalize( -mvPosition.xyz );\nGeometricContext backGeometry;\nbackGeometry.position = geometry.position;\nbackGeometry.normal = -geometry.normal;\nbackGeometry.viewDir = geometry.viewDir;\nvLightFront = vec3( 0.0 );\nvIndirectFront = vec3( 0.0 );\n#ifdef DOUBLE_SIDED\n\tvLightBack = vec3( 0.0 );\n\tvIndirectBack = vec3( 0.0 );\n#endif\nIncidentLight directLight;\nfloat dotNL;\nvec3 directLightColor_Diffuse;\nvIndirectFront += getAmbientLightIrradiance( ambientLightColor );\nvIndirectFront += getLightProbeIrradiance( lightProbe, geometry );\n#ifdef DOUBLE_SIDED\n\tvIndirectBack += getAmbientLightIrradiance( ambientLightColor );\n\tvIndirectBack += getLightProbeIrradiance( lightProbe, backGeometry );\n#endif\n#if NUM_POINT_LIGHTS > 0\n\t#pragma unroll_loop_start\n\tfor ( int i = 0; i < NUM_POINT_LIGHTS; i ++ ) {\n\t\tgetPointDirectLightIrradiance( pointLights[ i ], geometry, directLight );\n\t\tdotNL = dot( geometry.normal, directLight.direction );\n\t\tdirectLightColor_Diffuse = PI * directLight.color;\n\t\tvLightFront += saturate( dotNL ) * directLightColor_Diffuse;\n\t\t#ifdef DOUBLE_SIDED\n\t\t\tvLightBack += saturate( -dotNL ) * directLightColor_Diffuse;\n\t\t#endif\n\t}\n\t#pragma unroll_loop_end\n#endif\n#if NUM_SPOT_LIGHTS > 0\n\t#pragma unroll_loop_start\n\tfor ( int i = 0; i < NUM_SPOT_LIGHTS; i ++ ) {\n\t\tgetSpotDirectLightIrradiance( spotLights[ i ], geometry, directLight );\n\t\tdotNL = dot( geometry.normal, directLight.direction );\n\t\tdirectLightColor_Diffuse = PI * directLight.color;\n\t\tvLightFront += saturate( dotNL ) * directLightColor_Diffuse;\n\t\t#ifdef DOUBLE_SIDED\n\t\t\tvLightBack += saturate( -dotNL ) * directLightColor_Diffuse;\n\t\t#endif\n\t}\n\t#pragma unroll_loop_end\n#endif\n#if NUM_DIR_LIGHTS > 0\n\t#pragma unroll_loop_start\n\tfor ( int i = 0; i < NUM_DIR_LIGHTS; i ++ ) {\n\t\tgetDirectionalDirectLightIrradiance( directionalLights[ i ], geometry, directLight );\n\t\tdotNL = dot( geometry.normal, directLight.direction );\n\t\tdirectLightColor_Diffuse = PI * directLight.color;\n\t\tvLightFront += saturate( dotNL ) * directLightColor_Diffuse;\n\t\t#ifdef DOUBLE_SIDED\n\t\t\tvLightBack += saturate( -dotNL ) * directLightColor_Diffuse;\n\t\t#endif\n\t}\n\t#pragma unroll_loop_end\n#endif\n#if NUM_HEMI_LIGHTS > 0\n\t#pragma unroll_loop_start\n\tfor ( int i = 0; i < NUM_HEMI_LIGHTS; i ++ ) {\n\t\tvIndirectFront += getHemisphereLightIrradiance( hemisphereLights[ i ], geometry );\n\t\t#ifdef DOUBLE_SIDED\n\t\t\tvIndirectBack += getHemisphereLightIrradiance( hemisphereLights[ i ], backGeometry );\n\t\t#endif\n\t}\n\t#pragma unroll_loop_end\n#endif";
 
-var lights_pars_begin = "uniform bool receiveShadow;\nuniform vec3 ambientLightColor;\nuniform vec3 lightProbe[ 9 ];\nvec3 shGetIrradianceAt( in vec3 normal, in vec3 shCoefficients[ 9 ] ) {\n\tfloat x = normal.x, y = normal.y, z = normal.z;\n\tvec3 result = shCoefficients[ 0 ] * 0.886227;\n\tresult += shCoefficients[ 1 ] * 2.0 * 0.511664 * y;\n\tresult += shCoefficients[ 2 ] * 2.0 * 0.511664 * z;\n\tresult += shCoefficients[ 3 ] * 2.0 * 0.511664 * x;\n\tresult += shCoefficients[ 4 ] * 2.0 * 0.429043 * x * y;\n\tresult += shCoefficients[ 5 ] * 2.0 * 0.429043 * y * z;\n\tresult += shCoefficients[ 6 ] * ( 0.743125 * z * z - 0.247708 );\n\tresult += shCoefficients[ 7 ] * 2.0 * 0.429043 * x * z;\n\tresult += shCoefficients[ 8 ] * 0.429043 * ( x * x - y * y );\n\treturn result;\n}\nvec3 getLightProbeIrradiance( const in vec3 lightProbe[ 9 ], const in GeometricContext geometry ) {\n\tvec3 worldNormal = inverseTransformDirection( geometry.normal, viewMatrix );\n\tvec3 irradiance = shGetIrradianceAt( worldNormal, lightProbe );\n\treturn irradiance;\n}\nvec3 getAmbientLightIrradiance( const in vec3 ambientLightColor ) {\n\tvec3 irradiance = ambientLightColor;\n\t#ifndef PHYSICALLY_CORRECT_LIGHTS\n\t\tirradiance *= PI;\n\t#endif\n\treturn irradiance;\n}\n#if NUM_DIR_LIGHTS > 0\n\tstruct DirectionalLight {\n\t\tvec3 direction;\n\t\tvec3 color;\n\t};\n\tuniform DirectionalLight directionalLights[ NUM_DIR_LIGHTS ];\n\tvoid getDirectionalDirectLightIrradiance( const in DirectionalLight directionalLight, const in GeometricContext geometry, out IncidentLight directLight ) {\n\t\tdirectLight.color = directionalLight.color;\n\t\tdirectLight.direction = directionalLight.direction;\n\t\tdirectLight.visible = true;\n\t}\n#endif\n#if NUM_POINT_LIGHTS > 0\n\tstruct PointLight {\n\t\tvec3 position;\n\t\tvec3 color;\n\t\tfloat distance;\n\t\tfloat decay;\n\t};\n\tuniform PointLight pointLights[ NUM_POINT_LIGHTS ];\n\tvoid getPointDirectLightIrradiance( const in PointLight pointLight, const in GeometricContext geometry, out IncidentLight directLight ) {\n\t\tvec3 lVector = pointLight.position - geometry.position;\n\t\tdirectLight.direction = normalize( lVector );\n\t\tfloat lightDistance = length( lVector );\n\t\tdirectLight.color = pointLight.color;\n\t\tdirectLight.color *= punctualLightIntensityToIrradianceFactor( lightDistance, pointLight.distance, pointLight.decay );\n\t\tdirectLight.visible = ( directLight.color != vec3( 0.0 ) );\n\t}\n#endif\n#if NUM_SPOT_LIGHTS > 0\n\tstruct SpotLight {\n\t\tvec3 position;\n\t\tvec3 direction;\n\t\tvec3 color;\n\t\tfloat distance;\n\t\tfloat decay;\n\t\tfloat coneCos;\n\t\tfloat penumbraCos;\n\t};\n\tuniform SpotLight spotLights[ NUM_SPOT_LIGHTS ];\n\tvoid getSpotDirectLightIrradiance( const in SpotLight spotLight, const in GeometricContext geometry, out IncidentLight directLight  ) {\n\t\tvec3 lVector = spotLight.position - geometry.position;\n\t\tdirectLight.direction = normalize( lVector );\n\t\tfloat lightDistance = length( lVector );\n\t\tfloat angleCos = dot( directLight.direction, spotLight.direction );\n\t\tif ( angleCos > spotLight.coneCos ) {\n\t\t\tfloat spotEffect = smoothstep( spotLight.coneCos, spotLight.penumbraCos, angleCos );\n\t\t\tdirectLight.color = spotLight.color;\n\t\t\tdirectLight.color *= spotEffect * punctualLightIntensityToIrradianceFactor( lightDistance, spotLight.distance, spotLight.decay );\n\t\t\tdirectLight.visible = true;\n\t\t} else {\n\t\t\tdirectLight.color = vec3( 0.0 );\n\t\t\tdirectLight.visible = false;\n\t\t}\n\t}\n#endif\n#if NUM_RECT_AREA_LIGHTS > 0\n\tstruct RectAreaLight {\n\t\tvec3 color;\n\t\tvec3 position;\n\t\tvec3 halfWidth;\n\t\tvec3 halfHeight;\n\t};\n\tuniform sampler2D ltc_1;\tuniform sampler2D ltc_2;\n\tuniform RectAreaLight rectAreaLights[ NUM_RECT_AREA_LIGHTS ];\n#endif\n#if NUM_HEMI_LIGHTS > 0\n\tstruct HemisphereLight {\n\t\tvec3 direction;\n\t\tvec3 skyColor;\n\t\tvec3 groundColor;\n\t};\n\tuniform HemisphereLight hemisphereLights[ NUM_HEMI_LIGHTS ];\n\tvec3 getHemisphereLightIrradiance( const in HemisphereLight hemiLight, const in GeometricContext geometry ) {\n\t\tfloat dotNL = dot( geometry.normal, hemiLight.direction );\n\t\tfloat hemiDiffuseWeight = 0.5 * dotNL + 0.5;\n\t\tvec3 irradiance = mix( hemiLight.groundColor, hemiLight.skyColor, hemiDiffuseWeight );\n\t\t#ifndef PHYSICALLY_CORRECT_LIGHTS\n\t\t\tirradiance *= PI;\n\t\t#endif\n\t\treturn irradiance;\n\t}\n#endif";
+var lights_pars_begin = "uniform bool receiveShadow;\nuniform vec3 ambientLightColor;\nuniform vec3 lightProbe[ 9 ];\nvec3 shGetIrradianceAt( in vec3 normal, in vec3 shCoefficients[ 9 ] ) {\n\tfloat x = normal.x, y = normal.y, z = normal.z;\n\tvec3 result = shCoefficients[ 0 ] * 0.886227;\n\tresult += shCoefficients[ 1 ] * 2.0 * 0.511664 * y;\n\tresult += shCoefficients[ 2 ] * 2.0 * 0.511664 * z;\n\tresult += shCoefficients[ 3 ] * 2.0 * 0.511664 * x;\n\tresult += shCoefficients[ 4 ] * 2.0 * 0.429043 * x * y;\n\tresult += shCoefficients[ 5 ] * 2.0 * 0.429043 * y * z;\n\tresult += shCoefficients[ 6 ] * ( 0.743125 * z * z - 0.247708 );\n\tresult += shCoefficients[ 7 ] * 2.0 * 0.429043 * x * z;\n\tresult += shCoefficients[ 8 ] * 0.429043 * ( x * x - y * y );\n\treturn result;\n}\nvec3 getLightProbeIrradiance( const in vec3 lightProbe[ 9 ], const in GeometricContext geometry ) {\n\tvec3 worldNormal = inverseTransformDirection( geometry.normal, viewMatrix );\n\tvec3 irradiance = shGetIrradianceAt( worldNormal, lightProbe );\n\treturn irradiance;\n}\nvec3 getAmbientLightIrradiance( const in vec3 ambientLightColor ) {\n\tvec3 irradiance = ambientLightColor;\n\t#ifndef PHYSICALLY_CORRECT_LIGHTS\n\t\tirradiance *= PI;\n\t#endif\n\treturn irradiance;\n}\n#if NUM_DIR_LIGHTS > 0\n\tstruct DirectionalLight {\n\t\tvec3 direction;\n\t\tvec3 color;\n\t};\n\tuniform DirectionalLight directionalLights[ NUM_DIR_LIGHTS ];\n\tvoid getDirectionalDirectLightIrradiance( const in DirectionalLight directionalLight, const in GeometricContext geometry, out IncidentLight directLight ) {\n\t\tdirectLight.color = directionalLight.color;\n\t\tdirectLight.direction = directionalLight.direction;\n\t\tdirectLight.visible = true;\n\t}\n#endif\n#if NUM_POINT_LIGHTS > 0\n\tstruct PointLight {\n\t\tvec3 position;\n\t\tvec3 color;\n\t\tfloat distance;\n\t\tfloat decay;\n\t};\n\tuniform PointLight pointLights[ NUM_POINT_LIGHTS ];\n\tvoid getPointDirectLightIrradiance( const in PointLight pointLight, const in GeometricContext geometry, out IncidentLight directLight ) {\n\t\tvec3 lVector = pointLight.position - geometry.position;\n\t\tdirectLight.direction = normalize( lVector );\n\t\tfloat lightDistance = length( lVector );\n\t\tdirectLight.color = pointLight.color;\n\t\tdirectLight.color *= punctualLightIntensityToIrradianceFactor( lightDistance, pointLight.distance, pointLight.decay );\n\t\tdirectLight.visible = ( directLight.color != vec3( 0.0 ) );\n\t}\n#endif\n#if NUM_SPOT_LIGHTS > 0\n\tstruct SpotLight {\n\t\tvec3 position;\n\t\tvec3 direction;\n\t\tvec3 color;\n\t\tfloat distance;\n\t\tfloat decay;\n\t\tfloat coneCos;\n\t\tfloat penumbraCos;\n\t};\n\tuniform SpotLight spotLights[ NUM_SPOT_LIGHTS ];\n\tvoid getSpotDirectLightIrradiance( const in SpotLight spotLight, const in GeometricContext geometry, out IncidentLight directLight ) {\n\t\tvec3 lVector = spotLight.position - geometry.position;\n\t\tdirectLight.direction = normalize( lVector );\n\t\tfloat lightDistance = length( lVector );\n\t\tfloat angleCos = dot( directLight.direction, spotLight.direction );\n\t\tif ( angleCos > spotLight.coneCos ) {\n\t\t\tfloat spotEffect = smoothstep( spotLight.coneCos, spotLight.penumbraCos, angleCos );\n\t\t\tdirectLight.color = spotLight.color;\n\t\t\tdirectLight.color *= spotEffect * punctualLightIntensityToIrradianceFactor( lightDistance, spotLight.distance, spotLight.decay );\n\t\t\tdirectLight.visible = true;\n\t\t} else {\n\t\t\tdirectLight.color = vec3( 0.0 );\n\t\t\tdirectLight.visible = false;\n\t\t}\n\t}\n#endif\n#if NUM_RECT_AREA_LIGHTS > 0\n\tstruct RectAreaLight {\n\t\tvec3 color;\n\t\tvec3 position;\n\t\tvec3 halfWidth;\n\t\tvec3 halfHeight;\n\t};\n\tuniform sampler2D ltc_1;\tuniform sampler2D ltc_2;\n\tuniform RectAreaLight rectAreaLights[ NUM_RECT_AREA_LIGHTS ];\n#endif\n#if NUM_HEMI_LIGHTS > 0\n\tstruct HemisphereLight {\n\t\tvec3 direction;\n\t\tvec3 skyColor;\n\t\tvec3 groundColor;\n\t};\n\tuniform HemisphereLight hemisphereLights[ NUM_HEMI_LIGHTS ];\n\tvec3 getHemisphereLightIrradiance( const in HemisphereLight hemiLight, const in GeometricContext geometry ) {\n\t\tfloat dotNL = dot( geometry.normal, hemiLight.direction );\n\t\tfloat hemiDiffuseWeight = 0.5 * dotNL + 0.5;\n\t\tvec3 irradiance = mix( hemiLight.groundColor, hemiLight.skyColor, hemiDiffuseWeight );\n\t\t#ifndef PHYSICALLY_CORRECT_LIGHTS\n\t\t\tirradiance *= PI;\n\t\t#endif\n\t\treturn irradiance;\n\t}\n#endif";
 
-var envmap_physical_pars_fragment = "#if defined( USE_ENVMAP )\n\t#ifdef ENVMAP_MODE_REFRACTION\n\t\tuniform float refractionRatio;\n\t#endif\n\tvec3 getLightProbeIndirectIrradiance( const in GeometricContext geometry, const in int maxMIPLevel ) {\n\t\tvec3 worldNormal = inverseTransformDirection( geometry.normal, viewMatrix );\n\t\t#ifdef ENVMAP_TYPE_CUBE\n\t\t\tvec3 queryVec = vec3( flipEnvMap * worldNormal.x, worldNormal.yz );\n\t\t\t#ifdef TEXTURE_LOD_EXT\n\t\t\t\tvec4 envMapColor = textureCubeLodEXT( envMap, queryVec, float( maxMIPLevel ) );\n\t\t\t#else\n\t\t\t\tvec4 envMapColor = textureCube( envMap, queryVec, float( maxMIPLevel ) );\n\t\t\t#endif\n\t\t\tenvMapColor.rgb = envMapTexelToLinear( envMapColor ).rgb;\n\t\t#elif defined( ENVMAP_TYPE_CUBE_UV )\n\t\t\tvec4 envMapColor = textureCubeUV( envMap, worldNormal, 1.0 );\n\t\t#else\n\t\t\tvec4 envMapColor = vec4( 0.0 );\n\t\t#endif\n\t\treturn PI * envMapColor.rgb * envMapIntensity;\n\t}\n\tfloat getSpecularMIPLevel( const in float roughness, const in int maxMIPLevel ) {\n\t\tfloat maxMIPLevelScalar = float( maxMIPLevel );\n\t\tfloat sigma = PI * roughness * roughness / ( 1.0 + roughness );\n\t\tfloat desiredMIPLevel = maxMIPLevelScalar + log2( sigma );\n\t\treturn clamp( desiredMIPLevel, 0.0, maxMIPLevelScalar );\n\t}\n\tvec3 getLightProbeIndirectRadiance( const in vec3 viewDir, const in vec3 normal, const in float roughness, const in int maxMIPLevel ) {\n\t\t#ifdef ENVMAP_MODE_REFLECTION\n\t\t  vec3 reflectVec = reflect( -viewDir, normal );\n\t\t  reflectVec = normalize( mix( reflectVec, normal, roughness * roughness) );\n\t\t#else\n\t\t  vec3 reflectVec = refract( -viewDir, normal, refractionRatio );\n\t\t#endif\n\t\treflectVec = inverseTransformDirection( reflectVec, viewMatrix );\n\t\tfloat specularMIPLevel = getSpecularMIPLevel( roughness, maxMIPLevel );\n\t\t#ifdef ENVMAP_TYPE_CUBE\n\t\t\tvec3 queryReflectVec = vec3( flipEnvMap * reflectVec.x, reflectVec.yz );\n\t\t\t#ifdef TEXTURE_LOD_EXT\n\t\t\t\tvec4 envMapColor = textureCubeLodEXT( envMap, queryReflectVec, specularMIPLevel );\n\t\t\t#else\n\t\t\t\tvec4 envMapColor = textureCube( envMap, queryReflectVec, specularMIPLevel );\n\t\t\t#endif\n\t\t\tenvMapColor.rgb = envMapTexelToLinear( envMapColor ).rgb;\n\t\t#elif defined( ENVMAP_TYPE_CUBE_UV )\n\t\t\tvec4 envMapColor = textureCubeUV( envMap, reflectVec, roughness );\n\t\t#elif defined( ENVMAP_TYPE_EQUIREC )\n\t\t\tvec2 sampleUV = equirectUv( reflectVec );\n\t\t\t#ifdef TEXTURE_LOD_EXT\n\t\t\t\tvec4 envMapColor = texture2DLodEXT( envMap, sampleUV, specularMIPLevel );\n\t\t\t#else\n\t\t\t\tvec4 envMapColor = texture2D( envMap, sampleUV, specularMIPLevel );\n\t\t\t#endif\n\t\t\tenvMapColor.rgb = envMapTexelToLinear( envMapColor ).rgb;\n\t\t#endif\n\t\treturn envMapColor.rgb * envMapIntensity;\n\t}\n#endif";
+var envmap_physical_pars_fragment = "#if defined( USE_ENVMAP )\n\t#ifdef ENVMAP_MODE_REFRACTION\n\t\tuniform float refractionRatio;\n\t#endif\n\tvec3 getLightProbeIndirectIrradiance( const in GeometricContext geometry, const in int maxMIPLevel ) {\n\t\tvec3 worldNormal = inverseTransformDirection( geometry.normal, viewMatrix );\n\t\t#ifdef ENVMAP_TYPE_CUBE\n\t\t\tvec3 queryVec = vec3( flipEnvMap * worldNormal.x, worldNormal.yz );\n\t\t\t#ifdef TEXTURE_LOD_EXT\n\t\t\t\tvec4 envMapColor = textureCubeLodEXT( envMap, queryVec, float( maxMIPLevel ) );\n\t\t\t#else\n\t\t\t\tvec4 envMapColor = textureCube( envMap, queryVec, float( maxMIPLevel ) );\n\t\t\t#endif\n\t\t\tenvMapColor.rgb = envMapTexelToLinear( envMapColor ).rgb;\n\t\t#elif defined( ENVMAP_TYPE_CUBE_UV )\n\t\t\tvec4 envMapColor = textureCubeUV( envMap, worldNormal, 1.0 );\n\t\t#else\n\t\t\tvec4 envMapColor = vec4( 0.0 );\n\t\t#endif\n\t\treturn PI * envMapColor.rgb * envMapIntensity;\n\t}\n\tfloat getSpecularMIPLevel( const in float roughness, const in int maxMIPLevel ) {\n\t\tfloat maxMIPLevelScalar = float( maxMIPLevel );\n\t\tfloat sigma = PI * roughness * roughness / ( 1.0 + roughness );\n\t\tfloat desiredMIPLevel = maxMIPLevelScalar + log2( sigma );\n\t\treturn clamp( desiredMIPLevel, 0.0, maxMIPLevelScalar );\n\t}\n\tvec3 getLightProbeIndirectRadiance( const in vec3 viewDir, const in vec3 normal, const in float roughness, const in int maxMIPLevel ) {\n\t\t#ifdef ENVMAP_MODE_REFLECTION\n\t\t\tvec3 reflectVec = reflect( -viewDir, normal );\n\t\t\treflectVec = normalize( mix( reflectVec, normal, roughness * roughness) );\n\t\t#else\n\t\t\tvec3 reflectVec = refract( -viewDir, normal, refractionRatio );\n\t\t#endif\n\t\treflectVec = inverseTransformDirection( reflectVec, viewMatrix );\n\t\tfloat specularMIPLevel = getSpecularMIPLevel( roughness, maxMIPLevel );\n\t\t#ifdef ENVMAP_TYPE_CUBE\n\t\t\tvec3 queryReflectVec = vec3( flipEnvMap * reflectVec.x, reflectVec.yz );\n\t\t\t#ifdef TEXTURE_LOD_EXT\n\t\t\t\tvec4 envMapColor = textureCubeLodEXT( envMap, queryReflectVec, specularMIPLevel );\n\t\t\t#else\n\t\t\t\tvec4 envMapColor = textureCube( envMap, queryReflectVec, specularMIPLevel );\n\t\t\t#endif\n\t\t\tenvMapColor.rgb = envMapTexelToLinear( envMapColor ).rgb;\n\t\t#elif defined( ENVMAP_TYPE_CUBE_UV )\n\t\t\tvec4 envMapColor = textureCubeUV( envMap, reflectVec, roughness );\n\t\t#endif\n\t\treturn envMapColor.rgb * envMapIntensity;\n\t}\n#endif";
 
 var lights_toon_fragment = "ToonMaterial material;\nmaterial.diffuseColor = diffuseColor.rgb;";
 
@@ -14749,7 +14460,7 @@ var clearcoat_normal_fragment_maps = "#ifdef USE_CLEARCOAT_NORMALMAP\n\tvec3 cle
 
 var clearcoat_pars_fragment = "#ifdef USE_CLEARCOATMAP\n\tuniform sampler2D clearcoatMap;\n#endif\n#ifdef USE_CLEARCOAT_ROUGHNESSMAP\n\tuniform sampler2D clearcoatRoughnessMap;\n#endif\n#ifdef USE_CLEARCOAT_NORMALMAP\n\tuniform sampler2D clearcoatNormalMap;\n\tuniform vec2 clearcoatNormalScale;\n#endif";
 
-var packing = "vec3 packNormalToRGB( const in vec3 normal ) {\n\treturn normalize( normal ) * 0.5 + 0.5;\n}\nvec3 unpackRGBToNormal( const in vec3 rgb ) {\n\treturn 2.0 * rgb.xyz - 1.0;\n}\nconst float PackUpscale = 256. / 255.;const float UnpackDownscale = 255. / 256.;\nconst vec3 PackFactors = vec3( 256. * 256. * 256., 256. * 256.,  256. );\nconst vec4 UnpackFactors = UnpackDownscale / vec4( PackFactors, 1. );\nconst float ShiftRight8 = 1. / 256.;\nvec4 packDepthToRGBA( const in float v ) {\n\tvec4 r = vec4( fract( v * PackFactors ), v );\n\tr.yzw -= r.xyz * ShiftRight8;\treturn r * PackUpscale;\n}\nfloat unpackRGBAToDepth( const in vec4 v ) {\n\treturn dot( v, UnpackFactors );\n}\nvec4 pack2HalfToRGBA( vec2 v ) {\n\tvec4 r = vec4( v.x, fract( v.x * 255.0 ), v.y, fract( v.y * 255.0 ));\n\treturn vec4( r.x - r.y / 255.0, r.y, r.z - r.w / 255.0, r.w);\n}\nvec2 unpackRGBATo2Half( vec4 v ) {\n\treturn vec2( v.x + ( v.y / 255.0 ), v.z + ( v.w / 255.0 ) );\n}\nfloat viewZToOrthographicDepth( const in float viewZ, const in float near, const in float far ) {\n\treturn ( viewZ + near ) / ( near - far );\n}\nfloat orthographicDepthToViewZ( const in float linearClipZ, const in float near, const in float far ) {\n\treturn linearClipZ * ( near - far ) - near;\n}\nfloat viewZToPerspectiveDepth( const in float viewZ, const in float near, const in float far ) {\n\treturn (( near + viewZ ) * far ) / (( far - near ) * viewZ );\n}\nfloat perspectiveDepthToViewZ( const in float invClipZ, const in float near, const in float far ) {\n\treturn ( near * far ) / ( ( far - near ) * invClipZ - far );\n}";
+var packing = "vec3 packNormalToRGB( const in vec3 normal ) {\n\treturn normalize( normal ) * 0.5 + 0.5;\n}\nvec3 unpackRGBToNormal( const in vec3 rgb ) {\n\treturn 2.0 * rgb.xyz - 1.0;\n}\nconst float PackUpscale = 256. / 255.;const float UnpackDownscale = 255. / 256.;\nconst vec3 PackFactors = vec3( 256. * 256. * 256., 256. * 256., 256. );\nconst vec4 UnpackFactors = UnpackDownscale / vec4( PackFactors, 1. );\nconst float ShiftRight8 = 1. / 256.;\nvec4 packDepthToRGBA( const in float v ) {\n\tvec4 r = vec4( fract( v * PackFactors ), v );\n\tr.yzw -= r.xyz * ShiftRight8;\treturn r * PackUpscale;\n}\nfloat unpackRGBAToDepth( const in vec4 v ) {\n\treturn dot( v, UnpackFactors );\n}\nvec4 pack2HalfToRGBA( vec2 v ) {\n\tvec4 r = vec4( v.x, fract( v.x * 255.0 ), v.y, fract( v.y * 255.0 ));\n\treturn vec4( r.x - r.y / 255.0, r.y, r.z - r.w / 255.0, r.w);\n}\nvec2 unpackRGBATo2Half( vec4 v ) {\n\treturn vec2( v.x + ( v.y / 255.0 ), v.z + ( v.w / 255.0 ) );\n}\nfloat viewZToOrthographicDepth( const in float viewZ, const in float near, const in float far ) {\n\treturn ( viewZ + near ) / ( near - far );\n}\nfloat orthographicDepthToViewZ( const in float linearClipZ, const in float near, const in float far ) {\n\treturn linearClipZ * ( near - far ) - near;\n}\nfloat viewZToPerspectiveDepth( const in float viewZ, const in float near, const in float far ) {\n\treturn (( near + viewZ ) * far ) / (( far - near ) * viewZ );\n}\nfloat perspectiveDepthToViewZ( const in float invClipZ, const in float near, const in float far ) {\n\treturn ( near * far ) / ( ( far - near ) * invClipZ - far );\n}";
 
 var premultiplied_alpha_fragment = "#ifdef PREMULTIPLIED_ALPHA\n\tgl_FragColor.rgb *= gl_FragColor.a;\n#endif";
 
@@ -14777,7 +14488,7 @@ var skinning_pars_vertex = "#ifdef USE_SKINNING\n\tuniform mat4 bindMatrix;\n\tu
 
 var skinning_vertex = "#ifdef USE_SKINNING\n\tvec4 skinVertex = bindMatrix * vec4( transformed, 1.0 );\n\tvec4 skinned = vec4( 0.0 );\n\tskinned += boneMatX * skinVertex * skinWeight.x;\n\tskinned += boneMatY * skinVertex * skinWeight.y;\n\tskinned += boneMatZ * skinVertex * skinWeight.z;\n\tskinned += boneMatW * skinVertex * skinWeight.w;\n\ttransformed = ( bindMatrixInverse * skinned ).xyz;\n#endif";
 
-var skinnormal_vertex = "#ifdef USE_SKINNING\n\tmat4 skinMatrix = mat4( 0.0 );\n\tskinMatrix += skinWeight.x * boneMatX;\n\tskinMatrix += skinWeight.y * boneMatY;\n\tskinMatrix += skinWeight.z * boneMatZ;\n\tskinMatrix += skinWeight.w * boneMatW;\n\tskinMatrix  = bindMatrixInverse * skinMatrix * bindMatrix;\n\tobjectNormal = vec4( skinMatrix * vec4( objectNormal, 0.0 ) ).xyz;\n\t#ifdef USE_TANGENT\n\t\tobjectTangent = vec4( skinMatrix * vec4( objectTangent, 0.0 ) ).xyz;\n\t#endif\n#endif";
+var skinnormal_vertex = "#ifdef USE_SKINNING\n\tmat4 skinMatrix = mat4( 0.0 );\n\tskinMatrix += skinWeight.x * boneMatX;\n\tskinMatrix += skinWeight.y * boneMatY;\n\tskinMatrix += skinWeight.z * boneMatZ;\n\tskinMatrix += skinWeight.w * boneMatW;\n\tskinMatrix = bindMatrixInverse * skinMatrix * bindMatrix;\n\tobjectNormal = vec4( skinMatrix * vec4( objectNormal, 0.0 ) ).xyz;\n\t#ifdef USE_TANGENT\n\t\tobjectTangent = vec4( skinMatrix * vec4( objectTangent, 0.0 ) ).xyz;\n\t#endif\n#endif";
 
 var specularmap_fragment = "float specularStrength;\n#ifdef USE_SPECULARMAP\n\tvec4 texelSpecular = texture2D( specularMap, vUv );\n\tspecularStrength = texelSpecular.r;\n#else\n\tspecularStrength = 1.0;\n#endif";
 
@@ -15000,6 +14711,215 @@ const ShaderChunk = {
 	shadow_vert: shadow_vert,
 	sprite_frag: sprite_frag,
 	sprite_vert: sprite_vert
+};
+
+/**
+ * Uniforms library for shared webgl shaders
+ */
+
+const UniformsLib = {
+
+	common: {
+
+		diffuse: { value: new Color( 0xeeeeee ) },
+		opacity: { value: 1.0 },
+
+		map: { value: null },
+		uvTransform: { value: new Matrix3() },
+		uv2Transform: { value: new Matrix3() },
+
+		alphaMap: { value: null },
+
+	},
+
+	specularmap: {
+
+		specularMap: { value: null },
+
+	},
+
+	envmap: {
+
+		envMap: { value: null },
+		flipEnvMap: { value: - 1 },
+		reflectivity: { value: 1.0 },
+		refractionRatio: { value: 0.98 },
+		maxMipLevel: { value: 0 }
+
+	},
+
+	aomap: {
+
+		aoMap: { value: null },
+		aoMapIntensity: { value: 1 }
+
+	},
+
+	lightmap: {
+
+		lightMap: { value: null },
+		lightMapIntensity: { value: 1 }
+
+	},
+
+	emissivemap: {
+
+		emissiveMap: { value: null }
+
+	},
+
+	bumpmap: {
+
+		bumpMap: { value: null },
+		bumpScale: { value: 1 }
+
+	},
+
+	normalmap: {
+
+		normalMap: { value: null },
+		normalScale: { value: new Vector2( 1, 1 ) }
+
+	},
+
+	displacementmap: {
+
+		displacementMap: { value: null },
+		displacementScale: { value: 1 },
+		displacementBias: { value: 0 }
+
+	},
+
+	roughnessmap: {
+
+		roughnessMap: { value: null }
+
+	},
+
+	metalnessmap: {
+
+		metalnessMap: { value: null }
+
+	},
+
+	gradientmap: {
+
+		gradientMap: { value: null }
+
+	},
+
+	fog: {
+
+		fogDensity: { value: 0.00025 },
+		fogNear: { value: 1 },
+		fogFar: { value: 2000 },
+		fogColor: { value: new Color( 0xffffff ) }
+
+	},
+
+	lights: {
+
+		ambientLightColor: { value: [] },
+
+		lightProbe: { value: [] },
+
+		directionalLights: { value: [], properties: {
+			direction: {},
+			color: {}
+		} },
+
+		directionalLightShadows: { value: [], properties: {
+			shadowBias: {},
+			shadowNormalBias: {},
+			shadowRadius: {},
+			shadowMapSize: {}
+		} },
+
+		directionalShadowMap: { value: [] },
+		directionalShadowMatrix: { value: [] },
+
+		spotLights: { value: [], properties: {
+			color: {},
+			position: {},
+			direction: {},
+			distance: {},
+			coneCos: {},
+			penumbraCos: {},
+			decay: {}
+		} },
+
+		spotLightShadows: { value: [], properties: {
+			shadowBias: {},
+			shadowNormalBias: {},
+			shadowRadius: {},
+			shadowMapSize: {}
+		} },
+
+		spotShadowMap: { value: [] },
+		spotShadowMatrix: { value: [] },
+
+		pointLights: { value: [], properties: {
+			color: {},
+			position: {},
+			decay: {},
+			distance: {}
+		} },
+
+		pointLightShadows: { value: [], properties: {
+			shadowBias: {},
+			shadowNormalBias: {},
+			shadowRadius: {},
+			shadowMapSize: {},
+			shadowCameraNear: {},
+			shadowCameraFar: {}
+		} },
+
+		pointShadowMap: { value: [] },
+		pointShadowMatrix: { value: [] },
+
+		hemisphereLights: { value: [], properties: {
+			direction: {},
+			skyColor: {},
+			groundColor: {}
+		} },
+
+		// TODO (abelnation): RectAreaLight BRDF data needs to be moved from example to main src
+		rectAreaLights: { value: [], properties: {
+			color: {},
+			position: {},
+			width: {},
+			height: {}
+		} },
+
+		ltc_1: { value: null },
+		ltc_2: { value: null }
+
+	},
+
+	points: {
+
+		diffuse: { value: new Color( 0xeeeeee ) },
+		opacity: { value: 1.0 },
+		size: { value: 1.0 },
+		scale: { value: 1.0 },
+		map: { value: null },
+		alphaMap: { value: null },
+		uvTransform: { value: new Matrix3() }
+
+	},
+
+	sprite: {
+
+		diffuse: { value: new Color( 0xeeeeee ) },
+		opacity: { value: 1.0 },
+		center: { value: new Vector2( 0.5, 0.5 ) },
+		rotation: { value: 0.0 },
+		map: { value: null },
+		alphaMap: { value: null },
+		uvTransform: { value: new Matrix3() }
+
+	}
+
 };
 
 const ShaderLib = {
@@ -15303,7 +15223,7 @@ ShaderLib.physical = {
 
 };
 
-function WebGLBackground( renderer, state, objects, premultipliedAlpha ) {
+function WebGLBackground( renderer, cubemaps, state, objects, premultipliedAlpha ) {
 
 	const clearColor = new Color( 0x000000 );
 	let clearAlpha = 0;
@@ -15318,6 +15238,12 @@ function WebGLBackground( renderer, state, objects, premultipliedAlpha ) {
 	function render( renderList, scene, camera, forceClear ) {
 
 		let background = scene.isScene === true ? scene.background : null;
+
+		if ( background && background.isTexture ) {
+
+			background = cubemaps.get( background );
+
+		}
 
 		// Ignore background in AR
 		// TODO: Reconsider this.
@@ -15348,7 +15274,7 @@ function WebGLBackground( renderer, state, objects, premultipliedAlpha ) {
 
 		}
 
-		if ( background && ( background.isCubeTexture || background.isWebGLCubeRenderTarget || background.mapping === CubeUVReflectionMapping ) ) {
+		if ( background && ( background.isCubeTexture || background.isWebGLCubeRenderTarget || background.isWebGLCubeRenderTargetTexture || background.mapping === CubeUVReflectionMapping ) ) {
 
 			if ( boxMesh === undefined ) {
 
@@ -15390,19 +15316,25 @@ function WebGLBackground( renderer, state, objects, premultipliedAlpha ) {
 
 			}
 
-			const texture = background.isWebGLCubeRenderTarget ? background.texture : background;
+			if ( background.isWebGLCubeRenderTarget ) {
 
-			boxMesh.material.uniforms.envMap.value = texture;
-			boxMesh.material.uniforms.flipEnvMap.value = texture.isCubeTexture ? - 1 : 1;
+				// TODO Deprecate
+
+				background = background.texture;
+
+			}
+
+			boxMesh.material.uniforms.envMap.value = background;
+			boxMesh.material.uniforms.flipEnvMap.value = background.isCubeTexture ? - 1 : 1;
 
 			if ( currentBackground !== background ||
-				currentBackgroundVersion !== texture.version ||
+				currentBackgroundVersion !== background.version ||
 				currentTonemapping !== renderer.toneMapping ) {
 
 				boxMesh.material.needsUpdate = true;
 
 				currentBackground = background;
-				currentBackgroundVersion = texture.version;
+				currentBackgroundVersion = background.version;
 				currentTonemapping = renderer.toneMapping;
 
 			}
@@ -15539,9 +15471,9 @@ function WebGLBindingStates( gl, extensions, attributes, capabilities ) {
 
 			}
 
-			updateBuffers = needsUpdate( geometry );
+			updateBuffers = needsUpdate( geometry, index );
 
-			if ( updateBuffers ) saveCache( geometry );
+			if ( updateBuffers ) saveCache( geometry, index );
 
 		} else {
 
@@ -15671,13 +15603,14 @@ function WebGLBindingStates( gl, extensions, attributes, capabilities ) {
 			enabledAttributes: enabledAttributes,
 			attributeDivisors: attributeDivisors,
 			object: vao,
-			attributes: {}
+			attributes: {},
+			index: null
 
 		};
 
 	}
 
-	function needsUpdate( geometry ) {
+	function needsUpdate( geometry, index ) {
 
 		const cachedAttributes = currentState.attributes;
 		const geometryAttributes = geometry.attributes;
@@ -15689,17 +15622,21 @@ function WebGLBindingStates( gl, extensions, attributes, capabilities ) {
 			const cachedAttribute = cachedAttributes[ key ];
 			const geometryAttribute = geometryAttributes[ key ];
 
+			if ( cachedAttribute === undefined ) return true;
+
 			if ( cachedAttribute.attribute !== geometryAttribute ) return true;
 
 			if ( cachedAttribute.data !== geometryAttribute.data ) return true;
 
 		}
 
+		if ( currentState.index !== index ) return true;
+
 		return false;
 
 	}
 
-	function saveCache( geometry ) {
+	function saveCache( geometry, index ) {
 
 		const cache = {};
 		const attributes = geometry.attributes;
@@ -15722,6 +15659,8 @@ function WebGLBindingStates( gl, extensions, attributes, capabilities ) {
 		}
 
 		currentState.attributes = cache;
+
+		currentState.index = index;
 
 	}
 
@@ -15910,6 +15849,23 @@ function WebGLBindingStates( gl, extensions, attributes, capabilities ) {
 					gl.vertexAttribPointer( programAttribute + 1, 4, type, false, 64, 16 );
 					gl.vertexAttribPointer( programAttribute + 2, 4, type, false, 64, 32 );
 					gl.vertexAttribPointer( programAttribute + 3, 4, type, false, 64, 48 );
+
+				} else if ( name === 'instanceColor' ) {
+
+					const attribute = attributes.get( object.instanceColor );
+
+					// TODO Attribute may not be available on context restore
+
+					if ( attribute === undefined ) continue;
+
+					const buffer = attribute.buffer;
+					const type = attribute.type;
+
+					enableAttributeAndDivisor( programAttribute, 1 );
+
+					gl.bindBuffer( 34962, buffer );
+
+					gl.vertexAttribPointer( programAttribute, 3, type, false, 12, 0 );
 
 				} else if ( materialDefaultAttributeValues !== undefined ) {
 
@@ -16242,7 +16198,7 @@ function WebGLCapabilities( gl, extensions, parameters ) {
 
 }
 
-function WebGLClipping() {
+function WebGLClipping( properties ) {
 
 	const scope = this;
 
@@ -16293,7 +16249,13 @@ function WebGLClipping() {
 
 	};
 
-	this.setState = function ( planes, clipIntersection, clipShadows, camera, cache, fromCache ) {
+	this.setState = function ( material, camera, useCache ) {
+
+		const planes = material.clippingPlanes,
+			clipIntersection = material.clipIntersection,
+			clipShadows = material.clipShadows;
+
+		const materialProperties = properties.get( material );
 
 		if ( ! localClippingEnabled || planes === null || planes.length === 0 || renderingShadows && ! clipShadows ) {
 
@@ -16316,11 +16278,11 @@ function WebGLClipping() {
 			const nGlobal = renderingShadows ? 0 : numGlobalPlanes,
 				lGlobal = nGlobal * 4;
 
-			let dstArray = cache.clippingState || null;
+			let dstArray = materialProperties.clippingState || null;
 
 			uniform.value = dstArray; // ensure unique state
 
-			dstArray = projectPlanes( planes, camera, lGlobal, fromCache );
+			dstArray = projectPlanes( planes, camera, lGlobal, useCache );
 
 			for ( let i = 0; i !== lGlobal; ++ i ) {
 
@@ -16328,7 +16290,7 @@ function WebGLClipping() {
 
 			}
 
-			cache.clippingState = dstArray;
+			materialProperties.clippingState = dstArray;
 			this.numIntersection = clipIntersection ? this.numPlanes : 0;
 			this.numPlanes += nGlobal;
 
@@ -16353,8 +16315,8 @@ function WebGLClipping() {
 
 	function projectPlanes( planes, camera, dstOffset, skipTransform ) {
 
-		let nPlanes = planes !== null ? planes.length : 0,
-			dstArray = null;
+		const nPlanes = planes !== null ? planes.length : 0;
+		let dstArray = null;
 
 		if ( nPlanes !== 0 ) {
 
@@ -16398,6 +16360,90 @@ function WebGLClipping() {
 
 }
 
+function WebGLCubeMaps( renderer ) {
+
+	let cubemaps = new WeakMap();
+
+	function mapTextureMapping( texture, mapping ) {
+
+		if ( mapping === EquirectangularReflectionMapping ) {
+
+			texture.mapping = CubeReflectionMapping;
+
+		} else if ( mapping === EquirectangularRefractionMapping ) {
+
+			texture.mapping = CubeRefractionMapping;
+
+		}
+
+		return texture;
+
+	}
+
+	function get( texture ) {
+
+		if ( texture && texture.isTexture ) {
+
+			const mapping = texture.mapping;
+
+			if ( mapping === EquirectangularReflectionMapping || mapping === EquirectangularRefractionMapping ) {
+
+				if ( cubemaps.has( texture ) ) {
+
+					const cubemap = cubemaps.get( texture ).texture;
+					return mapTextureMapping( cubemap, texture.mapping );
+
+				} else {
+
+					const image = texture.image;
+
+					if ( image && image.height > 0 ) {
+
+						const currentRenderList = renderer.getRenderList();
+						const currentRenderTarget = renderer.getRenderTarget();
+						const currentRenderState = renderer.getRenderState();
+
+						const renderTarget = new WebGLCubeRenderTarget( image.height / 2 );
+						renderTarget.fromEquirectangularTexture( renderer, texture );
+						cubemaps.set( texture, renderTarget );
+
+						renderer.setRenderTarget( currentRenderTarget );
+						renderer.setRenderList( currentRenderList );
+						renderer.setRenderState( currentRenderState );
+
+						return mapTextureMapping( renderTarget.texture, texture.mapping );
+
+					} else {
+
+						// image not yet ready. try the conversion next frame
+
+						return null;
+
+					}
+
+				}
+
+			}
+
+		}
+
+		return texture;
+
+	}
+
+	function dispose() {
+
+		cubemaps = new WeakMap();
+
+	}
+
+	return {
+		get: get,
+		dispose: dispose
+	};
+
+}
+
 function WebGLExtensions( gl ) {
 
 	const extensions = {};
@@ -16408,7 +16454,7 @@ function WebGLExtensions( gl ) {
 
 			if ( extensions[ name ] !== undefined ) {
 
-				return extensions[ name ];
+				return extensions[ name ] !== null;
 
 			}
 
@@ -16439,7 +16485,7 @@ function WebGLExtensions( gl ) {
 
 			extensions[ name ] = extension;
 
-			return !! extension;
+			return extension !== null;
 
 		},
 
@@ -16987,6 +17033,12 @@ function WebGLObjects( gl, geometries, attributes, info ) {
 
 			attributes.update( object.instanceMatrix, 34962 );
 
+			if ( object.instanceColor !== null ) {
+
+				attributes.update( object.instanceColor, 34962 );
+
+			}
+
 		}
 
 		return buffergeometry;
@@ -17165,8 +17217,8 @@ function flatten( array, nBlocks, blockSize ) {
 	// unoptimized: ! isNaN( firstElem )
 	// see http://jacksondunstan.com/articles/983
 
-	let n = nBlocks * blockSize,
-		r = arrayCacheF32[ n ];
+	const n = nBlocks * blockSize;
+	let r = arrayCacheF32[ n ];
 
 	if ( r === undefined ) {
 
@@ -17802,7 +17854,7 @@ function PureArrayUniform( id, activeInfo, addr ) {
 
 PureArrayUniform.prototype.updateCache = function ( data ) {
 
-	let cache = this.cache;
+	const cache = this.cache;
 
 	if ( data instanceof Float32Array && cache.length !== data.length ) {
 
@@ -17871,8 +17923,8 @@ function parseUniform( activeInfo, addr, container ) {
 		const match = RePathPart.exec( path ),
 			matchEnd = RePathPart.lastIndex;
 
-		let id = match[ 1 ],
-			idIsIndex = match[ 2 ] === ']',
+		let id = match[ 1 ];
+		const idIsIndex = match[ 2 ] === ']',
 			subscript = match[ 3 ];
 
 		if ( idIsIndex ) id = id | 0; // convert to integer
@@ -18209,7 +18261,7 @@ function includeReplacer( match, include ) {
 // Unroll Loops
 
 const deprecatedUnrollLoopPattern = /#pragma unroll_loop[\s]+?for \( int i \= (\d+)\; i < (\d+)\; i \+\+ \) \{([\s\S]+?)(?=\})\}/g;
-const unrollLoopPattern = /#pragma unroll_loop_start[\s]+?for \( int i \= (\d+)\; i < (\d+)\; i \+\+ \) \{([\s\S]+?)(?=\})\}[\s]+?#pragma unroll_loop_end/g;
+const unrollLoopPattern = /#pragma unroll_loop_start\s+for\s*\(\s*int\s+i\s*=\s*(\d+)\s*;\s*i\s*<\s*(\d+)\s*;\s*i\s*\+\+\s*\)\s*{([\s\S]+?)}\s+#pragma unroll_loop_end/g;
 
 function unrollLoops( string ) {
 
@@ -18233,7 +18285,7 @@ function loopReplacer( match, start, end, snippet ) {
 	for ( let i = parseInt( start ); i < parseInt( end ); i ++ ) {
 
 		string += snippet
-			.replace( /\[ i \]/g, '[ ' + i + ' ]' )
+			.replace( /\[\s*i\s*\]/g, '[ ' + i + ' ]' )
 			.replace( /UNROLLED_LOOP_INDEX/g, i );
 
 	}
@@ -18306,11 +18358,6 @@ function generateEnvMapTypeDefine( parameters ) {
 				envMapTypeDefine = 'ENVMAP_TYPE_CUBE_UV';
 				break;
 
-			case EquirectangularReflectionMapping:
-			case EquirectangularRefractionMapping:
-				envMapTypeDefine = 'ENVMAP_TYPE_EQUIREC';
-				break;
-
 		}
 
 	}
@@ -18328,7 +18375,6 @@ function generateEnvMapModeDefine( parameters ) {
 		switch ( parameters.envMapMode ) {
 
 			case CubeRefractionMapping:
-			case EquirectangularRefractionMapping:
 			case CubeUVRefractionMapping:
 
 				envMapModeDefine = 'ENVMAP_MODE_REFRACTION';
@@ -18394,6 +18440,7 @@ function WebGLProgram( renderer, cacheKey, parameters, bindingStates ) {
 	const program = gl.createProgram();
 
 	let prefixVertex, prefixFragment;
+	let versionString = parameters.glslVersion ? '#version ' + parameters.glslVersion + "\n" : '';
 
 	if ( parameters.isRawShaderMaterial ) {
 
@@ -18433,6 +18480,8 @@ function WebGLProgram( renderer, cacheKey, parameters, bindingStates ) {
 			customDefines,
 
 			parameters.instancing ? '#define USE_INSTANCING' : '',
+			parameters.instancingColor ? '#define USE_INSTANCING_COLOR' : '',
+
 			parameters.supportsVertexTextures ? '#define VERTEX_TEXTURES' : '',
 
 			'#define GAMMA_FACTOR ' + gammaFactorDefine,
@@ -18495,7 +18544,13 @@ function WebGLProgram( renderer, cacheKey, parameters, bindingStates ) {
 
 			'#ifdef USE_INSTANCING',
 
-			' attribute mat4 instanceMatrix;',
+			'	attribute mat4 instanceMatrix;',
+
+			'#endif',
+
+			'#ifdef USE_INSTANCING_COLOR',
+
+			'	attribute vec3 instanceColor;',
 
 			'#endif',
 
@@ -18593,7 +18648,7 @@ function WebGLProgram( renderer, cacheKey, parameters, bindingStates ) {
 			parameters.transmissionMap ? '#define USE_TRANSMISSIONMAP' : '',
 
 			parameters.vertexTangents ? '#define USE_TANGENT' : '',
-			parameters.vertexColors ? '#define USE_COLOR' : '',
+			parameters.vertexColors || parameters.instancingColor ? '#define USE_COLOR' : '',
 			parameters.vertexUvs ? '#define USE_UV' : '',
 			parameters.uvsVertexOnly ? '#define UVS_VERTEX_ONLY' : '',
 
@@ -18653,22 +18708,22 @@ function WebGLProgram( renderer, cacheKey, parameters, bindingStates ) {
 	vertexShader = unrollLoops( vertexShader );
 	fragmentShader = unrollLoops( fragmentShader );
 
-	if ( parameters.isWebGL2 && ! parameters.isRawShaderMaterial ) {
+	if ( parameters.isWebGL2 && parameters.isRawShaderMaterial !== true ) {
 
-		// GLSL 3.0 conversion
+		// GLSL 3.0 conversion for built-in materials and ShaderMaterial
+
+		versionString = '#version 300 es\n';
 
 		prefixVertex = [
-			'#version 300 es\n',
 			'#define attribute in',
 			'#define varying out',
 			'#define texture2D texture'
 		].join( '\n' ) + '\n' + prefixVertex;
 
 		prefixFragment = [
-			'#version 300 es\n',
 			'#define varying in',
-			'out highp vec4 pc_fragColor;',
-			'#define gl_FragColor pc_fragColor',
+			( parameters.glslVersion === GLSL3 ) ? '' : 'out highp vec4 pc_fragColor;',
+			( parameters.glslVersion === GLSL3 ) ? '' : '#define gl_FragColor pc_fragColor',
 			'#define gl_FragDepthEXT gl_FragDepth',
 			'#define texture2D texture',
 			'#define textureCube texture',
@@ -18683,8 +18738,8 @@ function WebGLProgram( renderer, cacheKey, parameters, bindingStates ) {
 
 	}
 
-	const vertexGlsl = prefixVertex + vertexShader;
-	const fragmentGlsl = prefixFragment + fragmentShader;
+	const vertexGlsl = versionString + prefixVertex + vertexShader;
+	const fragmentGlsl = versionString + prefixFragment + fragmentShader;
 
 	// console.log( '*VERTEX*', vertexGlsl );
 	// console.log( '*FRAGMENT*', fragmentGlsl );
@@ -18833,7 +18888,7 @@ function WebGLProgram( renderer, cacheKey, parameters, bindingStates ) {
 
 }
 
-function WebGLPrograms( renderer, extensions, capabilities, bindingStates ) {
+function WebGLPrograms( renderer, cubemaps, extensions, capabilities, bindingStates, clipping ) {
 
 	const programs = [];
 
@@ -18864,7 +18919,7 @@ function WebGLPrograms( renderer, extensions, capabilities, bindingStates ) {
 	};
 
 	const parameterNames = [
-		"precision", "isWebGL2", "supportsVertexTextures", "outputEncoding", "instancing",
+		"precision", "isWebGL2", "supportsVertexTextures", "outputEncoding", "instancing", "instancingColor",
 		"map", "mapEncoding", "matcap", "matcapEncoding", "envMap", "envMapMode", "envMapEncoding", "envMapCubeUV",
 		"lightMap", "lightMapEncoding", "aoMap", "emissiveMap", "emissiveMapEncoding", "bumpMap", "normalMap", "objectSpaceNormalMap", "tangentSpaceNormalMap", "clearcoatMap", "clearcoatRoughnessMap", "clearcoatNormalMap", "displacementMap", "specularMap",
 		"roughnessMap", "metalnessMap", "gradientMap",
@@ -18879,7 +18934,7 @@ function WebGLPrograms( renderer, extensions, capabilities, bindingStates ) {
 		"sheen", "transmissionMap"
 	];
 
-	function allocateBones( object ) {
+	function getMaxBones( object ) {
 
 		const skeleton = object.skeleton;
 		const bones = skeleton.bones;
@@ -18938,19 +18993,19 @@ function WebGLPrograms( renderer, extensions, capabilities, bindingStates ) {
 
 	}
 
-	function getParameters( material, lights, shadows, scene, nClipPlanes, nClipIntersection, object ) {
+	function getParameters( material, lights, shadows, scene, object ) {
 
 		const fog = scene.fog;
 		const environment = material.isMeshStandardMaterial ? scene.environment : null;
 
-		const envMap = material.envMap || environment;
+		const envMap = cubemaps.get( material.envMap || environment );
 
 		const shaderID = shaderIDs[ material.type ];
 
 		// heuristics to create shader parameters according to lights in the scene
 		// (not to blow over maxLights budget)
 
-		const maxBones = object.isSkinnedMesh ? allocateBones( object ) : 0;
+		const maxBones = object.isSkinnedMesh ? getMaxBones( object ) : 0;
 
 		if ( material.precision !== null ) {
 
@@ -18993,12 +19048,13 @@ function WebGLPrograms( renderer, extensions, capabilities, bindingStates ) {
 			fragmentShader: fragmentShader,
 			defines: material.defines,
 
-			isRawShaderMaterial: material.isRawShaderMaterial,
-			isShaderMaterial: material.isShaderMaterial,
+			isRawShaderMaterial: material.isRawShaderMaterial === true,
+			glslVersion: material.glslVersion,
 
 			precision: precision,
 
 			instancing: object.isInstancedMesh === true,
+			instancingColor: object.isInstancedMesh === true && object.instanceColor !== null,
 
 			supportsVertexTextures: vertexTextures,
 			outputEncoding: ( currentRenderTarget !== null ) ? getTextureEncodingFromMap( currentRenderTarget.texture ) : renderer.outputEncoding,
@@ -19069,8 +19125,8 @@ function WebGLPrograms( renderer, extensions, capabilities, bindingStates ) {
 			numPointLightShadows: lights.pointShadowMap.length,
 			numSpotLightShadows: lights.spotShadowMap.length,
 
-			numClippingPlanes: nClipPlanes,
-			numClipIntersection: nClipIntersection,
+			numClippingPlanes: clipping.numPlanes,
+			numClipIntersection: clipping.numIntersection,
 
 			dithering: material.dithering,
 
@@ -19095,9 +19151,9 @@ function WebGLPrograms( renderer, extensions, capabilities, bindingStates ) {
 			extensionDrawBuffers: material.extensions && material.extensions.drawBuffers,
 			extensionShaderTextureLOD: material.extensions && material.extensions.shaderTextureLOD,
 
-			rendererExtensionFragDepth: isWebGL2 || extensions.get( 'EXT_frag_depth' ) !== null,
-			rendererExtensionDrawBuffers: isWebGL2 || extensions.get( 'WEBGL_draw_buffers' ) !== null,
-			rendererExtensionShaderTextureLod: isWebGL2 || extensions.get( 'EXT_shader_texture_lod' ) !== null,
+			rendererExtensionFragDepth: isWebGL2 || extensions.has( 'EXT_frag_depth' ),
+			rendererExtensionDrawBuffers: isWebGL2 || extensions.has( 'WEBGL_draw_buffers' ),
+			rendererExtensionShaderTextureLod: isWebGL2 || extensions.has( 'EXT_shader_texture_lod' ),
 
 			customProgramCacheKey: material.customProgramCacheKey()
 
@@ -19133,7 +19189,7 @@ function WebGLPrograms( renderer, extensions, capabilities, bindingStates ) {
 
 		}
 
-		if ( parameters.isRawShaderMaterial === undefined ) {
+		if ( parameters.isRawShaderMaterial === false ) {
 
 			for ( let i = 0; i < parameterNames.length; i ++ ) {
 
@@ -19453,16 +19509,6 @@ function WebGLRenderLists( properties ) {
 
 	let lists = new WeakMap();
 
-	function onSceneDispose( event ) {
-
-		const scene = event.target;
-
-		scene.removeEventListener( 'dispose', onSceneDispose );
-
-		lists.delete( scene );
-
-	}
-
 	function get( scene, camera ) {
 
 		const cameras = lists.get( scene );
@@ -19473,8 +19519,6 @@ function WebGLRenderLists( properties ) {
 			list = new WebGLRenderList( properties );
 			lists.set( scene, new WeakMap() );
 			lists.get( scene ).set( camera, list );
-
-			scene.addEventListener( 'dispose', onSceneDispose );
 
 		} else {
 
@@ -19684,6 +19728,8 @@ function WebGLLights() {
 		spotShadowMap: [],
 		spotShadowMatrix: [],
 		rectArea: [],
+		rectAreaLTC1: null,
+		rectAreaLTC2: null,
 		point: [],
 		pointShadow: [],
 		pointShadowMap: [],
@@ -19904,6 +19950,13 @@ function WebGLLights() {
 
 		}
 
+		if ( rectAreaLength > 0 ) {
+
+			state.rectAreaLTC1 = UniformsLib.LTC_1;
+			state.rectAreaLTC2 = UniformsLib.LTC_2;
+
+		}
+
 		state.ambient[ 0 ] = r;
 		state.ambient[ 1 ] = g;
 		state.ambient[ 2 ] = b;
@@ -20012,16 +20065,6 @@ function WebGLRenderStates() {
 
 	let renderStates = new WeakMap();
 
-	function onSceneDispose( event ) {
-
-		const scene = event.target;
-
-		scene.removeEventListener( 'dispose', onSceneDispose );
-
-		renderStates.delete( scene );
-
-	}
-
 	function get( scene, camera ) {
 
 		let renderState;
@@ -20031,8 +20074,6 @@ function WebGLRenderStates() {
 			renderState = new WebGLRenderState();
 			renderStates.set( scene, new WeakMap() );
 			renderStates.get( scene ).set( camera, renderState );
-
-			scene.addEventListener( 'dispose', onSceneDispose );
 
 		} else {
 
@@ -20217,7 +20258,7 @@ MeshDistanceMaterial.prototype.copy = function ( source ) {
 
 };
 
-var vsm_frag = "uniform sampler2D shadow_pass;\nuniform vec2 resolution;\nuniform float radius;\n#include <packing>\nvoid main() {\n  float mean = 0.0;\n  float squared_mean = 0.0;\n\tfloat depth = unpackRGBAToDepth( texture2D( shadow_pass, ( gl_FragCoord.xy  ) / resolution ) );\n  for ( float i = -1.0; i < 1.0 ; i += SAMPLE_RATE) {\n    #ifdef HORIZONAL_PASS\n      vec2 distribution = unpackRGBATo2Half( texture2D( shadow_pass, ( gl_FragCoord.xy + vec2( i, 0.0 ) * radius ) / resolution ) );\n      mean += distribution.x;\n      squared_mean += distribution.y * distribution.y + distribution.x * distribution.x;\n    #else\n      float depth = unpackRGBAToDepth( texture2D( shadow_pass, ( gl_FragCoord.xy + vec2( 0.0,  i )  * radius ) / resolution ) );\n      mean += depth;\n      squared_mean += depth * depth;\n    #endif\n  }\n  mean = mean * HALF_SAMPLE_RATE;\n  squared_mean = squared_mean * HALF_SAMPLE_RATE;\n  float std_dev = sqrt( squared_mean - mean * mean );\n  gl_FragColor = pack2HalfToRGBA( vec2( mean, std_dev ) );\n}";
+var vsm_frag = "uniform sampler2D shadow_pass;\nuniform vec2 resolution;\nuniform float radius;\n#include <packing>\nvoid main() {\n\tfloat mean = 0.0;\n\tfloat squared_mean = 0.0;\n\tfloat depth = unpackRGBAToDepth( texture2D( shadow_pass, ( gl_FragCoord.xy ) / resolution ) );\n\tfor ( float i = -1.0; i < 1.0 ; i += SAMPLE_RATE) {\n\t\t#ifdef HORIZONAL_PASS\n\t\t\tvec2 distribution = unpackRGBATo2Half( texture2D( shadow_pass, ( gl_FragCoord.xy + vec2( i, 0.0 ) * radius ) / resolution ) );\n\t\t\tmean += distribution.x;\n\t\t\tsquared_mean += distribution.y * distribution.y + distribution.x * distribution.x;\n\t\t#else\n\t\t\tfloat depth = unpackRGBAToDepth( texture2D( shadow_pass, ( gl_FragCoord.xy + vec2( 0.0, i ) * radius ) / resolution ) );\n\t\t\tmean += depth;\n\t\t\tsquared_mean += depth * depth;\n\t\t#endif\n\t}\n\tmean = mean * HALF_SAMPLE_RATE;\n\tsquared_mean = squared_mean * HALF_SAMPLE_RATE;\n\tfloat std_dev = sqrt( squared_mean - mean * mean );\n\tgl_FragColor = pack2HalfToRGBA( vec2( mean, std_dev ) );\n}";
 
 var vsm_vert = "void main() {\n\tgl_Position = vec4( position, 1.0 );\n}";
 
@@ -20344,7 +20385,7 @@ function WebGLShadowMap( _renderer, _objects, maxTextureSize ) {
 
 			if ( shadow.map === null && ! shadow.isPointLightShadow && this.type === VSMShadowMap ) {
 
-				const pars = { minFilter: LinearFilter, magFilter: LinearFilter, format: RGBAFormat, stencilBuffer: false };
+				const pars = { minFilter: LinearFilter, magFilter: LinearFilter, format: RGBAFormat };
 
 				shadow.map = new WebGLRenderTarget( _shadowMapSize.x, _shadowMapSize.y, pars );
 				shadow.map.texture.name = light.name + ".shadowMap";
@@ -20357,7 +20398,7 @@ function WebGLShadowMap( _renderer, _objects, maxTextureSize ) {
 
 			if ( shadow.map === null ) {
 
-				const pars = { minFilter: NearestFilter, magFilter: NearestFilter, format: RGBAFormat, stencilBuffer: false };
+				const pars = { minFilter: NearestFilter, magFilter: NearestFilter, format: RGBAFormat };
 
 				shadow.map = new WebGLRenderTarget( _shadowMapSize.x, _shadowMapSize.y, pars );
 				shadow.map.texture.name = light.name + ".shadowMap";
@@ -20895,7 +20936,7 @@ function WebGLState( gl, extensions, capabilities ) {
 			setFunc: function ( stencilFunc, stencilRef, stencilMask ) {
 
 				if ( currentStencilFunc !== stencilFunc ||
-				     currentStencilRef 	!== stencilRef 	||
+				     currentStencilRef !== stencilRef ||
 				     currentStencilFuncMask !== stencilMask ) {
 
 					gl.stencilFunc( stencilFunc, stencilRef, stencilMask );
@@ -20910,7 +20951,7 @@ function WebGLState( gl, extensions, capabilities ) {
 
 			setOp: function ( stencilFail, stencilZFail, stencilZPass ) {
 
-				if ( currentStencilFail	 !== stencilFail 	||
+				if ( currentStencilFail !== stencilFail ||
 				     currentStencilZFail !== stencilZFail ||
 				     currentStencilZPass !== stencilZPass ) {
 
@@ -23124,7 +23165,7 @@ Object.assign( WebXRController.prototype, {
 				for ( let i = 0; i <= window.XRHand.LITTLE_PHALANX_TIP; i ++ ) {
 
 					// The transform of this joint will be updated with the joint pose on each frame
-					let joint = new Group();
+					const joint = new Group();
 					joint.matrixAutoUpdate = false;
 					joint.visible = false;
 					this._hand.joints.push( joint );
@@ -23231,7 +23272,7 @@ Object.assign( WebXRController.prototype, {
 
 		if ( inputSource ) {
 
-			if ( inputSource.hand ) {
+			if ( hand && inputSource.hand ) {
 
 				handPose = true;
 
@@ -23240,7 +23281,7 @@ Object.assign( WebXRController.prototype, {
 					if ( inputSource.hand[ i ] ) {
 
 						// Update the joints groups with the XRJoint poses
-						let jointPose = frame.getJointPose( inputSource.hand[ i ], referenceSpace );
+						const jointPose = frame.getJointPose( inputSource.hand[ i ], referenceSpace );
 						const joint = hand.joints[ i ];
 
 						if ( jointPose !== null ) {
@@ -23843,7 +23884,7 @@ function WebGLMaterials( properties ) {
 
 	}
 
-	function refreshMaterialUniforms( uniforms, material, environment, pixelRatio, height ) {
+	function refreshMaterialUniforms( uniforms, material, pixelRatio, height ) {
 
 		if ( material.isMeshBasicMaterial ) {
 
@@ -23866,15 +23907,15 @@ function WebGLMaterials( properties ) {
 
 		} else if ( material.isMeshStandardMaterial ) {
 
-			refreshUniformsCommon( uniforms, material, environment );
+			refreshUniformsCommon( uniforms, material );
 
 			if ( material.isMeshPhysicalMaterial ) {
 
-				refreshUniformsPhysical( uniforms, material, environment );
+				refreshUniformsPhysical( uniforms, material );
 
 			} else {
 
-				refreshUniformsStandard( uniforms, material, environment );
+				refreshUniformsStandard( uniforms, material );
 
 			}
 
@@ -23929,7 +23970,7 @@ function WebGLMaterials( properties ) {
 
 	}
 
-	function refreshUniformsCommon( uniforms, material, environment ) {
+	function refreshUniformsCommon( uniforms, material ) {
 
 		uniforms.opacity.value = material.opacity;
 
@@ -23963,7 +24004,7 @@ function WebGLMaterials( properties ) {
 
 		}
 
-		const envMap = material.envMap || environment;
+		const envMap = properties.get( material ).envMap;
 
 		if ( envMap ) {
 
@@ -23974,7 +24015,7 @@ function WebGLMaterials( properties ) {
 			uniforms.reflectivity.value = material.reflectivity;
 			uniforms.refractionRatio.value = material.refractionRatio;
 
-			var maxMipLevel = properties.get( envMap ).__maxMipLevel;
+			const maxMipLevel = properties.get( envMap ).__maxMipLevel;
 
 			if ( maxMipLevel !== undefined ) {
 
@@ -24001,10 +24042,16 @@ function WebGLMaterials( properties ) {
 		// uv repeat and offset setting priorities
 		// 1. color map
 		// 2. specular map
-		// 3. normal map
-		// 4. bump map
-		// 5. alpha map
-		// 6. emissive map
+		// 3. displacementMap map
+		// 4. normal map
+		// 5. bump map
+		// 6. roughnessMap map
+		// 7. metalnessMap map
+		// 8. alphaMap map
+		// 9. emissiveMap map
+		// 10. clearcoat map
+		// 11. clearcoat normal map
+		// 12. clearcoat roughnessMap map
 
 		let uvScaleMap;
 
@@ -24043,6 +24090,18 @@ function WebGLMaterials( properties ) {
 		} else if ( material.emissiveMap ) {
 
 			uvScaleMap = material.emissiveMap;
+
+		} else if ( material.clearcoatMap ) {
+
+			uvScaleMap = material.clearcoatMap;
+
+		} else if ( material.clearcoatNormalMap ) {
+
+			uvScaleMap = material.clearcoatNormalMap;
+
+		} else if ( material.clearcoatRoughnessMap ) {
+
+			uvScaleMap = material.clearcoatRoughnessMap;
 
 		}
 
@@ -24301,7 +24360,7 @@ function WebGLMaterials( properties ) {
 
 	}
 
-	function refreshUniformsStandard( uniforms, material, environment ) {
+	function refreshUniformsStandard( uniforms, material ) {
 
 		uniforms.roughness.value = material.roughness;
 		uniforms.metalness.value = material.metalness;
@@ -24348,7 +24407,9 @@ function WebGLMaterials( properties ) {
 
 		}
 
-		if ( material.envMap || environment ) {
+		const envMap = properties.get( material ).envMap;
+
+		if ( envMap ) {
 
 			//uniforms.envMap.value = material.envMap; // part of uniforms common
 			uniforms.envMapIntensity.value = material.envMapIntensity;
@@ -24357,9 +24418,9 @@ function WebGLMaterials( properties ) {
 
 	}
 
-	function refreshUniformsPhysical( uniforms, material, environment ) {
+	function refreshUniformsPhysical( uniforms, material ) {
 
-		refreshUniformsStandard( uniforms, material, environment );
+		refreshUniformsStandard( uniforms, material );
 
 		uniforms.reflectivity.value = material.reflectivity; // also part of uniforms common
 
@@ -24609,7 +24670,6 @@ function WebGLRenderer( parameters ) {
 
 	// clipping
 
-	const _clipping = new WebGLClipping();
 	let _clippingEnabled = false;
 	let _localClippingEnabled = false;
 
@@ -24711,8 +24771,8 @@ function WebGLRenderer( parameters ) {
 	}
 
 	let extensions, capabilities, state, info;
-	let properties, textures, attributes, geometries, objects;
-	let programCache, materials, renderLists, renderStates;
+	let properties, textures, cubemaps, attributes, geometries, objects;
+	let programCache, materials, renderLists, renderStates, clipping;
 
 	let background, morphtargets, bufferRenderer, indexedBufferRenderer;
 
@@ -24748,17 +24808,18 @@ function WebGLRenderer( parameters ) {
 		info = new WebGLInfo( _gl );
 		properties = new WebGLProperties();
 		textures = new WebGLTextures( _gl, extensions, state, properties, capabilities, utils, info );
+		cubemaps = new WebGLCubeMaps( _this );
 		attributes = new WebGLAttributes( _gl, capabilities );
 		bindingStates = new WebGLBindingStates( _gl, extensions, attributes, capabilities );
 		geometries = new WebGLGeometries( _gl, attributes, info, bindingStates );
 		objects = new WebGLObjects( _gl, geometries, attributes, info );
 		morphtargets = new WebGLMorphtargets( _gl );
-		programCache = new WebGLPrograms( _this, extensions, capabilities, bindingStates );
+		clipping = new WebGLClipping( properties );
+		programCache = new WebGLPrograms( _this, cubemaps, extensions, capabilities, bindingStates, clipping );
 		materials = new WebGLMaterials( properties );
 		renderLists = new WebGLRenderLists( properties );
 		renderStates = new WebGLRenderStates();
-
-		background = new WebGLBackground( _this, state, objects, _premultipliedAlpha );
+		background = new WebGLBackground( _this, cubemaps, state, objects, _premultipliedAlpha );
 
 		bufferRenderer = new WebGLBufferRenderer( _gl, extensions, info, capabilities );
 		indexedBufferRenderer = new WebGLIndexedBufferRenderer( _gl, extensions, info, capabilities );
@@ -25048,6 +25109,7 @@ function WebGLRenderer( parameters ) {
 		renderLists.dispose();
 		renderStates.dispose();
 		properties.dispose();
+		cubemaps.dispose();
 		objects.dispose();
 		bindingStates.dispose();
 
@@ -25354,7 +25416,7 @@ function WebGLRenderer( parameters ) {
 
 		scene.traverse( function ( object ) {
 
-			let material = object.material;
+			const material = object.material;
 
 			if ( material ) {
 
@@ -25362,7 +25424,7 @@ function WebGLRenderer( parameters ) {
 
 					for ( let i = 0; i < material.length; i ++ ) {
 
-						let material2 = material[ i ];
+						const material2 = material[ i ];
 
 						if ( compiled.has( material2 ) === false ) {
 
@@ -25470,7 +25532,7 @@ function WebGLRenderer( parameters ) {
 		_frustum.setFromProjectionMatrix( _projScreenMatrix );
 
 		_localClippingEnabled = this.localClippingEnabled;
-		_clippingEnabled = _clipping.init( this.clippingPlanes, _localClippingEnabled, camera );
+		_clippingEnabled = clipping.init( this.clippingPlanes, _localClippingEnabled, camera );
 
 		currentRenderList = renderLists.get( scene, camera );
 		currentRenderList.init();
@@ -25487,7 +25549,7 @@ function WebGLRenderer( parameters ) {
 
 		//
 
-		if ( _clippingEnabled === true ) _clipping.beginShadows();
+		if ( _clippingEnabled === true ) clipping.beginShadows();
 
 		const shadowsArray = currentRenderState.state.shadowsArray;
 
@@ -25495,7 +25557,7 @@ function WebGLRenderer( parameters ) {
 
 		currentRenderState.setupLights( camera );
 
-		if ( _clippingEnabled === true ) _clipping.endShadows();
+		if ( _clippingEnabled === true ) clipping.endShadows();
 
 		//
 
@@ -25764,7 +25826,7 @@ function WebGLRenderer( parameters ) {
 
 		const lightsStateVersion = lights.state.version;
 
-		const parameters = programCache.getParameters( material, lights.state, shadowsArray, scene, _clipping.numPlanes, _clipping.numIntersection, object );
+		const parameters = programCache.getParameters( material, lights.state, shadowsArray, scene, object );
 		const programCacheKey = programCache.getProgramCacheKey( parameters );
 
 		let program = materialProperties.program;
@@ -25782,13 +25844,15 @@ function WebGLRenderer( parameters ) {
 
 		} else if ( materialProperties.lightsStateVersion !== lightsStateVersion ) {
 
-			materialProperties.lightsStateVersion = lightsStateVersion;
-
 			programChange = false;
 
 		} else if ( parameters.shaderID !== undefined ) {
 
-			// same glsl and uniform list
+			// same glsl and uniform list, envMap still needs the update here to avoid a frame-late effect
+
+			const environment = material.isMeshStandardMaterial ? scene.environment : null;
+			materialProperties.envMap = cubemaps.get( material.envMap || environment );
+
 			return;
 
 		} else {
@@ -25800,7 +25864,7 @@ function WebGLRenderer( parameters ) {
 
 		if ( programChange ) {
 
-			parameters.uniforms = programCache.getUniforms( material, parameters );
+			parameters.uniforms = programCache.getUniforms( material );
 
 			material.onBeforeCompile( parameters, _this );
 
@@ -25812,54 +25876,21 @@ function WebGLRenderer( parameters ) {
 
 		}
 
-		const programAttributes = program.getAttributes();
-
-		if ( material.morphTargets ) {
-
-			material.numSupportedMorphTargets = 0;
-
-			for ( let i = 0; i < _this.maxMorphTargets; i ++ ) {
-
-				if ( programAttributes[ 'morphTarget' + i ] >= 0 ) {
-
-					material.numSupportedMorphTargets ++;
-
-				}
-
-			}
-
-		}
-
-		if ( material.morphNormals ) {
-
-			material.numSupportedMorphNormals = 0;
-
-			for ( let i = 0; i < _this.maxMorphNormals; i ++ ) {
-
-				if ( programAttributes[ 'morphNormal' + i ] >= 0 ) {
-
-					material.numSupportedMorphNormals ++;
-
-				}
-
-			}
-
-		}
-
 		const uniforms = materialProperties.uniforms;
 
 		if ( ! material.isShaderMaterial &&
 			! material.isRawShaderMaterial ||
 			material.clipping === true ) {
 
-			materialProperties.numClippingPlanes = _clipping.numPlanes;
-			materialProperties.numIntersection = _clipping.numIntersection;
-			uniforms.clippingPlanes = _clipping.uniform;
+			materialProperties.numClippingPlanes = clipping.numPlanes;
+			materialProperties.numIntersection = clipping.numIntersection;
+			uniforms.clippingPlanes = clipping.uniform;
 
 		}
 
 		materialProperties.environment = material.isMeshStandardMaterial ? scene.environment : null;
 		materialProperties.fog = scene.fog;
+		materialProperties.envMap = cubemaps.get( material.envMap || materialProperties.environment );
 
 		// store the light setup it was created for
 
@@ -25877,6 +25908,8 @@ function WebGLRenderer( parameters ) {
 			uniforms.spotLights.value = lights.state.spot;
 			uniforms.spotLightShadows.value = lights.state.spotShadow;
 			uniforms.rectAreaLights.value = lights.state.rectArea;
+			uniforms.ltc_1.value = lights.state.rectAreaLTC1;
+			uniforms.ltc_2.value = lights.state.rectAreaLTC2;
 			uniforms.pointLights.value = lights.state.point;
 			uniforms.pointLightShadows.value = lights.state.pointShadow;
 			uniforms.hemisphereLights.value = lights.state.hemi;
@@ -25891,9 +25924,8 @@ function WebGLRenderer( parameters ) {
 
 		}
 
-		const progUniforms = materialProperties.program.getUniforms(),
-			uniformsList =
-				WebGLUniforms.seqWithValue( progUniforms.seq, uniforms );
+		const progUniforms = materialProperties.program.getUniforms();
+		const uniformsList = WebGLUniforms.seqWithValue( progUniforms.seq, uniforms );
 
 		materialProperties.uniformsList = uniformsList;
 
@@ -25908,6 +25940,7 @@ function WebGLRenderer( parameters ) {
 		const fog = scene.fog;
 		const environment = material.isMeshStandardMaterial ? scene.environment : null;
 		const encoding = ( _currentRenderTarget === null ) ? _this.outputEncoding : _currentRenderTarget.texture.encoding;
+		const envMap = cubemaps.get( material.envMap || environment );
 
 		const materialProperties = properties.get( material );
 		const lights = currentRenderState.state.lights;
@@ -25923,9 +25956,7 @@ function WebGLRenderer( parameters ) {
 				// we might want to call this function with some ClippingGroup
 				// object instead of the material, once it becomes feasible
 				// (#8465, #8379)
-				_clipping.setState(
-					material.clippingPlanes, material.clipIntersection, material.clipShadows,
-					camera, materialProperties, useCache );
+				clipping.setState( material, camera, useCache );
 
 			}
 
@@ -25933,11 +25964,7 @@ function WebGLRenderer( parameters ) {
 
 		if ( material.version === materialProperties.__version ) {
 
-			if ( materialProperties.program === undefined ) {
-
-				initMaterial( material, scene, object );
-
-			} else if ( material.fog && materialProperties.fog !== fog ) {
+			if ( material.fog && materialProperties.fog !== fog ) {
 
 				initMaterial( material, scene, object );
 
@@ -25950,12 +25977,16 @@ function WebGLRenderer( parameters ) {
 				initMaterial( material, scene, object );
 
 			} else if ( materialProperties.numClippingPlanes !== undefined &&
-				( materialProperties.numClippingPlanes !== _clipping.numPlanes ||
-				materialProperties.numIntersection !== _clipping.numIntersection ) ) {
+				( materialProperties.numClippingPlanes !== clipping.numPlanes ||
+				materialProperties.numIntersection !== clipping.numIntersection ) ) {
 
 				initMaterial( material, scene, object );
 
 			} else if ( materialProperties.outputEncoding !== encoding ) {
+
+				initMaterial( material, scene, object );
+
+			} else if ( materialProperties.envMap !== envMap ) {
 
 				initMaterial( material, scene, object );
 
@@ -26151,13 +26182,7 @@ function WebGLRenderer( parameters ) {
 
 			}
 
-			materials.refreshMaterialUniforms( m_uniforms, material, environment, _pixelRatio, _height );
-
-			// RectAreaLight Texture
-			// TODO (mrdoob): Find a nicer implementation
-
-			if ( m_uniforms.ltc_1 !== undefined ) m_uniforms.ltc_1.value = UniformsLib.LTC_1;
-			if ( m_uniforms.ltc_2 !== undefined ) m_uniforms.ltc_2.value = UniformsLib.LTC_2;
+			materials.refreshMaterialUniforms( m_uniforms, material, _pixelRatio, _height );
 
 			WebGLUniforms.upload( _gl, materialProperties.uniformsList, m_uniforms, textures );
 
@@ -26233,13 +26258,37 @@ function WebGLRenderer( parameters ) {
 
 	};
 
+	this.getRenderList = function () {
+
+		return currentRenderList;
+
+	};
+
+	this.setRenderList = function ( renderList ) {
+
+		currentRenderList = renderList;
+
+	};
+
+	this.getRenderState = function () {
+
+		return currentRenderState;
+
+	};
+
+	this.setRenderState = function ( renderState ) {
+
+		currentRenderState = renderState;
+
+	};
+
 	this.getRenderTarget = function () {
 
 		return _currentRenderTarget;
 
 	};
 
-	this.setRenderTarget = function ( renderTarget, activeCubeFace, activeMipmapLevel ) {
+	this.setRenderTarget = function ( renderTarget, activeCubeFace = 0, activeMipmapLevel = 0 ) {
 
 		_currentRenderTarget = renderTarget;
 		_currentActiveCubeFace = activeCubeFace;
@@ -26260,7 +26309,7 @@ function WebGLRenderer( parameters ) {
 
 			if ( renderTarget.isWebGLCubeRenderTarget ) {
 
-				framebuffer = __webglFramebuffer[ activeCubeFace || 0 ];
+				framebuffer = __webglFramebuffer[ activeCubeFace ];
 				isCube = true;
 
 			} else if ( renderTarget.isWebGLMultisampleRenderTarget ) {
@@ -26299,7 +26348,7 @@ function WebGLRenderer( parameters ) {
 		if ( isCube ) {
 
 			const textureProperties = properties.get( renderTarget.texture );
-			_gl.framebufferTexture2D( 36160, 36064, 34069 + ( activeCubeFace || 0 ), textureProperties.__webglTexture, activeMipmapLevel || 0 );
+			_gl.framebufferTexture2D( 36160, 36064, 34069 + activeCubeFace, textureProperties.__webglTexture, activeMipmapLevel );
 
 		}
 
@@ -26475,26 +26524,26 @@ WebGL1Renderer.prototype = Object.assign( Object.create( WebGLRenderer.prototype
 
 } );
 
-function FogExp2( color, density ) {
+class FogExp2 {
 
-	this.name = '';
+	constructor( color, density ) {
 
-	this.color = new Color( color );
-	this.density = ( density !== undefined ) ? density : 0.00025;
+		Object.defineProperty( this, 'isFogExp2', { value: true } );
 
-}
+		this.name = '';
 
-Object.assign( FogExp2.prototype, {
+		this.color = new Color( color );
+		this.density = ( density !== undefined ) ? density : 0.00025;
 
-	isFogExp2: true,
+	}
 
-	clone: function () {
+	clone() {
 
 		return new FogExp2( this.color, this.density );
 
-	},
+	}
 
-	toJSON: function ( /* meta */ ) {
+	toJSON( /* meta */ ) {
 
 		return {
 			type: 'FogExp2',
@@ -26504,30 +26553,30 @@ Object.assign( FogExp2.prototype, {
 
 	}
 
-} );
-
-function Fog( color, near, far ) {
-
-	this.name = '';
-
-	this.color = new Color( color );
-
-	this.near = ( near !== undefined ) ? near : 1;
-	this.far = ( far !== undefined ) ? far : 1000;
-
 }
 
-Object.assign( Fog.prototype, {
+class Fog {
 
-	isFog: true,
+	constructor( color, near, far ) {
 
-	clone: function () {
+		Object.defineProperty( this, 'isFog', { value: true } );
+
+		this.name = '';
+
+		this.color = new Color( color );
+
+		this.near = ( near !== undefined ) ? near : 1;
+		this.far = ( far !== undefined ) ? far : 1000;
+
+	}
+
+	clone() {
 
 		return new Fog( this.color, this.near, this.far );
 
-	},
+	}
 
-	toJSON: function ( /* meta */ ) {
+	toJSON( /* meta */ ) {
 
 		return {
 			type: 'Fog',
@@ -26538,7 +26587,64 @@ Object.assign( Fog.prototype, {
 
 	}
 
-} );
+}
+
+class Scene extends Object3D {
+
+	constructor() {
+
+		super();
+
+		Object.defineProperty( this, 'isScene', { value: true } );
+
+		this.type = 'Scene';
+
+		this.background = null;
+		this.environment = null;
+		this.fog = null;
+
+		this.overrideMaterial = null;
+
+		this.autoUpdate = true; // checked by the renderer
+
+		if ( typeof __THREE_DEVTOOLS__ !== 'undefined' ) {
+
+			__THREE_DEVTOOLS__.dispatchEvent( new CustomEvent( 'observe', { detail: this } ) ); // eslint-disable-line no-undef
+
+		}
+
+	}
+
+	copy( source, recursive ) {
+
+		super.copy( source, recursive );
+
+		if ( source.background !== null ) this.background = source.background.clone();
+		if ( source.environment !== null ) this.environment = source.environment.clone();
+		if ( source.fog !== null ) this.fog = source.fog.clone();
+
+		if ( source.overrideMaterial !== null ) this.overrideMaterial = source.overrideMaterial.clone();
+
+		this.autoUpdate = source.autoUpdate;
+		this.matrixAutoUpdate = source.matrixAutoUpdate;
+
+		return this;
+
+	}
+
+	toJSON( meta ) {
+
+		const data = super.toJSON( meta );
+
+		if ( this.background !== null ) data.object.background = this.background.toJSON( meta );
+		if ( this.environment !== null ) data.object.environment = this.environment.toJSON( meta );
+		if ( this.fog !== null ) data.object.fog = this.fog.toJSON();
+
+		return data;
+
+	}
+
+}
 
 function InterleavedBuffer( array, stride ) {
 
@@ -27732,6 +27838,7 @@ function InstancedMesh( geometry, material, count ) {
 	Mesh.call( this, geometry, material );
 
 	this.instanceMatrix = new BufferAttribute( new Float32Array( count * 16 ), 16 );
+	this.instanceColor = null;
 
 	this.count = count;
 
@@ -27753,6 +27860,18 @@ InstancedMesh.prototype = Object.assign( Object.create( Mesh.prototype ), {
 		this.count = source.count;
 
 		return this;
+
+	},
+
+	setColorAt: function ( index, color ) {
+
+		if ( this.instanceColor === null ) {
+
+			this.instanceColor = new BufferAttribute( new Float32Array( this.count * 3 ), 3 );
+
+		}
+
+		color.toArray( this.instanceColor.array, index * 3 );
 
 	},
 
@@ -28590,109 +28709,46 @@ DepthTexture.prototype = Object.create( Texture.prototype );
 DepthTexture.prototype.constructor = DepthTexture;
 DepthTexture.prototype.isDepthTexture = true;
 
-function WireframeGeometry( geometry ) {
+class WireframeGeometry extends BufferGeometry {
 
-	BufferGeometry.call( this );
+	constructor( geometry ) {
 
-	this.type = 'WireframeGeometry';
+		super();
+		this.type = 'WireframeGeometry';
 
-	// buffer
+		// buffer
 
-	const vertices = [];
+		const vertices = [];
 
-	// helper variables
+		// helper variables
 
-	const edge = [ 0, 0 ], edges = {};
-	const keys = [ 'a', 'b', 'c' ];
+		const edge = [ 0, 0 ], edges = {};
+		const keys = [ 'a', 'b', 'c' ];
 
-	// different logic for Geometry and BufferGeometry
+		// different logic for Geometry and BufferGeometry
 
-	if ( geometry && geometry.isGeometry ) {
+		if ( geometry && geometry.isGeometry ) {
 
-		// create a data structure that contains all edges without duplicates
+			// create a data structure that contains all edges without duplicates
 
-		const faces = geometry.faces;
+			const faces = geometry.faces;
 
-		for ( let i = 0, l = faces.length; i < l; i ++ ) {
+			for ( let i = 0, l = faces.length; i < l; i ++ ) {
 
-			const face = faces[ i ];
+				const face = faces[ i ];
 
-			for ( let j = 0; j < 3; j ++ ) {
+				for ( let j = 0; j < 3; j ++ ) {
 
-				const edge1 = face[ keys[ j ] ];
-				const edge2 = face[ keys[ ( j + 1 ) % 3 ] ];
-				edge[ 0 ] = Math.min( edge1, edge2 ); // sorting prevents duplicates
-				edge[ 1 ] = Math.max( edge1, edge2 );
+					const edge1 = face[ keys[ j ] ];
+					const edge2 = face[ keys[ ( j + 1 ) % 3 ] ];
+					edge[ 0 ] = Math.min( edge1, edge2 ); // sorting prevents duplicates
+					edge[ 1 ] = Math.max( edge1, edge2 );
 
-				const key = edge[ 0 ] + ',' + edge[ 1 ];
+					const key = edge[ 0 ] + ',' + edge[ 1 ];
 
-				if ( edges[ key ] === undefined ) {
+					if ( edges[ key ] === undefined ) {
 
-					edges[ key ] = { index1: edge[ 0 ], index2: edge[ 1 ] };
-
-				}
-
-			}
-
-		}
-
-		// generate vertices
-
-		for ( const key in edges ) {
-
-			const e = edges[ key ];
-
-			let vertex = geometry.vertices[ e.index1 ];
-			vertices.push( vertex.x, vertex.y, vertex.z );
-
-			vertex = geometry.vertices[ e.index2 ];
-			vertices.push( vertex.x, vertex.y, vertex.z );
-
-		}
-
-	} else if ( geometry && geometry.isBufferGeometry ) {
-
-		let vertex = new Vector3();
-
-		if ( geometry.index !== null ) {
-
-			// indexed BufferGeometry
-
-			const position = geometry.attributes.position;
-			const indices = geometry.index;
-			let groups = geometry.groups;
-
-			if ( groups.length === 0 ) {
-
-				groups = [ { start: 0, count: indices.count, materialIndex: 0 } ];
-
-			}
-
-			// create a data structure that contains all eges without duplicates
-
-			for ( let o = 0, ol = groups.length; o < ol; ++ o ) {
-
-				const group = groups[ o ];
-
-				const start = group.start;
-				const count = group.count;
-
-				for ( let i = start, l = ( start + count ); i < l; i += 3 ) {
-
-					for ( let j = 0; j < 3; j ++ ) {
-
-						const edge1 = indices.getX( i + j );
-						const edge2 = indices.getX( i + ( j + 1 ) % 3 );
-						edge[ 0 ] = Math.min( edge1, edge2 ); // sorting prevents duplicates
-						edge[ 1 ] = Math.max( edge1, edge2 );
-
-						const key = edge[ 0 ] + ',' + edge[ 1 ];
-
-						if ( edges[ key ] === undefined ) {
-
-							edges[ key ] = { index1: edge[ 0 ], index2: edge[ 1 ] };
-
-						}
+						edges[ key ] = { index1: edge[ 0 ], index2: edge[ 1 ] };
 
 					}
 
@@ -28706,34 +28762,100 @@ function WireframeGeometry( geometry ) {
 
 				const e = edges[ key ];
 
-				vertex.fromBufferAttribute( position, e.index1 );
+				let vertex = geometry.vertices[ e.index1 ];
 				vertices.push( vertex.x, vertex.y, vertex.z );
 
-				vertex.fromBufferAttribute( position, e.index2 );
+				vertex = geometry.vertices[ e.index2 ];
 				vertices.push( vertex.x, vertex.y, vertex.z );
 
 			}
 
-		} else {
+		} else if ( geometry && geometry.isBufferGeometry ) {
 
-			// non-indexed BufferGeometry
+			const vertex = new Vector3();
 
-			const position = geometry.attributes.position;
+			if ( geometry.index !== null ) {
 
-			for ( let i = 0, l = ( position.count / 3 ); i < l; i ++ ) {
+				// indexed BufferGeometry
 
-				for ( let j = 0; j < 3; j ++ ) {
+				const position = geometry.attributes.position;
+				const indices = geometry.index;
+				let groups = geometry.groups;
 
-					// three edges per triangle, an edge is represented as (index1, index2)
-					// e.g. the first triangle has the following edges: (0,1),(1,2),(2,0)
+				if ( groups.length === 0 ) {
 
-					const index1 = 3 * i + j;
-					vertex.fromBufferAttribute( position, index1 );
+					groups = [ { start: 0, count: indices.count, materialIndex: 0 } ];
+
+				}
+
+				// create a data structure that contains all eges without duplicates
+
+				for ( let o = 0, ol = groups.length; o < ol; ++ o ) {
+
+					const group = groups[ o ];
+
+					const start = group.start;
+					const count = group.count;
+
+					for ( let i = start, l = ( start + count ); i < l; i += 3 ) {
+
+						for ( let j = 0; j < 3; j ++ ) {
+
+							const edge1 = indices.getX( i + j );
+							const edge2 = indices.getX( i + ( j + 1 ) % 3 );
+							edge[ 0 ] = Math.min( edge1, edge2 ); // sorting prevents duplicates
+							edge[ 1 ] = Math.max( edge1, edge2 );
+
+							const key = edge[ 0 ] + ',' + edge[ 1 ];
+
+							if ( edges[ key ] === undefined ) {
+
+								edges[ key ] = { index1: edge[ 0 ], index2: edge[ 1 ] };
+
+							}
+
+						}
+
+					}
+
+				}
+
+				// generate vertices
+
+				for ( const key in edges ) {
+
+					const e = edges[ key ];
+
+					vertex.fromBufferAttribute( position, e.index1 );
 					vertices.push( vertex.x, vertex.y, vertex.z );
 
-					const index2 = 3 * i + ( ( j + 1 ) % 3 );
-					vertex.fromBufferAttribute( position, index2 );
+					vertex.fromBufferAttribute( position, e.index2 );
 					vertices.push( vertex.x, vertex.y, vertex.z );
+
+				}
+
+			} else {
+
+				// non-indexed BufferGeometry
+
+				const position = geometry.attributes.position;
+
+				for ( let i = 0, l = ( position.count / 3 ); i < l; i ++ ) {
+
+					for ( let j = 0; j < 3; j ++ ) {
+
+						// three edges per triangle, an edge is represented as (index1, index2)
+						// e.g. the first triangle has the following edges: (0,1),(1,2),(2,0)
+
+						const index1 = 3 * i + j;
+						vertex.fromBufferAttribute( position, index1 );
+						vertices.push( vertex.x, vertex.y, vertex.z );
+
+						const index2 = 3 * i + ( ( j + 1 ) % 3 );
+						vertex.fromBufferAttribute( position, index2 );
+						vertices.push( vertex.x, vertex.y, vertex.z );
+
+					}
 
 				}
 
@@ -28741,16 +28863,13 @@ function WireframeGeometry( geometry ) {
 
 		}
 
+		// build geometry
+
+		this.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
+
 	}
 
-	// build geometry
-
-	this.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
-
 }
-
-WireframeGeometry.prototype = Object.create( BufferGeometry.prototype );
-WireframeGeometry.prototype.constructor = WireframeGeometry;
 
 /**
  * Parametric Surfaces Geometry
@@ -28905,721 +29024,917 @@ ParametricBufferGeometry.prototype.constructor = ParametricBufferGeometry;
 
 // PolyhedronGeometry
 
-function PolyhedronGeometry( vertices, indices, radius, detail ) {
+class PolyhedronGeometry extends Geometry {
 
-	Geometry.call( this );
+	constructor( vertices, indices, radius, detail ) {
 
-	this.type = 'PolyhedronGeometry';
+		super();
 
-	this.parameters = {
-		vertices: vertices,
-		indices: indices,
-		radius: radius,
-		detail: detail
-	};
+		this.type = 'PolyhedronGeometry';
 
-	this.fromBufferGeometry( new PolyhedronBufferGeometry( vertices, indices, radius, detail ) );
-	this.mergeVertices();
+		this.parameters = {
+			vertices: vertices,
+			indices: indices,
+			radius: radius,
+			detail: detail
+		};
+
+		this.fromBufferGeometry( new PolyhedronBufferGeometry( vertices, indices, radius, detail ) );
+		this.mergeVertices();
+
+	}
 
 }
-
-PolyhedronGeometry.prototype = Object.create( Geometry.prototype );
-PolyhedronGeometry.prototype.constructor = PolyhedronGeometry;
 
 // PolyhedronBufferGeometry
 
-function PolyhedronBufferGeometry( vertices, indices, radius, detail ) {
+class PolyhedronBufferGeometry extends BufferGeometry {
 
-	BufferGeometry.call( this );
+	constructor( vertices, indices, radius, detail ) {
 
-	this.type = 'PolyhedronBufferGeometry';
+		super();
 
-	this.parameters = {
-		vertices: vertices,
-		indices: indices,
-		radius: radius,
-		detail: detail
-	};
+		this.type = 'PolyhedronBufferGeometry';
 
-	radius = radius || 1;
-	detail = detail || 0;
+		this.parameters = {
+			vertices: vertices,
+			indices: indices,
+			radius: radius,
+			detail: detail
+		};
 
-	// default buffer data
+		radius = radius || 1;
+		detail = detail || 0;
 
-	const vertexBuffer = [];
-	const uvBuffer = [];
+		// default buffer data
 
-	// the subdivision creates the vertex buffer data
+		const vertexBuffer = [];
+		const uvBuffer = [];
 
-	subdivide( detail );
+		// the subdivision creates the vertex buffer data
 
-	// all vertices should lie on a conceptual sphere with a given radius
+		subdivide( detail );
 
-	applyRadius( radius );
+		// all vertices should lie on a conceptual sphere with a given radius
 
-	// finally, create the uv data
+		applyRadius( radius );
 
-	generateUVs();
-
-	// build non-indexed geometry
-
-	this.setAttribute( 'position', new Float32BufferAttribute( vertexBuffer, 3 ) );
-	this.setAttribute( 'normal', new Float32BufferAttribute( vertexBuffer.slice(), 3 ) );
-	this.setAttribute( 'uv', new Float32BufferAttribute( uvBuffer, 2 ) );
-
-	if ( detail === 0 ) {
-
-		this.computeVertexNormals(); // flat normals
-
-	} else {
-
-		this.normalizeNormals(); // smooth normals
-
-	}
-
-	// helper functions
-
-	function subdivide( detail ) {
-
-		const a = new Vector3();
-		const b = new Vector3();
-		const c = new Vector3();
-
-		// iterate over all faces and apply a subdivison with the given detail value
-
-		for ( let i = 0; i < indices.length; i += 3 ) {
-
-			// get the vertices of the face
-
-			getVertexByIndex( indices[ i + 0 ], a );
-			getVertexByIndex( indices[ i + 1 ], b );
-			getVertexByIndex( indices[ i + 2 ], c );
-
-			// perform subdivision
-
-			subdivideFace( a, b, c, detail );
-
-		}
-
-	}
-
-	function subdivideFace( a, b, c, detail ) {
-
-		const cols = Math.pow( 2, detail );
-
-		// we use this multidimensional array as a data structure for creating the subdivision
-
-		const v = [];
-
-		// construct all of the vertices for this subdivision
-
-		for ( let i = 0; i <= cols; i ++ ) {
-
-			v[ i ] = [];
-
-			const aj = a.clone().lerp( c, i / cols );
-			const bj = b.clone().lerp( c, i / cols );
-
-			const rows = cols - i;
-
-			for ( let j = 0; j <= rows; j ++ ) {
-
-				if ( j === 0 && i === cols ) {
-
-					v[ i ][ j ] = aj;
-
-				} else {
-
-					v[ i ][ j ] = aj.clone().lerp( bj, j / rows );
-
-				}
-
-			}
-
-		}
-
-		// construct all of the faces
-
-		for ( let i = 0; i < cols; i ++ ) {
-
-			for ( let j = 0; j < 2 * ( cols - i ) - 1; j ++ ) {
-
-				const k = Math.floor( j / 2 );
-
-				if ( j % 2 === 0 ) {
-
-					pushVertex( v[ i ][ k + 1 ] );
-					pushVertex( v[ i + 1 ][ k ] );
-					pushVertex( v[ i ][ k ] );
-
-				} else {
-
-					pushVertex( v[ i ][ k + 1 ] );
-					pushVertex( v[ i + 1 ][ k + 1 ] );
-					pushVertex( v[ i + 1 ][ k ] );
-
-				}
-
-			}
-
-		}
-
-	}
-
-	function applyRadius( radius ) {
-
-		const vertex = new Vector3();
-
-		// iterate over the entire buffer and apply the radius to each vertex
-
-		for ( let i = 0; i < vertexBuffer.length; i += 3 ) {
-
-			vertex.x = vertexBuffer[ i + 0 ];
-			vertex.y = vertexBuffer[ i + 1 ];
-			vertex.z = vertexBuffer[ i + 2 ];
-
-			vertex.normalize().multiplyScalar( radius );
-
-			vertexBuffer[ i + 0 ] = vertex.x;
-			vertexBuffer[ i + 1 ] = vertex.y;
-			vertexBuffer[ i + 2 ] = vertex.z;
-
-		}
-
-	}
-
-	function generateUVs() {
-
-		const vertex = new Vector3();
-
-		for ( let i = 0; i < vertexBuffer.length; i += 3 ) {
-
-			vertex.x = vertexBuffer[ i + 0 ];
-			vertex.y = vertexBuffer[ i + 1 ];
-			vertex.z = vertexBuffer[ i + 2 ];
-
-			const u = azimuth( vertex ) / 2 / Math.PI + 0.5;
-			const v = inclination( vertex ) / Math.PI + 0.5;
-			uvBuffer.push( u, 1 - v );
-
-		}
-
-		correctUVs();
-
-		correctSeam();
-
-	}
-
-	function correctSeam() {
-
-		// handle case when face straddles the seam, see #3269
-
-		for ( let i = 0; i < uvBuffer.length; i += 6 ) {
-
-			// uv data of a single face
-
-			const x0 = uvBuffer[ i + 0 ];
-			const x1 = uvBuffer[ i + 2 ];
-			const x2 = uvBuffer[ i + 4 ];
-
-			const max = Math.max( x0, x1, x2 );
-			const min = Math.min( x0, x1, x2 );
-
-			// 0.9 is somewhat arbitrary
-
-			if ( max > 0.9 && min < 0.1 ) {
-
-				if ( x0 < 0.2 ) uvBuffer[ i + 0 ] += 1;
-				if ( x1 < 0.2 ) uvBuffer[ i + 2 ] += 1;
-				if ( x2 < 0.2 ) uvBuffer[ i + 4 ] += 1;
-
-			}
-
-		}
-
-	}
-
-	function pushVertex( vertex ) {
-
-		vertexBuffer.push( vertex.x, vertex.y, vertex.z );
-
-	}
-
-	function getVertexByIndex( index, vertex ) {
-
-		const stride = index * 3;
-
-		vertex.x = vertices[ stride + 0 ];
-		vertex.y = vertices[ stride + 1 ];
-		vertex.z = vertices[ stride + 2 ];
-
-	}
-
-	function correctUVs() {
-
-		const a = new Vector3();
-		const b = new Vector3();
-		const c = new Vector3();
-
-		const centroid = new Vector3();
-
-		const uvA = new Vector2();
-		const uvB = new Vector2();
-		const uvC = new Vector2();
-
-		for ( let i = 0, j = 0; i < vertexBuffer.length; i += 9, j += 6 ) {
-
-			a.set( vertexBuffer[ i + 0 ], vertexBuffer[ i + 1 ], vertexBuffer[ i + 2 ] );
-			b.set( vertexBuffer[ i + 3 ], vertexBuffer[ i + 4 ], vertexBuffer[ i + 5 ] );
-			c.set( vertexBuffer[ i + 6 ], vertexBuffer[ i + 7 ], vertexBuffer[ i + 8 ] );
-
-			uvA.set( uvBuffer[ j + 0 ], uvBuffer[ j + 1 ] );
-			uvB.set( uvBuffer[ j + 2 ], uvBuffer[ j + 3 ] );
-			uvC.set( uvBuffer[ j + 4 ], uvBuffer[ j + 5 ] );
-
-			centroid.copy( a ).add( b ).add( c ).divideScalar( 3 );
-
-			const azi = azimuth( centroid );
-
-			correctUV( uvA, j + 0, a, azi );
-			correctUV( uvB, j + 2, b, azi );
-			correctUV( uvC, j + 4, c, azi );
-
-		}
-
-	}
-
-	function correctUV( uv, stride, vector, azimuth ) {
-
-		if ( ( azimuth < 0 ) && ( uv.x === 1 ) ) {
-
-			uvBuffer[ stride ] = uv.x - 1;
-
-		}
-
-		if ( ( vector.x === 0 ) && ( vector.z === 0 ) ) {
-
-			uvBuffer[ stride ] = azimuth / 2 / Math.PI + 0.5;
-
-		}
-
-	}
-
-	// Angle around the Y axis, counter-clockwise when looking from above.
-
-	function azimuth( vector ) {
-
-		return Math.atan2( vector.z, - vector.x );
-
-	}
-
-
-	// Angle above the XZ plane.
-
-	function inclination( vector ) {
-
-		return Math.atan2( - vector.y, Math.sqrt( ( vector.x * vector.x ) + ( vector.z * vector.z ) ) );
-
-	}
-
-}
-
-PolyhedronBufferGeometry.prototype = Object.create( BufferGeometry.prototype );
-PolyhedronBufferGeometry.prototype.constructor = PolyhedronBufferGeometry;
-
-// TetrahedronGeometry
-
-function TetrahedronGeometry( radius, detail ) {
-
-	Geometry.call( this );
-
-	this.type = 'TetrahedronGeometry';
-
-	this.parameters = {
-		radius: radius,
-		detail: detail
-	};
-
-	this.fromBufferGeometry( new TetrahedronBufferGeometry( radius, detail ) );
-	this.mergeVertices();
-
-}
-
-TetrahedronGeometry.prototype = Object.create( Geometry.prototype );
-TetrahedronGeometry.prototype.constructor = TetrahedronGeometry;
-
-// TetrahedronBufferGeometry
-
-function TetrahedronBufferGeometry( radius, detail ) {
-
-	const vertices = [
-		1, 1, 1, 	- 1, - 1, 1, 	- 1, 1, - 1, 	1, - 1, - 1
-	];
-
-	const indices = [
-		2, 1, 0, 	0, 3, 2,	1, 3, 0,	2, 3, 1
-	];
-
-	PolyhedronBufferGeometry.call( this, vertices, indices, radius, detail );
-
-	this.type = 'TetrahedronBufferGeometry';
-
-	this.parameters = {
-		radius: radius,
-		detail: detail
-	};
-
-}
-
-TetrahedronBufferGeometry.prototype = Object.create( PolyhedronBufferGeometry.prototype );
-TetrahedronBufferGeometry.prototype.constructor = TetrahedronBufferGeometry;
-
-// OctahedronGeometry
-
-function OctahedronGeometry( radius, detail ) {
-
-	Geometry.call( this );
-
-	this.type = 'OctahedronGeometry';
-
-	this.parameters = {
-		radius: radius,
-		detail: detail
-	};
-
-	this.fromBufferGeometry( new OctahedronBufferGeometry( radius, detail ) );
-	this.mergeVertices();
-
-}
-
-OctahedronGeometry.prototype = Object.create( Geometry.prototype );
-OctahedronGeometry.prototype.constructor = OctahedronGeometry;
-
-// OctahedronBufferGeometry
-
-function OctahedronBufferGeometry( radius, detail ) {
-
-	const vertices = [
-		1, 0, 0, 	- 1, 0, 0,	0, 1, 0,
-		0, - 1, 0, 	0, 0, 1,	0, 0, - 1
-	];
-
-	const indices = [
-		0, 2, 4,	0, 4, 3,	0, 3, 5,
-		0, 5, 2,	1, 2, 5,	1, 5, 3,
-		1, 3, 4,	1, 4, 2
-	];
-
-	PolyhedronBufferGeometry.call( this, vertices, indices, radius, detail );
-
-	this.type = 'OctahedronBufferGeometry';
-
-	this.parameters = {
-		radius: radius,
-		detail: detail
-	};
-
-}
-
-OctahedronBufferGeometry.prototype = Object.create( PolyhedronBufferGeometry.prototype );
-OctahedronBufferGeometry.prototype.constructor = OctahedronBufferGeometry;
-
-// IcosahedronGeometry
-
-function IcosahedronGeometry( radius, detail ) {
-
-	Geometry.call( this );
-
-	this.type = 'IcosahedronGeometry';
-
-	this.parameters = {
-		radius: radius,
-		detail: detail
-	};
-
-	this.fromBufferGeometry( new IcosahedronBufferGeometry( radius, detail ) );
-	this.mergeVertices();
-
-}
-
-IcosahedronGeometry.prototype = Object.create( Geometry.prototype );
-IcosahedronGeometry.prototype.constructor = IcosahedronGeometry;
-
-// IcosahedronBufferGeometry
-
-function IcosahedronBufferGeometry( radius, detail ) {
-
-	const t = ( 1 + Math.sqrt( 5 ) ) / 2;
-
-	const vertices = [
-		- 1, t, 0, 	1, t, 0, 	- 1, - t, 0, 	1, - t, 0,
-		 0, - 1, t, 	0, 1, t,	0, - 1, - t, 	0, 1, - t,
-		 t, 0, - 1, 	t, 0, 1, 	- t, 0, - 1, 	- t, 0, 1
-	];
-
-	const indices = [
-		 0, 11, 5, 	0, 5, 1, 	0, 1, 7, 	0, 7, 10, 	0, 10, 11,
-		 1, 5, 9, 	5, 11, 4,	11, 10, 2,	10, 7, 6,	7, 1, 8,
-		 3, 9, 4, 	3, 4, 2,	3, 2, 6,	3, 6, 8,	3, 8, 9,
-		 4, 9, 5, 	2, 4, 11,	6, 2, 10,	8, 6, 7,	9, 8, 1
-	];
-
-	PolyhedronBufferGeometry.call( this, vertices, indices, radius, detail );
-
-	this.type = 'IcosahedronBufferGeometry';
-
-	this.parameters = {
-		radius: radius,
-		detail: detail
-	};
-
-}
-
-IcosahedronBufferGeometry.prototype = Object.create( PolyhedronBufferGeometry.prototype );
-IcosahedronBufferGeometry.prototype.constructor = IcosahedronBufferGeometry;
-
-// DodecahedronGeometry
-
-function DodecahedronGeometry( radius, detail ) {
-
-	Geometry.call( this );
-
-	this.type = 'DodecahedronGeometry';
-
-	this.parameters = {
-		radius: radius,
-		detail: detail
-	};
-
-	this.fromBufferGeometry( new DodecahedronBufferGeometry( radius, detail ) );
-	this.mergeVertices();
-
-}
-
-DodecahedronGeometry.prototype = Object.create( Geometry.prototype );
-DodecahedronGeometry.prototype.constructor = DodecahedronGeometry;
-
-// DodecahedronBufferGeometry
-
-function DodecahedronBufferGeometry( radius, detail ) {
-
-	const t = ( 1 + Math.sqrt( 5 ) ) / 2;
-	const r = 1 / t;
-
-	const vertices = [
-
-		// (±1, ±1, ±1)
-		- 1, - 1, - 1,	- 1, - 1, 1,
-		- 1, 1, - 1, - 1, 1, 1,
-		1, - 1, - 1, 1, - 1, 1,
-		1, 1, - 1, 1, 1, 1,
-
-		// (0, ±1/φ, ±φ)
-		 0, - r, - t, 0, - r, t,
-		 0, r, - t, 0, r, t,
-
-		// (±1/φ, ±φ, 0)
-		- r, - t, 0, - r, t, 0,
-		 r, - t, 0, r, t, 0,
-
-		// (±φ, 0, ±1/φ)
-		- t, 0, - r, t, 0, - r,
-		- t, 0, r, t, 0, r
-	];
-
-	const indices = [
-		3, 11, 7, 	3, 7, 15, 	3, 15, 13,
-		7, 19, 17, 	7, 17, 6, 	7, 6, 15,
-		17, 4, 8, 	17, 8, 10, 	17, 10, 6,
-		8, 0, 16, 	8, 16, 2, 	8, 2, 10,
-		0, 12, 1, 	0, 1, 18, 	0, 18, 16,
-		6, 10, 2, 	6, 2, 13, 	6, 13, 15,
-		2, 16, 18, 	2, 18, 3, 	2, 3, 13,
-		18, 1, 9, 	18, 9, 11, 	18, 11, 3,
-		4, 14, 12, 	4, 12, 0, 	4, 0, 8,
-		11, 9, 5, 	11, 5, 19, 	11, 19, 7,
-		19, 5, 14, 	19, 14, 4, 	19, 4, 17,
-		1, 12, 14, 	1, 14, 5, 	1, 5, 9
-	];
-
-	PolyhedronBufferGeometry.call( this, vertices, indices, radius, detail );
-
-	this.type = 'DodecahedronBufferGeometry';
-
-	this.parameters = {
-		radius: radius,
-		detail: detail
-	};
-
-}
-
-DodecahedronBufferGeometry.prototype = Object.create( PolyhedronBufferGeometry.prototype );
-DodecahedronBufferGeometry.prototype.constructor = DodecahedronBufferGeometry;
-
-// TubeGeometry
-
-function TubeGeometry( path, tubularSegments, radius, radialSegments, closed, taper ) {
-
-	Geometry.call( this );
-
-	this.type = 'TubeGeometry';
-
-	this.parameters = {
-		path: path,
-		tubularSegments: tubularSegments,
-		radius: radius,
-		radialSegments: radialSegments,
-		closed: closed
-	};
-
-	if ( taper !== undefined ) console.warn( 'THREE.TubeGeometry: taper has been removed.' );
-
-	const bufferGeometry = new TubeBufferGeometry( path, tubularSegments, radius, radialSegments, closed );
-
-	// expose internals
-
-	this.tangents = bufferGeometry.tangents;
-	this.normals = bufferGeometry.normals;
-	this.binormals = bufferGeometry.binormals;
-
-	// create geometry
-
-	this.fromBufferGeometry( bufferGeometry );
-	this.mergeVertices();
-
-}
-
-TubeGeometry.prototype = Object.create( Geometry.prototype );
-TubeGeometry.prototype.constructor = TubeGeometry;
-
-// TubeBufferGeometry
-
-function TubeBufferGeometry( path, tubularSegments, radius, radialSegments, closed ) {
-
-	BufferGeometry.call( this );
-
-	this.type = 'TubeBufferGeometry';
-
-	this.parameters = {
-		path: path,
-		tubularSegments: tubularSegments,
-		radius: radius,
-		radialSegments: radialSegments,
-		closed: closed
-	};
-
-	tubularSegments = tubularSegments || 64;
-	radius = radius || 1;
-	radialSegments = radialSegments || 8;
-	closed = closed || false;
-
-	const frames = path.computeFrenetFrames( tubularSegments, closed );
-
-	// expose internals
-
-	this.tangents = frames.tangents;
-	this.normals = frames.normals;
-	this.binormals = frames.binormals;
-
-	// helper variables
-
-	const vertex = new Vector3();
-	const normal = new Vector3();
-	const uv = new Vector2();
-	let P = new Vector3();
-
-	// buffer
-
-	const vertices = [];
-	const normals = [];
-	const uvs = [];
-	const indices = [];
-
-	// create buffer data
-
-	generateBufferData();
-
-	// build geometry
-
-	this.setIndex( indices );
-	this.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
-	this.setAttribute( 'normal', new Float32BufferAttribute( normals, 3 ) );
-	this.setAttribute( 'uv', new Float32BufferAttribute( uvs, 2 ) );
-
-	// functions
-
-	function generateBufferData() {
-
-		for ( let i = 0; i < tubularSegments; i ++ ) {
-
-			generateSegment( i );
-
-		}
-
-		// if the geometry is not closed, generate the last row of vertices and normals
-		// at the regular position on the given path
-		//
-		// if the geometry is closed, duplicate the first row of vertices and normals (uvs will differ)
-
-		generateSegment( ( closed === false ) ? tubularSegments : 0 );
-
-		// uvs are generated in a separate function.
-		// this makes it easy compute correct values for closed geometries
+		// finally, create the uv data
 
 		generateUVs();
 
-		// finally create faces
+		// build non-indexed geometry
 
-		generateIndices();
+		this.setAttribute( 'position', new Float32BufferAttribute( vertexBuffer, 3 ) );
+		this.setAttribute( 'normal', new Float32BufferAttribute( vertexBuffer.slice(), 3 ) );
+		this.setAttribute( 'uv', new Float32BufferAttribute( uvBuffer, 2 ) );
 
-	}
+		if ( detail === 0 ) {
 
-	function generateSegment( i ) {
+			this.computeVertexNormals(); // flat normals
 
-		// we use getPointAt to sample evenly distributed points from the given path
+		} else {
 
-		P = path.getPointAt( i / tubularSegments, P );
+			this.normalizeNormals(); // smooth normals
 
-		// retrieve corresponding normal and binormal
+		}
 
-		const N = frames.normals[ i ];
-		const B = frames.binormals[ i ];
+		// helper functions
 
-		// generate normals and vertices for the current segment
+		function subdivide( detail ) {
 
-		for ( let j = 0; j <= radialSegments; j ++ ) {
+			const a = new Vector3();
+			const b = new Vector3();
+			const c = new Vector3();
 
-			const v = j / radialSegments * Math.PI * 2;
+			// iterate over all faces and apply a subdivison with the given detail value
 
-			const sin = Math.sin( v );
-			const cos = - Math.cos( v );
+			for ( let i = 0; i < indices.length; i += 3 ) {
 
-			// normal
+				// get the vertices of the face
 
-			normal.x = ( cos * N.x + sin * B.x );
-			normal.y = ( cos * N.y + sin * B.y );
-			normal.z = ( cos * N.z + sin * B.z );
-			normal.normalize();
+				getVertexByIndex( indices[ i + 0 ], a );
+				getVertexByIndex( indices[ i + 1 ], b );
+				getVertexByIndex( indices[ i + 2 ], c );
 
-			normals.push( normal.x, normal.y, normal.z );
+				// perform subdivision
 
-			// vertex
+				subdivideFace( a, b, c, detail );
 
-			vertex.x = P.x + radius * normal.x;
-			vertex.y = P.y + radius * normal.y;
-			vertex.z = P.z + radius * normal.z;
+			}
 
-			vertices.push( vertex.x, vertex.y, vertex.z );
+		}
+
+		function subdivideFace( a, b, c, detail ) {
+
+			const cols = Math.pow( 2, detail );
+
+			// we use this multidimensional array as a data structure for creating the subdivision
+
+			const v = [];
+
+			// construct all of the vertices for this subdivision
+
+			for ( let i = 0; i <= cols; i ++ ) {
+
+				v[ i ] = [];
+
+				const aj = a.clone().lerp( c, i / cols );
+				const bj = b.clone().lerp( c, i / cols );
+
+				const rows = cols - i;
+
+				for ( let j = 0; j <= rows; j ++ ) {
+
+					if ( j === 0 && i === cols ) {
+
+						v[ i ][ j ] = aj;
+
+					} else {
+
+						v[ i ][ j ] = aj.clone().lerp( bj, j / rows );
+
+					}
+
+				}
+
+			}
+
+			// construct all of the faces
+
+			for ( let i = 0; i < cols; i ++ ) {
+
+				for ( let j = 0; j < 2 * ( cols - i ) - 1; j ++ ) {
+
+					const k = Math.floor( j / 2 );
+
+					if ( j % 2 === 0 ) {
+
+						pushVertex( v[ i ][ k + 1 ] );
+						pushVertex( v[ i + 1 ][ k ] );
+						pushVertex( v[ i ][ k ] );
+
+					} else {
+
+						pushVertex( v[ i ][ k + 1 ] );
+						pushVertex( v[ i + 1 ][ k + 1 ] );
+						pushVertex( v[ i + 1 ][ k ] );
+
+					}
+
+				}
+
+			}
+
+		}
+
+		function applyRadius( radius ) {
+
+			const vertex = new Vector3();
+
+			// iterate over the entire buffer and apply the radius to each vertex
+
+			for ( let i = 0; i < vertexBuffer.length; i += 3 ) {
+
+				vertex.x = vertexBuffer[ i + 0 ];
+				vertex.y = vertexBuffer[ i + 1 ];
+				vertex.z = vertexBuffer[ i + 2 ];
+
+				vertex.normalize().multiplyScalar( radius );
+
+				vertexBuffer[ i + 0 ] = vertex.x;
+				vertexBuffer[ i + 1 ] = vertex.y;
+				vertexBuffer[ i + 2 ] = vertex.z;
+
+			}
+
+		}
+
+		function generateUVs() {
+
+			const vertex = new Vector3();
+
+			for ( let i = 0; i < vertexBuffer.length; i += 3 ) {
+
+				vertex.x = vertexBuffer[ i + 0 ];
+				vertex.y = vertexBuffer[ i + 1 ];
+				vertex.z = vertexBuffer[ i + 2 ];
+
+				const u = azimuth( vertex ) / 2 / Math.PI + 0.5;
+				const v = inclination( vertex ) / Math.PI + 0.5;
+				uvBuffer.push( u, 1 - v );
+
+			}
+
+			correctUVs();
+
+			correctSeam();
+
+		}
+
+		function correctSeam() {
+
+			// handle case when face straddles the seam, see #3269
+
+			for ( let i = 0; i < uvBuffer.length; i += 6 ) {
+
+				// uv data of a single face
+
+				const x0 = uvBuffer[ i + 0 ];
+				const x1 = uvBuffer[ i + 2 ];
+				const x2 = uvBuffer[ i + 4 ];
+
+				const max = Math.max( x0, x1, x2 );
+				const min = Math.min( x0, x1, x2 );
+
+				// 0.9 is somewhat arbitrary
+
+				if ( max > 0.9 && min < 0.1 ) {
+
+					if ( x0 < 0.2 ) uvBuffer[ i + 0 ] += 1;
+					if ( x1 < 0.2 ) uvBuffer[ i + 2 ] += 1;
+					if ( x2 < 0.2 ) uvBuffer[ i + 4 ] += 1;
+
+				}
+
+			}
+
+		}
+
+		function pushVertex( vertex ) {
+
+			vertexBuffer.push( vertex.x, vertex.y, vertex.z );
+
+		}
+
+		function getVertexByIndex( index, vertex ) {
+
+			const stride = index * 3;
+
+			vertex.x = vertices[ stride + 0 ];
+			vertex.y = vertices[ stride + 1 ];
+			vertex.z = vertices[ stride + 2 ];
+
+		}
+
+		function correctUVs() {
+
+			const a = new Vector3();
+			const b = new Vector3();
+			const c = new Vector3();
+
+			const centroid = new Vector3();
+
+			const uvA = new Vector2();
+			const uvB = new Vector2();
+			const uvC = new Vector2();
+
+			for ( let i = 0, j = 0; i < vertexBuffer.length; i += 9, j += 6 ) {
+
+				a.set( vertexBuffer[ i + 0 ], vertexBuffer[ i + 1 ], vertexBuffer[ i + 2 ] );
+				b.set( vertexBuffer[ i + 3 ], vertexBuffer[ i + 4 ], vertexBuffer[ i + 5 ] );
+				c.set( vertexBuffer[ i + 6 ], vertexBuffer[ i + 7 ], vertexBuffer[ i + 8 ] );
+
+				uvA.set( uvBuffer[ j + 0 ], uvBuffer[ j + 1 ] );
+				uvB.set( uvBuffer[ j + 2 ], uvBuffer[ j + 3 ] );
+				uvC.set( uvBuffer[ j + 4 ], uvBuffer[ j + 5 ] );
+
+				centroid.copy( a ).add( b ).add( c ).divideScalar( 3 );
+
+				const azi = azimuth( centroid );
+
+				correctUV( uvA, j + 0, a, azi );
+				correctUV( uvB, j + 2, b, azi );
+				correctUV( uvC, j + 4, c, azi );
+
+			}
+
+		}
+
+		function correctUV( uv, stride, vector, azimuth ) {
+
+			if ( ( azimuth < 0 ) && ( uv.x === 1 ) ) {
+
+				uvBuffer[ stride ] = uv.x - 1;
+
+			}
+
+			if ( ( vector.x === 0 ) && ( vector.z === 0 ) ) {
+
+				uvBuffer[ stride ] = azimuth / 2 / Math.PI + 0.5;
+
+			}
+
+		}
+
+		// Angle around the Y axis, counter-clockwise when looking from above.
+
+		function azimuth( vector ) {
+
+			return Math.atan2( vector.z, - vector.x );
+
+		}
+
+
+		// Angle above the XZ plane.
+
+		function inclination( vector ) {
+
+			return Math.atan2( - vector.y, Math.sqrt( ( vector.x * vector.x ) + ( vector.z * vector.z ) ) );
 
 		}
 
 	}
 
-	function generateIndices() {
+}
+
+// TetrahedronGeometry
+
+class TetrahedronGeometry extends Geometry {
+
+	constructor( radius, detail ) {
+
+		super();
+		this.type = 'TetrahedronGeometry';
+
+		this.parameters = {
+			radius: radius,
+			detail: detail
+		};
+
+		this.fromBufferGeometry( new TetrahedronBufferGeometry( radius, detail ) );
+		this.mergeVertices();
+
+	}
+
+}
+
+
+// TetrahedronBufferGeometry
+
+class TetrahedronBufferGeometry extends PolyhedronBufferGeometry {
+
+	constructor( radius, detail ) {
+
+		const vertices = [
+			1, 1, 1, 	- 1, - 1, 1, 	- 1, 1, - 1, 	1, - 1, - 1
+		];
+
+		const indices = [
+			2, 1, 0, 	0, 3, 2,	1, 3, 0,	2, 3, 1
+		];
+
+		super( vertices, indices, radius, detail );
+
+		this.type = 'TetrahedronBufferGeometry';
+
+		this.parameters = {
+			radius: radius,
+			detail: detail
+		};
+
+	}
+
+}
+
+// OctahedronGeometry
+
+class OctahedronGeometry extends Geometry {
+
+	constructor( radius, detail ) {
+
+		super();
+
+		this.type = 'OctahedronGeometry';
+
+		this.parameters = {
+			radius: radius,
+			detail: detail
+		};
+
+		this.fromBufferGeometry( new OctahedronBufferGeometry( radius, detail ) );
+		this.mergeVertices();
+
+	}
+
+}
+
+// OctahedronBufferGeometry
+
+class OctahedronBufferGeometry extends PolyhedronBufferGeometry {
+
+	constructor( radius, detail ) {
+
+		const vertices = [
+			1, 0, 0, 	- 1, 0, 0,	0, 1, 0,
+			0, - 1, 0, 	0, 0, 1,	0, 0, - 1
+		];
+
+		const indices = [
+			0, 2, 4,	0, 4, 3,	0, 3, 5,
+			0, 5, 2,	1, 2, 5,	1, 5, 3,
+			1, 3, 4,	1, 4, 2
+		];
+
+		super( vertices, indices, radius, detail );
+
+		this.type = 'OctahedronBufferGeometry';
+
+		this.parameters = {
+			radius: radius,
+			detail: detail
+		};
+
+	}
+
+}
+
+// IcosahedronGeometry
+
+class IcosahedronGeometry extends Geometry {
+
+	constructor( radius, detail ) {
+
+		super();
+
+		this.type = 'IcosahedronGeometry';
+
+		this.parameters = {
+			radius: radius,
+			detail: detail
+		};
+
+		this.fromBufferGeometry( new IcosahedronBufferGeometry( radius, detail ) );
+		this.mergeVertices();
+
+	}
+
+}
+
+// IcosahedronBufferGeometry
+
+class IcosahedronBufferGeometry extends PolyhedronBufferGeometry {
+
+	constructor( radius, detail ) {
+
+		const t = ( 1 + Math.sqrt( 5 ) ) / 2;
+
+		const vertices = [
+			- 1, t, 0, 	1, t, 0, 	- 1, - t, 0, 	1, - t, 0,
+			0, - 1, t, 	0, 1, t,	0, - 1, - t, 	0, 1, - t,
+			t, 0, - 1, 	t, 0, 1, 	- t, 0, - 1, 	- t, 0, 1
+		];
+
+		const indices = [
+			0, 11, 5, 	0, 5, 1, 	0, 1, 7, 	0, 7, 10, 	0, 10, 11,
+			1, 5, 9, 	5, 11, 4,	11, 10, 2,	10, 7, 6,	7, 1, 8,
+			3, 9, 4, 	3, 4, 2,	3, 2, 6,	3, 6, 8,	3, 8, 9,
+			4, 9, 5, 	2, 4, 11,	6, 2, 10,	8, 6, 7,	9, 8, 1
+		];
+
+		super( vertices, indices, radius, detail );
+
+		this.type = 'IcosahedronBufferGeometry';
+
+		this.parameters = {
+			radius: radius,
+			detail: detail
+		};
+
+	}
+
+}
+
+// DodecahedronGeometry
+
+class DodecahedronGeometry extends Geometry {
+
+	constructor( radius, detail ) {
+
+		super();
+		this.type = 'DodecahedronGeometry';
+
+		this.parameters = {
+			radius: radius,
+			detail: detail
+		};
+
+		this.fromBufferGeometry( new DodecahedronBufferGeometry( radius, detail ) );
+		this.mergeVertices();
+
+	}
+
+}
+
+// DodecahedronBufferGeometry
+
+class DodecahedronBufferGeometry extends PolyhedronBufferGeometry {
+
+	constructor( radius, detail ) {
+
+		const t = ( 1 + Math.sqrt( 5 ) ) / 2;
+		const r = 1 / t;
+
+		const vertices = [
+
+			// (±1, ±1, ±1)
+			- 1, - 1, - 1,	- 1, - 1, 1,
+			- 1, 1, - 1, - 1, 1, 1,
+			1, - 1, - 1, 1, - 1, 1,
+			1, 1, - 1, 1, 1, 1,
+
+			// (0, ±1/φ, ±φ)
+			0, - r, - t, 0, - r, t,
+			0, r, - t, 0, r, t,
+
+			// (±1/φ, ±φ, 0)
+			- r, - t, 0, - r, t, 0,
+			r, - t, 0, r, t, 0,
+
+			// (±φ, 0, ±1/φ)
+			- t, 0, - r, t, 0, - r,
+			- t, 0, r, t, 0, r
+		];
+
+		const indices = [
+			3, 11, 7, 	3, 7, 15, 	3, 15, 13,
+			7, 19, 17, 	7, 17, 6, 	7, 6, 15,
+			17, 4, 8, 	17, 8, 10, 	17, 10, 6,
+			8, 0, 16, 	8, 16, 2, 	8, 2, 10,
+			0, 12, 1, 	0, 1, 18, 	0, 18, 16,
+			6, 10, 2, 	6, 2, 13, 	6, 13, 15,
+			2, 16, 18, 	2, 18, 3, 	2, 3, 13,
+			18, 1, 9, 	18, 9, 11, 	18, 11, 3,
+			4, 14, 12, 	4, 12, 0, 	4, 0, 8,
+			11, 9, 5, 	11, 5, 19, 	11, 19, 7,
+			19, 5, 14, 	19, 14, 4, 	19, 4, 17,
+			1, 12, 14, 	1, 14, 5, 	1, 5, 9
+		];
+
+		super( vertices, indices, radius, detail );
+
+		this.type = 'DodecahedronBufferGeometry';
+
+		this.parameters = {
+			radius: radius,
+			detail: detail
+		};
+
+	}
+
+}
+
+// TubeGeometry
+
+class TubeGeometry extends Geometry {
+
+	constructor( path, tubularSegments, radius, radialSegments, closed, taper ) {
+
+		super();
+		this.type = 'TubeGeometry';
+
+		this.parameters = {
+			path: path,
+			tubularSegments: tubularSegments,
+			radius: radius,
+			radialSegments: radialSegments,
+			closed: closed
+		};
+
+		if ( taper !== undefined ) console.warn( 'THREE.TubeGeometry: taper has been removed.' );
+
+		const bufferGeometry = new TubeBufferGeometry( path, tubularSegments, radius, radialSegments, closed );
+
+		// expose internals
+
+		this.tangents = bufferGeometry.tangents;
+		this.normals = bufferGeometry.normals;
+		this.binormals = bufferGeometry.binormals;
+
+		// create geometry
+
+		this.fromBufferGeometry( bufferGeometry );
+		this.mergeVertices();
+
+	}
+
+}
+
+
+// TubeBufferGeometry
+
+class TubeBufferGeometry extends BufferGeometry {
+
+	constructor( path, tubularSegments, radius, radialSegments, closed ) {
+
+		super();
+		this.type = 'TubeBufferGeometry';
+
+		this.parameters = {
+			path: path,
+			tubularSegments: tubularSegments,
+			radius: radius,
+			radialSegments: radialSegments,
+			closed: closed
+		};
+
+		tubularSegments = tubularSegments || 64;
+		radius = radius || 1;
+		radialSegments = radialSegments || 8;
+		closed = closed || false;
+
+		const frames = path.computeFrenetFrames( tubularSegments, closed );
+
+		// expose internals
+
+		this.tangents = frames.tangents;
+		this.normals = frames.normals;
+		this.binormals = frames.binormals;
+
+		// helper variables
+
+		const vertex = new Vector3();
+		const normal = new Vector3();
+		const uv = new Vector2();
+		let P = new Vector3();
+
+		// buffer
+
+		const vertices = [];
+		const normals = [];
+		const uvs = [];
+		const indices = [];
+
+		// create buffer data
+
+		generateBufferData();
+
+		// build geometry
+
+		this.setIndex( indices );
+		this.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
+		this.setAttribute( 'normal', new Float32BufferAttribute( normals, 3 ) );
+		this.setAttribute( 'uv', new Float32BufferAttribute( uvs, 2 ) );
+
+		// functions
+
+		function generateBufferData() {
+
+			for ( let i = 0; i < tubularSegments; i ++ ) {
+
+				generateSegment( i );
+
+			}
+
+			// if the geometry is not closed, generate the last row of vertices and normals
+			// at the regular position on the given path
+			//
+			// if the geometry is closed, duplicate the first row of vertices and normals (uvs will differ)
+
+			generateSegment( ( closed === false ) ? tubularSegments : 0 );
+
+			// uvs are generated in a separate function.
+			// this makes it easy compute correct values for closed geometries
+
+			generateUVs();
+
+			// finally create faces
+
+			generateIndices();
+
+		}
+
+		function generateSegment( i ) {
+
+			// we use getPointAt to sample evenly distributed points from the given path
+
+			P = path.getPointAt( i / tubularSegments, P );
+
+			// retrieve corresponding normal and binormal
+
+			const N = frames.normals[ i ];
+			const B = frames.binormals[ i ];
+
+			// generate normals and vertices for the current segment
+
+			for ( let j = 0; j <= radialSegments; j ++ ) {
+
+				const v = j / radialSegments * Math.PI * 2;
+
+				const sin = Math.sin( v );
+				const cos = - Math.cos( v );
+
+				// normal
+
+				normal.x = ( cos * N.x + sin * B.x );
+				normal.y = ( cos * N.y + sin * B.y );
+				normal.z = ( cos * N.z + sin * B.z );
+				normal.normalize();
+
+				normals.push( normal.x, normal.y, normal.z );
+
+				// vertex
+
+				vertex.x = P.x + radius * normal.x;
+				vertex.y = P.y + radius * normal.y;
+				vertex.z = P.z + radius * normal.z;
+
+				vertices.push( vertex.x, vertex.y, vertex.z );
+
+			}
+
+		}
+
+		function generateIndices() {
+
+			for ( let j = 1; j <= tubularSegments; j ++ ) {
+
+				for ( let i = 1; i <= radialSegments; i ++ ) {
+
+					const a = ( radialSegments + 1 ) * ( j - 1 ) + ( i - 1 );
+					const b = ( radialSegments + 1 ) * j + ( i - 1 );
+					const c = ( radialSegments + 1 ) * j + i;
+					const d = ( radialSegments + 1 ) * ( j - 1 ) + i;
+
+					// faces
+
+					indices.push( a, b, d );
+					indices.push( b, c, d );
+
+				}
+
+			}
+
+		}
+
+		function generateUVs() {
+
+			for ( let i = 0; i <= tubularSegments; i ++ ) {
+
+				for ( let j = 0; j <= radialSegments; j ++ ) {
+
+					uv.x = i / tubularSegments;
+					uv.y = j / radialSegments;
+
+					uvs.push( uv.x, uv.y );
+
+				}
+
+			}
+
+		}
+
+	}
+	toJSON() {
+
+		const data = BufferGeometry.prototype.toJSON.call( this );
+
+		data.path = this.parameters.path.toJSON();
+
+		return data;
+
+	}
+
+}
+
+// TorusKnotGeometry
+
+class TorusKnotGeometry extends Geometry {
+
+	constructor( radius, tube, tubularSegments, radialSegments, p, q, heightScale ) {
+
+		super();
+		this.type = 'TorusKnotGeometry';
+
+		this.parameters = {
+			radius: radius,
+			tube: tube,
+			tubularSegments: tubularSegments,
+			radialSegments: radialSegments,
+			p: p,
+			q: q
+		};
+
+		if ( heightScale !== undefined ) console.warn( 'THREE.TorusKnotGeometry: heightScale has been deprecated. Use .scale( x, y, z ) instead.' );
+
+		this.fromBufferGeometry( new TorusKnotBufferGeometry( radius, tube, tubularSegments, radialSegments, p, q ) );
+		this.mergeVertices();
+
+	}
+
+}
+
+
+// TorusKnotBufferGeometry
+
+class TorusKnotBufferGeometry extends BufferGeometry {
+
+	constructor( radius, tube, tubularSegments, radialSegments, p, q ) {
+
+		super();
+		this.type = 'TorusKnotBufferGeometry';
+
+		this.parameters = {
+			radius: radius,
+			tube: tube,
+			tubularSegments: tubularSegments,
+			radialSegments: radialSegments,
+			p: p,
+			q: q
+		};
+
+		radius = radius || 1;
+		tube = tube || 0.4;
+		tubularSegments = Math.floor( tubularSegments ) || 64;
+		radialSegments = Math.floor( radialSegments ) || 8;
+		p = p || 2;
+		q = q || 3;
+
+		// buffers
+
+		const indices = [];
+		const vertices = [];
+		const normals = [];
+		const uvs = [];
+
+		// helper variables
+
+		const vertex = new Vector3();
+		const normal = new Vector3();
+
+		const P1 = new Vector3();
+		const P2 = new Vector3();
+
+		const B = new Vector3();
+		const T = new Vector3();
+		const N = new Vector3();
+
+		// generate vertices, normals and uvs
+
+		for ( let i = 0; i <= tubularSegments; ++ i ) {
+
+			// the radian "u" is used to calculate the position on the torus curve of the current tubular segement
+
+			const u = i / tubularSegments * p * Math.PI * 2;
+
+			// now we calculate two points. P1 is our current position on the curve, P2 is a little farther ahead.
+			// these points are used to create a special "coordinate space", which is necessary to calculate the correct vertex positions
+
+			calculatePositionOnCurve( u, p, q, radius, P1 );
+			calculatePositionOnCurve( u + 0.01, p, q, radius, P2 );
+
+			// calculate orthonormal basis
+
+			T.subVectors( P2, P1 );
+			N.addVectors( P2, P1 );
+			B.crossVectors( T, N );
+			N.crossVectors( B, T );
+
+			// normalize B, N. T can be ignored, we don't use it
+
+			B.normalize();
+			N.normalize();
+
+			for ( let j = 0; j <= radialSegments; ++ j ) {
+
+				// now calculate the vertices. they are nothing more than an extrusion of the torus curve.
+				// because we extrude a shape in the xy-plane, there is no need to calculate a z-value.
+
+				const v = j / radialSegments * Math.PI * 2;
+				const cx = - tube * Math.cos( v );
+				const cy = tube * Math.sin( v );
+
+				// now calculate the final vertex position.
+				// first we orient the extrusion with our basis vectos, then we add it to the current position on the curve
+
+				vertex.x = P1.x + ( cx * N.x + cy * B.x );
+				vertex.y = P1.y + ( cx * N.y + cy * B.y );
+				vertex.z = P1.z + ( cx * N.z + cy * B.z );
+
+				vertices.push( vertex.x, vertex.y, vertex.z );
+
+				// normal (P1 is always the center/origin of the extrusion, thus we can use it to calculate the normal)
+
+				normal.subVectors( vertex, P1 ).normalize();
+
+				normals.push( normal.x, normal.y, normal.z );
+
+				// uv
+
+				uvs.push( i / tubularSegments );
+				uvs.push( j / radialSegments );
+
+			}
+
+		}
+
+		// generate indices
 
 		for ( let j = 1; j <= tubularSegments; j ++ ) {
 
 			for ( let i = 1; i <= radialSegments; i ++ ) {
+
+				// indices
 
 				const a = ( radialSegments + 1 ) * ( j - 1 ) + ( i - 1 );
 				const b = ( radialSegments + 1 ) * j + ( i - 1 );
@@ -29635,344 +29950,159 @@ function TubeBufferGeometry( path, tubularSegments, radius, radialSegments, clos
 
 		}
 
+		// build geometry
+
+		this.setIndex( indices );
+		this.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
+		this.setAttribute( 'normal', new Float32BufferAttribute( normals, 3 ) );
+		this.setAttribute( 'uv', new Float32BufferAttribute( uvs, 2 ) );
+
+		// this function calculates the current position on the torus curve
+
+		function calculatePositionOnCurve( u, p, q, radius, position ) {
+
+			const cu = Math.cos( u );
+			const su = Math.sin( u );
+			const quOverP = q / p * u;
+			const cs = Math.cos( quOverP );
+
+			position.x = radius * ( 2 + cs ) * 0.5 * cu;
+			position.y = radius * ( 2 + cs ) * su * 0.5;
+			position.z = radius * Math.sin( quOverP ) * 0.5;
+
+		}
+
 	}
 
-	function generateUVs() {
+}
 
-		for ( let i = 0; i <= tubularSegments; i ++ ) {
+// TorusGeometry
 
-			for ( let j = 0; j <= radialSegments; j ++ ) {
+class TorusGeometry extends Geometry {
 
-				uv.x = i / tubularSegments;
-				uv.y = j / radialSegments;
+	constructor( radius, tube, radialSegments, tubularSegments, arc ) {
 
-				uvs.push( uv.x, uv.y );
+		super();
+		this.type = 'TorusGeometry';
+
+		this.parameters = {
+			radius: radius,
+			tube: tube,
+			radialSegments: radialSegments,
+			tubularSegments: tubularSegments,
+			arc: arc
+		};
+
+		this.fromBufferGeometry( new TorusBufferGeometry( radius, tube, radialSegments, tubularSegments, arc ) );
+		this.mergeVertices();
+
+	}
+
+}
+
+
+// TorusBufferGeometry
+
+class TorusBufferGeometry extends BufferGeometry {
+
+	constructor( radius, tube, radialSegments, tubularSegments, arc ) {
+
+		super();
+		this.type = 'TorusBufferGeometry';
+
+		this.parameters = {
+			radius: radius,
+			tube: tube,
+			radialSegments: radialSegments,
+			tubularSegments: tubularSegments,
+			arc: arc
+		};
+
+		radius = radius || 1;
+		tube = tube || 0.4;
+		radialSegments = Math.floor( radialSegments ) || 8;
+		tubularSegments = Math.floor( tubularSegments ) || 6;
+		arc = arc || Math.PI * 2;
+
+		// buffers
+
+		const indices = [];
+		const vertices = [];
+		const normals = [];
+		const uvs = [];
+
+		// helper variables
+
+		const center = new Vector3();
+		const vertex = new Vector3();
+		const normal = new Vector3();
+
+		// generate vertices, normals and uvs
+
+		for ( let j = 0; j <= radialSegments; j ++ ) {
+
+			for ( let i = 0; i <= tubularSegments; i ++ ) {
+
+				const u = i / tubularSegments * arc;
+				const v = j / radialSegments * Math.PI * 2;
+
+				// vertex
+
+				vertex.x = ( radius + tube * Math.cos( v ) ) * Math.cos( u );
+				vertex.y = ( radius + tube * Math.cos( v ) ) * Math.sin( u );
+				vertex.z = tube * Math.sin( v );
+
+				vertices.push( vertex.x, vertex.y, vertex.z );
+
+				// normal
+
+				center.x = radius * Math.cos( u );
+				center.y = radius * Math.sin( u );
+				normal.subVectors( vertex, center ).normalize();
+
+				normals.push( normal.x, normal.y, normal.z );
+
+				// uv
+
+				uvs.push( i / tubularSegments );
+				uvs.push( j / radialSegments );
 
 			}
 
 		}
 
-	}
+		// generate indices
 
-}
+		for ( let j = 1; j <= radialSegments; j ++ ) {
 
-TubeBufferGeometry.prototype = Object.create( BufferGeometry.prototype );
-TubeBufferGeometry.prototype.constructor = TubeBufferGeometry;
+			for ( let i = 1; i <= tubularSegments; i ++ ) {
 
-TubeBufferGeometry.prototype.toJSON = function () {
+				// indices
 
-	const data = BufferGeometry.prototype.toJSON.call( this );
+				const a = ( tubularSegments + 1 ) * j + i - 1;
+				const b = ( tubularSegments + 1 ) * ( j - 1 ) + i - 1;
+				const c = ( tubularSegments + 1 ) * ( j - 1 ) + i;
+				const d = ( tubularSegments + 1 ) * j + i;
 
-	data.path = this.parameters.path.toJSON();
+				// faces
 
-	return data;
+				indices.push( a, b, d );
+				indices.push( b, c, d );
 
-};
-
-// TorusKnotGeometry
-
-function TorusKnotGeometry( radius, tube, tubularSegments, radialSegments, p, q, heightScale ) {
-
-	Geometry.call( this );
-
-	this.type = 'TorusKnotGeometry';
-
-	this.parameters = {
-		radius: radius,
-		tube: tube,
-		tubularSegments: tubularSegments,
-		radialSegments: radialSegments,
-		p: p,
-		q: q
-	};
-
-	if ( heightScale !== undefined ) console.warn( 'THREE.TorusKnotGeometry: heightScale has been deprecated. Use .scale( x, y, z ) instead.' );
-
-	this.fromBufferGeometry( new TorusKnotBufferGeometry( radius, tube, tubularSegments, radialSegments, p, q ) );
-	this.mergeVertices();
-
-}
-
-TorusKnotGeometry.prototype = Object.create( Geometry.prototype );
-TorusKnotGeometry.prototype.constructor = TorusKnotGeometry;
-
-// TorusKnotBufferGeometry
-
-function TorusKnotBufferGeometry( radius, tube, tubularSegments, radialSegments, p, q ) {
-
-	BufferGeometry.call( this );
-
-	this.type = 'TorusKnotBufferGeometry';
-
-	this.parameters = {
-		radius: radius,
-		tube: tube,
-		tubularSegments: tubularSegments,
-		radialSegments: radialSegments,
-		p: p,
-		q: q
-	};
-
-	radius = radius || 1;
-	tube = tube || 0.4;
-	tubularSegments = Math.floor( tubularSegments ) || 64;
-	radialSegments = Math.floor( radialSegments ) || 8;
-	p = p || 2;
-	q = q || 3;
-
-	// buffers
-
-	const indices = [];
-	const vertices = [];
-	const normals = [];
-	const uvs = [];
-
-	// helper variables
-
-	const vertex = new Vector3();
-	const normal = new Vector3();
-
-	const P1 = new Vector3();
-	const P2 = new Vector3();
-
-	const B = new Vector3();
-	const T = new Vector3();
-	const N = new Vector3();
-
-	// generate vertices, normals and uvs
-
-	for ( let i = 0; i <= tubularSegments; ++ i ) {
-
-		// the radian "u" is used to calculate the position on the torus curve of the current tubular segement
-
-		const u = i / tubularSegments * p * Math.PI * 2;
-
-		// now we calculate two points. P1 is our current position on the curve, P2 is a little farther ahead.
-		// these points are used to create a special "coordinate space", which is necessary to calculate the correct vertex positions
-
-		calculatePositionOnCurve( u, p, q, radius, P1 );
-		calculatePositionOnCurve( u + 0.01, p, q, radius, P2 );
-
-		// calculate orthonormal basis
-
-		T.subVectors( P2, P1 );
-		N.addVectors( P2, P1 );
-		B.crossVectors( T, N );
-		N.crossVectors( B, T );
-
-		// normalize B, N. T can be ignored, we don't use it
-
-		B.normalize();
-		N.normalize();
-
-		for ( let j = 0; j <= radialSegments; ++ j ) {
-
-			// now calculate the vertices. they are nothing more than an extrusion of the torus curve.
-			// because we extrude a shape in the xy-plane, there is no need to calculate a z-value.
-
-			const v = j / radialSegments * Math.PI * 2;
-			const cx = - tube * Math.cos( v );
-			const cy = tube * Math.sin( v );
-
-			// now calculate the final vertex position.
-			// first we orient the extrusion with our basis vectos, then we add it to the current position on the curve
-
-			vertex.x = P1.x + ( cx * N.x + cy * B.x );
-			vertex.y = P1.y + ( cx * N.y + cy * B.y );
-			vertex.z = P1.z + ( cx * N.z + cy * B.z );
-
-			vertices.push( vertex.x, vertex.y, vertex.z );
-
-			// normal (P1 is always the center/origin of the extrusion, thus we can use it to calculate the normal)
-
-			normal.subVectors( vertex, P1 ).normalize();
-
-			normals.push( normal.x, normal.y, normal.z );
-
-			// uv
-
-			uvs.push( i / tubularSegments );
-			uvs.push( j / radialSegments );
+			}
 
 		}
 
-	}
+		// build geometry
 
-	// generate indices
-
-	for ( let j = 1; j <= tubularSegments; j ++ ) {
-
-		for ( let i = 1; i <= radialSegments; i ++ ) {
-
-			// indices
-
-			const a = ( radialSegments + 1 ) * ( j - 1 ) + ( i - 1 );
-			const b = ( radialSegments + 1 ) * j + ( i - 1 );
-			const c = ( radialSegments + 1 ) * j + i;
-			const d = ( radialSegments + 1 ) * ( j - 1 ) + i;
-
-			// faces
-
-			indices.push( a, b, d );
-			indices.push( b, c, d );
-
-		}
-
-	}
-
-	// build geometry
-
-	this.setIndex( indices );
-	this.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
-	this.setAttribute( 'normal', new Float32BufferAttribute( normals, 3 ) );
-	this.setAttribute( 'uv', new Float32BufferAttribute( uvs, 2 ) );
-
-	// this function calculates the current position on the torus curve
-
-	function calculatePositionOnCurve( u, p, q, radius, position ) {
-
-		const cu = Math.cos( u );
-		const su = Math.sin( u );
-		const quOverP = q / p * u;
-		const cs = Math.cos( quOverP );
-
-		position.x = radius * ( 2 + cs ) * 0.5 * cu;
-		position.y = radius * ( 2 + cs ) * su * 0.5;
-		position.z = radius * Math.sin( quOverP ) * 0.5;
+		this.setIndex( indices );
+		this.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
+		this.setAttribute( 'normal', new Float32BufferAttribute( normals, 3 ) );
+		this.setAttribute( 'uv', new Float32BufferAttribute( uvs, 2 ) );
 
 	}
 
 }
-
-TorusKnotBufferGeometry.prototype = Object.create( BufferGeometry.prototype );
-TorusKnotBufferGeometry.prototype.constructor = TorusKnotBufferGeometry;
-
-// TorusGeometry
-
-function TorusGeometry( radius, tube, radialSegments, tubularSegments, arc ) {
-
-	Geometry.call( this );
-
-	this.type = 'TorusGeometry';
-
-	this.parameters = {
-		radius: radius,
-		tube: tube,
-		radialSegments: radialSegments,
-		tubularSegments: tubularSegments,
-		arc: arc
-	};
-
-	this.fromBufferGeometry( new TorusBufferGeometry( radius, tube, radialSegments, tubularSegments, arc ) );
-	this.mergeVertices();
-
-}
-
-TorusGeometry.prototype = Object.create( Geometry.prototype );
-TorusGeometry.prototype.constructor = TorusGeometry;
-
-// TorusBufferGeometry
-
-function TorusBufferGeometry( radius, tube, radialSegments, tubularSegments, arc ) {
-
-	BufferGeometry.call( this );
-
-	this.type = 'TorusBufferGeometry';
-
-	this.parameters = {
-		radius: radius,
-		tube: tube,
-		radialSegments: radialSegments,
-		tubularSegments: tubularSegments,
-		arc: arc
-	};
-
-	radius = radius || 1;
-	tube = tube || 0.4;
-	radialSegments = Math.floor( radialSegments ) || 8;
-	tubularSegments = Math.floor( tubularSegments ) || 6;
-	arc = arc || Math.PI * 2;
-
-	// buffers
-
-	const indices = [];
-	const vertices = [];
-	const normals = [];
-	const uvs = [];
-
-	// helper variables
-
-	const center = new Vector3();
-	const vertex = new Vector3();
-	const normal = new Vector3();
-
-	// generate vertices, normals and uvs
-
-	for ( let j = 0; j <= radialSegments; j ++ ) {
-
-		for ( let i = 0; i <= tubularSegments; i ++ ) {
-
-			const u = i / tubularSegments * arc;
-			const v = j / radialSegments * Math.PI * 2;
-
-			// vertex
-
-			vertex.x = ( radius + tube * Math.cos( v ) ) * Math.cos( u );
-			vertex.y = ( radius + tube * Math.cos( v ) ) * Math.sin( u );
-			vertex.z = tube * Math.sin( v );
-
-			vertices.push( vertex.x, vertex.y, vertex.z );
-
-			// normal
-
-			center.x = radius * Math.cos( u );
-			center.y = radius * Math.sin( u );
-			normal.subVectors( vertex, center ).normalize();
-
-			normals.push( normal.x, normal.y, normal.z );
-
-			// uv
-
-			uvs.push( i / tubularSegments );
-			uvs.push( j / radialSegments );
-
-		}
-
-	}
-
-	// generate indices
-
-	for ( let j = 1; j <= radialSegments; j ++ ) {
-
-		for ( let i = 1; i <= tubularSegments; i ++ ) {
-
-			// indices
-
-			const a = ( tubularSegments + 1 ) * j + i - 1;
-			const b = ( tubularSegments + 1 ) * ( j - 1 ) + i - 1;
-			const c = ( tubularSegments + 1 ) * ( j - 1 ) + i;
-			const d = ( tubularSegments + 1 ) * j + i;
-
-			// faces
-
-			indices.push( a, b, d );
-			indices.push( b, c, d );
-
-		}
-
-	}
-
-	// build geometry
-
-	this.setIndex( indices );
-	this.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
-	this.setAttribute( 'normal', new Float32BufferAttribute( normals, 3 ) );
-	this.setAttribute( 'uv', new Float32BufferAttribute( uvs, 2 ) );
-
-}
-
-TorusBufferGeometry.prototype = Object.create( BufferGeometry.prototype );
-TorusBufferGeometry.prototype.constructor = TorusBufferGeometry;
 
 /**
  * Port from https://github.com/mapbox/earcut (v2.2.2)
@@ -29984,10 +30114,10 @@ const Earcut = {
 
 		dim = dim || 2;
 
-		let hasHoles = holeIndices && holeIndices.length,
-			outerLen = hasHoles ? holeIndices[ 0 ] * dim : data.length,
-			outerNode = linkedList( data, 0, outerLen, dim, true ),
-			triangles = [];
+		const hasHoles = holeIndices && holeIndices.length;
+		const outerLen = hasHoles ? holeIndices[ 0 ] * dim : data.length;
+		let outerNode = linkedList( data, 0, outerLen, dim, true );
+		const triangles = [];
 
 		if ( ! outerNode || outerNode.next === outerNode.prev ) return triangles;
 
@@ -30153,7 +30283,7 @@ function earcutLinked( ear, triangles, dim, minX, minY, invSize, pass ) {
 // check whether a polygon node forms a valid ear with adjacent nodes
 function isEar( ear ) {
 
-	let a = ear.prev,
+	const a = ear.prev,
 		b = ear,
 		c = ear.next;
 
@@ -30176,20 +30306,20 @@ function isEar( ear ) {
 
 function isEarHashed( ear, minX, minY, invSize ) {
 
-	let a = ear.prev,
+	const a = ear.prev,
 		b = ear,
 		c = ear.next;
 
 	if ( area( a, b, c ) >= 0 ) return false; // reflex, can't be an ear
 
 	// triangle bbox; min & max are calculated like this for speed
-	let minTX = a.x < b.x ? ( a.x < c.x ? a.x : c.x ) : ( b.x < c.x ? b.x : c.x ),
+	const minTX = a.x < b.x ? ( a.x < c.x ? a.x : c.x ) : ( b.x < c.x ? b.x : c.x ),
 		minTY = a.y < b.y ? ( a.y < c.y ? a.y : c.y ) : ( b.y < c.y ? b.y : c.y ),
 		maxTX = a.x > b.x ? ( a.x > c.x ? a.x : c.x ) : ( b.x > c.x ? b.x : c.x ),
 		maxTY = a.y > b.y ? ( a.y > c.y ? a.y : c.y ) : ( b.y > c.y ? b.y : c.y );
 
 	// z-order range for the current triangle bbox;
-	let minZ = zOrder( minTX, minTY, minX, minY, invSize ),
+	const minZ = zOrder( minTX, minTY, minX, minY, invSize ),
 		maxZ = zOrder( maxTX, maxTY, minX, minY, invSize );
 
 	let p = ear.prevZ,
@@ -30240,7 +30370,7 @@ function cureLocalIntersections( start, triangles, dim ) {
 	let p = start;
 	do {
 
-		let a = p.prev,
+		const a = p.prev,
 			b = p.next.next;
 
 		if ( ! equals( a, b ) && intersects( a, p, p.next, b ) && locallyInside( a, b ) && locallyInside( b, a ) ) {
@@ -30304,8 +30434,8 @@ function splitEarcut( start, triangles, dim, minX, minY, invSize ) {
 // link every hole into the outer loop, producing a single-ring polygon without holes
 function eliminateHoles( data, holeIndices, outerNode, dim ) {
 
-	let queue = [],
-		i, len, start, end, list;
+	const queue = [];
+	let i, len, start, end, list;
 
 	for ( i = 0, len = holeIndices.length; i < len; i ++ ) {
 
@@ -30356,11 +30486,10 @@ function eliminateHole( hole, outerNode ) {
 // David Eberly's algorithm for finding a bridge between hole and outer polygon
 function findHoleBridge( hole, outerNode ) {
 
-	let p = outerNode,
-		hx = hole.x,
-		hy = hole.y,
-		qx = - Infinity,
-		m;
+	let p = outerNode;
+	const hx = hole.x;
+	const hy = hole.y;
+	let qx = - Infinity, m;
 
 	// find a segment intersected by a ray from the hole's leftmost point to the left;
 	// segment's endpoint with lesser x will be potential connection point
@@ -30368,7 +30497,7 @@ function findHoleBridge( hole, outerNode ) {
 
 		if ( hy <= p.y && hy >= p.next.y && p.next.y !== p.y ) {
 
-			let x = p.x + ( hy - p.y ) * ( p.next.x - p.x ) / ( p.next.y - p.y );
+			const x = p.x + ( hy - p.y ) * ( p.next.x - p.x ) / ( p.next.y - p.y );
 			if ( x <= hx && x > qx ) {
 
 				qx = x;
@@ -30397,11 +30526,10 @@ function findHoleBridge( hole, outerNode ) {
 	// if there are no points found, we have a valid connection;
 	// otherwise choose the point of the minimum angle with the ray as connection point
 
-	let stop = m,
+	const stop = m,
 		mx = m.x,
-		my = m.y,
-		tanMin = Infinity,
-		tan;
+		my = m.y;
+	let tanMin = Infinity, tan;
 
 	p = m;
 
@@ -30653,8 +30781,8 @@ function locallyInside( a, b ) {
 function middleInside( a, b ) {
 
 	let p = a,
-		inside = false,
-		px = ( a.x + b.x ) / 2,
+		inside = false;
+	const px = ( a.x + b.x ) / 2,
 		py = ( a.y + b.y ) / 2;
 	do {
 
@@ -30673,7 +30801,7 @@ function middleInside( a, b ) {
 // if one belongs to the outer ring and another to a hole, it merges it into a single ring
 function splitPolygon( a, b ) {
 
-	let a2 = new Node( a.i, a.x, a.y ),
+	const a2 = new Node( a.i, a.x, a.y ),
 		b2 = new Node( b.i, b.x, b.y ),
 		an = a.next,
 		bp = b.prev;
@@ -30879,281 +31007,275 @@ function addContour( vertices, contour ) {
 
 // ExtrudeGeometry
 
-function ExtrudeGeometry( shapes, options ) {
+class ExtrudeGeometry extends Geometry {
 
-	Geometry.call( this );
+	constructor( shapes, options ) {
 
-	this.type = 'ExtrudeGeometry';
+		super();
 
-	this.parameters = {
-		shapes: shapes,
-		options: options
-	};
+		this.type = 'ExtrudeGeometry';
 
-	this.fromBufferGeometry( new ExtrudeBufferGeometry( shapes, options ) );
-	this.mergeVertices();
+		this.parameters = {
+			shapes: shapes,
+			options: options
+		};
 
-}
-
-ExtrudeGeometry.prototype = Object.create( Geometry.prototype );
-ExtrudeGeometry.prototype.constructor = ExtrudeGeometry;
-
-ExtrudeGeometry.prototype.toJSON = function () {
-
-	const data = Geometry.prototype.toJSON.call( this );
-
-	const shapes = this.parameters.shapes;
-	const options = this.parameters.options;
-
-	return toJSON( shapes, options, data );
-
-};
-
-// ExtrudeBufferGeometry
-
-function ExtrudeBufferGeometry( shapes, options ) {
-
-	BufferGeometry.call( this );
-
-	this.type = 'ExtrudeBufferGeometry';
-
-	this.parameters = {
-		shapes: shapes,
-		options: options
-	};
-
-	shapes = Array.isArray( shapes ) ? shapes : [ shapes ];
-
-	const scope = this;
-
-	const verticesArray = [];
-	const uvArray = [];
-
-	for ( let i = 0, l = shapes.length; i < l; i ++ ) {
-
-		const shape = shapes[ i ];
-		addShape( shape );
+		this.fromBufferGeometry( new ExtrudeBufferGeometry( shapes, options ) );
+		this.mergeVertices();
 
 	}
 
-	// build geometry
+	toJSON() {
 
-	this.setAttribute( 'position', new Float32BufferAttribute( verticesArray, 3 ) );
-	this.setAttribute( 'uv', new Float32BufferAttribute( uvArray, 2 ) );
+		const data = super.toJSON();
 
-	this.computeVertexNormals();
+		const shapes = this.parameters.shapes;
+		const options = this.parameters.options;
 
-	// functions
+		return toJSON( shapes, options, data );
 
-	function addShape( shape ) {
+	}
 
-		const placeholder = [];
+}
 
-		// options
 
-		const curveSegments = options.curveSegments !== undefined ? options.curveSegments : 12;
-		const steps = options.steps !== undefined ? options.steps : 1;
-		let depth = options.depth !== undefined ? options.depth : 100;
+// ExtrudeBufferGeometry
 
-		let bevelEnabled = options.bevelEnabled !== undefined ? options.bevelEnabled : true;
-		let bevelThickness = options.bevelThickness !== undefined ? options.bevelThickness : 6;
-		let bevelSize = options.bevelSize !== undefined ? options.bevelSize : bevelThickness - 2;
-		let bevelOffset = options.bevelOffset !== undefined ? options.bevelOffset : 0;
-		let bevelSegments = options.bevelSegments !== undefined ? options.bevelSegments : 3;
+class ExtrudeBufferGeometry extends BufferGeometry {
 
-		const extrudePath = options.extrudePath;
+	constructor( shapes, options ) {
 
-		const uvgen = options.UVGenerator !== undefined ? options.UVGenerator : WorldUVGenerator;
+		super();
 
-		// deprecated options
+		this.type = 'ExtrudeBufferGeometry';
 
-		if ( options.amount !== undefined ) {
+		this.parameters = {
+			shapes: shapes,
+			options: options
+		};
 
-			console.warn( 'THREE.ExtrudeBufferGeometry: amount has been renamed to depth.' );
-			depth = options.amount;
+		shapes = Array.isArray( shapes ) ? shapes : [ shapes ];
 
-		}
+		const scope = this;
 
-		//
+		const verticesArray = [];
+		const uvArray = [];
 
-		let extrudePts, extrudeByPath = false;
-		let splineTube, binormal, normal, position2;
+		for ( let i = 0, l = shapes.length; i < l; i ++ ) {
 
-		if ( extrudePath ) {
-
-			extrudePts = extrudePath.getSpacedPoints( steps );
-
-			extrudeByPath = true;
-			bevelEnabled = false; // bevels not supported for path extrusion
-
-			// SETUP TNB variables
-
-			// TODO1 - have a .isClosed in spline?
-
-			splineTube = extrudePath.computeFrenetFrames( steps, false );
-
-			// console.log(splineTube, 'splineTube', splineTube.normals.length, 'steps', steps, 'extrudePts', extrudePts.length);
-
-			binormal = new Vector3();
-			normal = new Vector3();
-			position2 = new Vector3();
+			const shape = shapes[ i ];
+			addShape( shape );
 
 		}
 
-		// Safeguards if bevels are not enabled
+		// build geometry
 
-		if ( ! bevelEnabled ) {
+		this.setAttribute( 'position', new Float32BufferAttribute( verticesArray, 3 ) );
+		this.setAttribute( 'uv', new Float32BufferAttribute( uvArray, 2 ) );
 
-			bevelSegments = 0;
-			bevelThickness = 0;
-			bevelSize = 0;
-			bevelOffset = 0;
+		this.computeVertexNormals();
 
-		}
+		// functions
 
-		// Variables initialization
+		function addShape( shape ) {
 
-		const shapePoints = shape.extractPoints( curveSegments );
+			const placeholder = [];
 
-		let vertices = shapePoints.shape;
-		const holes = shapePoints.holes;
+			// options
 
-		const reverse = ! ShapeUtils.isClockWise( vertices );
+			const curveSegments = options.curveSegments !== undefined ? options.curveSegments : 12;
+			const steps = options.steps !== undefined ? options.steps : 1;
+			let depth = options.depth !== undefined ? options.depth : 100;
 
-		if ( reverse ) {
+			let bevelEnabled = options.bevelEnabled !== undefined ? options.bevelEnabled : true;
+			let bevelThickness = options.bevelThickness !== undefined ? options.bevelThickness : 6;
+			let bevelSize = options.bevelSize !== undefined ? options.bevelSize : bevelThickness - 2;
+			let bevelOffset = options.bevelOffset !== undefined ? options.bevelOffset : 0;
+			let bevelSegments = options.bevelSegments !== undefined ? options.bevelSegments : 3;
 
-			vertices = vertices.reverse();
+			const extrudePath = options.extrudePath;
 
-			// Maybe we should also check if holes are in the opposite direction, just to be safe ...
+			const uvgen = options.UVGenerator !== undefined ? options.UVGenerator : WorldUVGenerator;
 
-			for ( let h = 0, hl = holes.length; h < hl; h ++ ) {
+			// deprecated options
 
-				const ahole = holes[ h ];
+			if ( options.amount !== undefined ) {
 
-				if ( ShapeUtils.isClockWise( ahole ) ) {
+				console.warn( 'THREE.ExtrudeBufferGeometry: amount has been renamed to depth.' );
+				depth = options.amount;
 
-					holes[ h ] = ahole.reverse();
+			}
+
+			//
+
+			let extrudePts, extrudeByPath = false;
+			let splineTube, binormal, normal, position2;
+
+			if ( extrudePath ) {
+
+				extrudePts = extrudePath.getSpacedPoints( steps );
+
+				extrudeByPath = true;
+				bevelEnabled = false; // bevels not supported for path extrusion
+
+				// SETUP TNB variables
+
+				// TODO1 - have a .isClosed in spline?
+
+				splineTube = extrudePath.computeFrenetFrames( steps, false );
+
+				// console.log(splineTube, 'splineTube', splineTube.normals.length, 'steps', steps, 'extrudePts', extrudePts.length);
+
+				binormal = new Vector3();
+				normal = new Vector3();
+				position2 = new Vector3();
+
+			}
+
+			// Safeguards if bevels are not enabled
+
+			if ( ! bevelEnabled ) {
+
+				bevelSegments = 0;
+				bevelThickness = 0;
+				bevelSize = 0;
+				bevelOffset = 0;
+
+			}
+
+			// Variables initialization
+
+			const shapePoints = shape.extractPoints( curveSegments );
+
+			let vertices = shapePoints.shape;
+			const holes = shapePoints.holes;
+
+			const reverse = ! ShapeUtils.isClockWise( vertices );
+
+			if ( reverse ) {
+
+				vertices = vertices.reverse();
+
+				// Maybe we should also check if holes are in the opposite direction, just to be safe ...
+
+				for ( let h = 0, hl = holes.length; h < hl; h ++ ) {
+
+					const ahole = holes[ h ];
+
+					if ( ShapeUtils.isClockWise( ahole ) ) {
+
+						holes[ h ] = ahole.reverse();
+
+					}
 
 				}
 
 			}
 
-		}
+
+			const faces = ShapeUtils.triangulateShape( vertices, holes );
+
+			/* Vertices */
+
+			const contour = vertices; // vertices has all points but contour has only points of circumference
+
+			for ( let h = 0, hl = holes.length; h < hl; h ++ ) {
+
+				const ahole = holes[ h ];
+
+				vertices = vertices.concat( ahole );
+
+			}
 
 
-		const faces = ShapeUtils.triangulateShape( vertices, holes );
+			function scalePt2( pt, vec, size ) {
 
-		/* Vertices */
+				if ( ! vec ) console.error( "THREE.ExtrudeGeometry: vec does not exist" );
 
-		const contour = vertices; // vertices has all points but contour has only points of circumference
+				return vec.clone().multiplyScalar( size ).add( pt );
 
-		for ( let h = 0, hl = holes.length; h < hl; h ++ ) {
+			}
 
-			const ahole = holes[ h ];
-
-			vertices = vertices.concat( ahole );
-
-		}
+			const vlen = vertices.length, flen = faces.length;
 
 
-		function scalePt2( pt, vec, size ) {
-
-			if ( ! vec ) console.error( "THREE.ExtrudeGeometry: vec does not exist" );
-
-			return vec.clone().multiplyScalar( size ).add( pt );
-
-		}
-
-		const vlen = vertices.length, flen = faces.length;
+			// Find directions for point movement
 
 
-		// Find directions for point movement
+			function getBevelVec( inPt, inPrev, inNext ) {
 
+				// computes for inPt the corresponding point inPt' on a new contour
+				//   shifted by 1 unit (length of normalized vector) to the left
+				// if we walk along contour clockwise, this new contour is outside the old one
+				//
+				// inPt' is the intersection of the two lines parallel to the two
+				//  adjacent edges of inPt at a distance of 1 unit on the left side.
 
-		function getBevelVec( inPt, inPrev, inNext ) {
+				let v_trans_x, v_trans_y, shrink_by; // resulting translation vector for inPt
 
-			// computes for inPt the corresponding point inPt' on a new contour
-			//   shifted by 1 unit (length of normalized vector) to the left
-			// if we walk along contour clockwise, this new contour is outside the old one
-			//
-			// inPt' is the intersection of the two lines parallel to the two
-			//  adjacent edges of inPt at a distance of 1 unit on the left side.
+				// good reading for geometry algorithms (here: line-line intersection)
+				// http://geomalgorithms.com/a05-_intersect-1.html
 
-			let v_trans_x, v_trans_y, shrink_by; // resulting translation vector for inPt
+				const v_prev_x = inPt.x - inPrev.x,
+					v_prev_y = inPt.y - inPrev.y;
+				const v_next_x = inNext.x - inPt.x,
+					v_next_y = inNext.y - inPt.y;
 
-			// good reading for geometry algorithms (here: line-line intersection)
-			// http://geomalgorithms.com/a05-_intersect-1.html
+				const v_prev_lensq = ( v_prev_x * v_prev_x + v_prev_y * v_prev_y );
 
-			const v_prev_x = inPt.x - inPrev.x,
-				v_prev_y = inPt.y - inPrev.y;
-			const v_next_x = inNext.x - inPt.x,
-				v_next_y = inNext.y - inPt.y;
+				// check for collinear edges
+				const collinear0 = ( v_prev_x * v_next_y - v_prev_y * v_next_x );
 
-			const v_prev_lensq = ( v_prev_x * v_prev_x + v_prev_y * v_prev_y );
+				if ( Math.abs( collinear0 ) > Number.EPSILON ) {
 
-			// check for collinear edges
-			const collinear0 = ( v_prev_x * v_next_y - v_prev_y * v_next_x );
+					// not collinear
 
-			if ( Math.abs( collinear0 ) > Number.EPSILON ) {
+					// length of vectors for normalizing
 
-				// not collinear
+					const v_prev_len = Math.sqrt( v_prev_lensq );
+					const v_next_len = Math.sqrt( v_next_x * v_next_x + v_next_y * v_next_y );
 
-				// length of vectors for normalizing
+					// shift adjacent points by unit vectors to the left
 
-				const v_prev_len = Math.sqrt( v_prev_lensq );
-				const v_next_len = Math.sqrt( v_next_x * v_next_x + v_next_y * v_next_y );
+					const ptPrevShift_x = ( inPrev.x - v_prev_y / v_prev_len );
+					const ptPrevShift_y = ( inPrev.y + v_prev_x / v_prev_len );
 
-				// shift adjacent points by unit vectors to the left
+					const ptNextShift_x = ( inNext.x - v_next_y / v_next_len );
+					const ptNextShift_y = ( inNext.y + v_next_x / v_next_len );
 
-				const ptPrevShift_x = ( inPrev.x - v_prev_y / v_prev_len );
-				const ptPrevShift_y = ( inPrev.y + v_prev_x / v_prev_len );
+					// scaling factor for v_prev to intersection point
 
-				const ptNextShift_x = ( inNext.x - v_next_y / v_next_len );
-				const ptNextShift_y = ( inNext.y + v_next_x / v_next_len );
+					const sf = ( ( ptNextShift_x - ptPrevShift_x ) * v_next_y -
+							( ptNextShift_y - ptPrevShift_y ) * v_next_x ) /
+						( v_prev_x * v_next_y - v_prev_y * v_next_x );
 
-				// scaling factor for v_prev to intersection point
+					// vector from inPt to intersection point
 
-				const sf = ( ( ptNextShift_x - ptPrevShift_x ) * v_next_y -
-						( ptNextShift_y - ptPrevShift_y ) * v_next_x ) /
-					( v_prev_x * v_next_y - v_prev_y * v_next_x );
+					v_trans_x = ( ptPrevShift_x + v_prev_x * sf - inPt.x );
+					v_trans_y = ( ptPrevShift_y + v_prev_y * sf - inPt.y );
 
-				// vector from inPt to intersection point
+					// Don't normalize!, otherwise sharp corners become ugly
+					//  but prevent crazy spikes
+					const v_trans_lensq = ( v_trans_x * v_trans_x + v_trans_y * v_trans_y );
+					if ( v_trans_lensq <= 2 ) {
 
-				v_trans_x = ( ptPrevShift_x + v_prev_x * sf - inPt.x );
-				v_trans_y = ( ptPrevShift_y + v_prev_y * sf - inPt.y );
+						return new Vector2( v_trans_x, v_trans_y );
 
-				// Don't normalize!, otherwise sharp corners become ugly
-				//  but prevent crazy spikes
-				const v_trans_lensq = ( v_trans_x * v_trans_x + v_trans_y * v_trans_y );
-				if ( v_trans_lensq <= 2 ) {
+					} else {
 
-					return new Vector2( v_trans_x, v_trans_y );
-
-				} else {
-
-					shrink_by = Math.sqrt( v_trans_lensq / 2 );
-
-				}
-
-			} else {
-
-				// handle special case of collinear edges
-
-				let direction_eq = false; // assumes: opposite
-
-				if ( v_prev_x > Number.EPSILON ) {
-
-					if ( v_next_x > Number.EPSILON ) {
-
-						direction_eq = true;
+						shrink_by = Math.sqrt( v_trans_lensq / 2 );
 
 					}
 
 				} else {
 
-					if ( v_prev_x < - Number.EPSILON ) {
+					// handle special case of collinear edges
 
-						if ( v_next_x < - Number.EPSILON ) {
+					let direction_eq = false; // assumes: opposite
+
+					if ( v_prev_x > Number.EPSILON ) {
+
+						if ( v_next_x > Number.EPSILON ) {
 
 							direction_eq = true;
 
@@ -31161,148 +31283,130 @@ function ExtrudeBufferGeometry( shapes, options ) {
 
 					} else {
 
-						if ( Math.sign( v_prev_y ) === Math.sign( v_next_y ) ) {
+						if ( v_prev_x < - Number.EPSILON ) {
 
-							direction_eq = true;
+							if ( v_next_x < - Number.EPSILON ) {
+
+								direction_eq = true;
+
+							}
+
+						} else {
+
+							if ( Math.sign( v_prev_y ) === Math.sign( v_next_y ) ) {
+
+								direction_eq = true;
+
+							}
 
 						}
 
 					}
 
+					if ( direction_eq ) {
+
+						// console.log("Warning: lines are a straight sequence");
+						v_trans_x = - v_prev_y;
+						v_trans_y = v_prev_x;
+						shrink_by = Math.sqrt( v_prev_lensq );
+
+					} else {
+
+						// console.log("Warning: lines are a straight spike");
+						v_trans_x = v_prev_x;
+						v_trans_y = v_prev_y;
+						shrink_by = Math.sqrt( v_prev_lensq / 2 );
+
+					}
+
 				}
 
-				if ( direction_eq ) {
-
-					// console.log("Warning: lines are a straight sequence");
-					v_trans_x = - v_prev_y;
-					v_trans_y = v_prev_x;
-					shrink_by = Math.sqrt( v_prev_lensq );
-
-				} else {
-
-					// console.log("Warning: lines are a straight spike");
-					v_trans_x = v_prev_x;
-					v_trans_y = v_prev_y;
-					shrink_by = Math.sqrt( v_prev_lensq / 2 );
-
-				}
+				return new Vector2( v_trans_x / shrink_by, v_trans_y / shrink_by );
 
 			}
 
-			return new Vector2( v_trans_x / shrink_by, v_trans_y / shrink_by );
 
-		}
+			const contourMovements = [];
 
-
-		const contourMovements = [];
-
-		for ( let i = 0, il = contour.length, j = il - 1, k = i + 1; i < il; i ++, j ++, k ++ ) {
-
-			if ( j === il ) j = 0;
-			if ( k === il ) k = 0;
-
-			//  (j)---(i)---(k)
-			// console.log('i,j,k', i, j , k)
-
-			contourMovements[ i ] = getBevelVec( contour[ i ], contour[ j ], contour[ k ] );
-
-		}
-
-		const holesMovements = [];
-		let oneHoleMovements, verticesMovements = contourMovements.concat();
-
-		for ( let h = 0, hl = holes.length; h < hl; h ++ ) {
-
-			const ahole = holes[ h ];
-
-			oneHoleMovements = [];
-
-			for ( let i = 0, il = ahole.length, j = il - 1, k = i + 1; i < il; i ++, j ++, k ++ ) {
+			for ( let i = 0, il = contour.length, j = il - 1, k = i + 1; i < il; i ++, j ++, k ++ ) {
 
 				if ( j === il ) j = 0;
 				if ( k === il ) k = 0;
 
 				//  (j)---(i)---(k)
-				oneHoleMovements[ i ] = getBevelVec( ahole[ i ], ahole[ j ], ahole[ k ] );
+				// console.log('i,j,k', i, j , k)
+
+				contourMovements[ i ] = getBevelVec( contour[ i ], contour[ j ], contour[ k ] );
 
 			}
 
-			holesMovements.push( oneHoleMovements );
-			verticesMovements = verticesMovements.concat( oneHoleMovements );
-
-		}
-
-
-		// Loop bevelSegments, 1 for the front, 1 for the back
-
-		for ( let b = 0; b < bevelSegments; b ++ ) {
-
-			//for ( b = bevelSegments; b > 0; b -- ) {
-
-			const t = b / bevelSegments;
-			const z = bevelThickness * Math.cos( t * Math.PI / 2 );
-			const bs = bevelSize * Math.sin( t * Math.PI / 2 ) + bevelOffset;
-
-			// contract shape
-
-			for ( let i = 0, il = contour.length; i < il; i ++ ) {
-
-				const vert = scalePt2( contour[ i ], contourMovements[ i ], bs );
-
-				v( vert.x, vert.y, - z );
-
-			}
-
-			// expand holes
+			const holesMovements = [];
+			let oneHoleMovements, verticesMovements = contourMovements.concat();
 
 			for ( let h = 0, hl = holes.length; h < hl; h ++ ) {
 
 				const ahole = holes[ h ];
-				oneHoleMovements = holesMovements[ h ];
 
-				for ( let i = 0, il = ahole.length; i < il; i ++ ) {
+				oneHoleMovements = [];
 
-					const vert = scalePt2( ahole[ i ], oneHoleMovements[ i ], bs );
+				for ( let i = 0, il = ahole.length, j = il - 1, k = i + 1; i < il; i ++, j ++, k ++ ) {
+
+					if ( j === il ) j = 0;
+					if ( k === il ) k = 0;
+
+					//  (j)---(i)---(k)
+					oneHoleMovements[ i ] = getBevelVec( ahole[ i ], ahole[ j ], ahole[ k ] );
+
+				}
+
+				holesMovements.push( oneHoleMovements );
+				verticesMovements = verticesMovements.concat( oneHoleMovements );
+
+			}
+
+
+			// Loop bevelSegments, 1 for the front, 1 for the back
+
+			for ( let b = 0; b < bevelSegments; b ++ ) {
+
+				//for ( b = bevelSegments; b > 0; b -- ) {
+
+				const t = b / bevelSegments;
+				const z = bevelThickness * Math.cos( t * Math.PI / 2 );
+				const bs = bevelSize * Math.sin( t * Math.PI / 2 ) + bevelOffset;
+
+				// contract shape
+
+				for ( let i = 0, il = contour.length; i < il; i ++ ) {
+
+					const vert = scalePt2( contour[ i ], contourMovements[ i ], bs );
 
 					v( vert.x, vert.y, - z );
 
 				}
 
-			}
+				// expand holes
 
-		}
+				for ( let h = 0, hl = holes.length; h < hl; h ++ ) {
 
-		const bs = bevelSize + bevelOffset;
+					const ahole = holes[ h ];
+					oneHoleMovements = holesMovements[ h ];
 
-		// Back facing vertices
+					for ( let i = 0, il = ahole.length; i < il; i ++ ) {
 
-		for ( let i = 0; i < vlen; i ++ ) {
+						const vert = scalePt2( ahole[ i ], oneHoleMovements[ i ], bs );
 
-			const vert = bevelEnabled ? scalePt2( vertices[ i ], verticesMovements[ i ], bs ) : vertices[ i ];
+						v( vert.x, vert.y, - z );
 
-			if ( ! extrudeByPath ) {
+					}
 
-				v( vert.x, vert.y, 0 );
-
-			} else {
-
-				// v( vert.x, vert.y + extrudePts[ 0 ].y, extrudePts[ 0 ].x );
-
-				normal.copy( splineTube.normals[ 0 ] ).multiplyScalar( vert.x );
-				binormal.copy( splineTube.binormals[ 0 ] ).multiplyScalar( vert.y );
-
-				position2.copy( extrudePts[ 0 ] ).add( normal ).add( binormal );
-
-				v( position2.x, position2.y, position2.z );
+				}
 
 			}
 
-		}
+			const bs = bevelSize + bevelOffset;
 
-		// Add stepped vertices...
-		// Including front facing vertices
-
-		for ( let s = 1; s <= steps; s ++ ) {
+			// Back facing vertices
 
 			for ( let i = 0; i < vlen; i ++ ) {
 
@@ -31310,16 +31414,16 @@ function ExtrudeBufferGeometry( shapes, options ) {
 
 				if ( ! extrudeByPath ) {
 
-					v( vert.x, vert.y, depth / steps * s );
+					v( vert.x, vert.y, 0 );
 
 				} else {
 
-					// v( vert.x, vert.y + extrudePts[ s - 1 ].y, extrudePts[ s - 1 ].x );
+					// v( vert.x, vert.y + extrudePts[ 0 ].y, extrudePts[ 0 ].x );
 
-					normal.copy( splineTube.normals[ s ] ).multiplyScalar( vert.x );
-					binormal.copy( splineTube.binormals[ s ] ).multiplyScalar( vert.y );
+					normal.copy( splineTube.normals[ 0 ] ).multiplyScalar( vert.x );
+					binormal.copy( splineTube.binormals[ 0 ] ).multiplyScalar( vert.y );
 
-					position2.copy( extrudePts[ s ] ).add( normal ).add( binormal );
+					position2.copy( extrudePts[ 0 ] ).add( normal ).add( binormal );
 
 					v( position2.x, position2.y, position2.z );
 
@@ -31327,45 +31431,29 @@ function ExtrudeBufferGeometry( shapes, options ) {
 
 			}
 
-		}
+			// Add stepped vertices...
+			// Including front facing vertices
 
+			for ( let s = 1; s <= steps; s ++ ) {
 
-		// Add bevel segments planes
+				for ( let i = 0; i < vlen; i ++ ) {
 
-		//for ( b = 1; b <= bevelSegments; b ++ ) {
-		for ( let b = bevelSegments - 1; b >= 0; b -- ) {
-
-			const t = b / bevelSegments;
-			const z = bevelThickness * Math.cos( t * Math.PI / 2 );
-			const bs = bevelSize * Math.sin( t * Math.PI / 2 ) + bevelOffset;
-
-			// contract shape
-
-			for ( let i = 0, il = contour.length; i < il; i ++ ) {
-
-				const vert = scalePt2( contour[ i ], contourMovements[ i ], bs );
-				v( vert.x, vert.y, depth + z );
-
-			}
-
-			// expand holes
-
-			for ( let h = 0, hl = holes.length; h < hl; h ++ ) {
-
-				const ahole = holes[ h ];
-				oneHoleMovements = holesMovements[ h ];
-
-				for ( let i = 0, il = ahole.length; i < il; i ++ ) {
-
-					const vert = scalePt2( ahole[ i ], oneHoleMovements[ i ], bs );
+					const vert = bevelEnabled ? scalePt2( vertices[ i ], verticesMovements[ i ], bs ) : vertices[ i ];
 
 					if ( ! extrudeByPath ) {
 
-						v( vert.x, vert.y, depth + z );
+						v( vert.x, vert.y, depth / steps * s );
 
 					} else {
 
-						v( vert.x, vert.y + extrudePts[ steps - 1 ].y, extrudePts[ steps - 1 ].x + z );
+						// v( vert.x, vert.y + extrudePts[ s - 1 ].y, extrudePts[ s - 1 ].x );
+
+						normal.copy( splineTube.normals[ s ] ).multiplyScalar( vert.x );
+						binormal.copy( splineTube.binormals[ s ] ).multiplyScalar( vert.y );
+
+						position2.copy( extrudePts[ s ] ).add( normal ).add( binormal );
+
+						v( position2.x, position2.y, position2.z );
 
 					}
 
@@ -31373,215 +31461,256 @@ function ExtrudeBufferGeometry( shapes, options ) {
 
 			}
 
-		}
 
-		/* Faces */
+			// Add bevel segments planes
 
-		// Top and bottom faces
+			//for ( b = 1; b <= bevelSegments; b ++ ) {
+			for ( let b = bevelSegments - 1; b >= 0; b -- ) {
 
-		buildLidFaces();
+				const t = b / bevelSegments;
+				const z = bevelThickness * Math.cos( t * Math.PI / 2 );
+				const bs = bevelSize * Math.sin( t * Math.PI / 2 ) + bevelOffset;
 
-		// Sides faces
+				// contract shape
 
-		buildSideFaces();
+				for ( let i = 0, il = contour.length; i < il; i ++ ) {
 
-
-		/////  Internal functions
-
-		function buildLidFaces() {
-
-			const start = verticesArray.length / 3;
-
-			if ( bevelEnabled ) {
-
-				let layer = 0; // steps + 1
-				let offset = vlen * layer;
-
-				// Bottom faces
-
-				for ( let i = 0; i < flen; i ++ ) {
-
-					const face = faces[ i ];
-					f3( face[ 2 ] + offset, face[ 1 ] + offset, face[ 0 ] + offset );
+					const vert = scalePt2( contour[ i ], contourMovements[ i ], bs );
+					v( vert.x, vert.y, depth + z );
 
 				}
 
-				layer = steps + bevelSegments * 2;
-				offset = vlen * layer;
+				// expand holes
 
-				// Top faces
+				for ( let h = 0, hl = holes.length; h < hl; h ++ ) {
 
-				for ( let i = 0; i < flen; i ++ ) {
+					const ahole = holes[ h ];
+					oneHoleMovements = holesMovements[ h ];
 
-					const face = faces[ i ];
-					f3( face[ 0 ] + offset, face[ 1 ] + offset, face[ 2 ] + offset );
+					for ( let i = 0, il = ahole.length; i < il; i ++ ) {
 
-				}
+						const vert = scalePt2( ahole[ i ], oneHoleMovements[ i ], bs );
 
-			} else {
+						if ( ! extrudeByPath ) {
 
-				// Bottom faces
+							v( vert.x, vert.y, depth + z );
 
-				for ( let i = 0; i < flen; i ++ ) {
+						} else {
 
-					const face = faces[ i ];
-					f3( face[ 2 ], face[ 1 ], face[ 0 ] );
+							v( vert.x, vert.y + extrudePts[ steps - 1 ].y, extrudePts[ steps - 1 ].x + z );
 
-				}
+						}
 
-				// Top faces
-
-				for ( let i = 0; i < flen; i ++ ) {
-
-					const face = faces[ i ];
-					f3( face[ 0 ] + vlen * steps, face[ 1 ] + vlen * steps, face[ 2 ] + vlen * steps );
+					}
 
 				}
 
 			}
 
-			scope.addGroup( start, verticesArray.length / 3 - start, 0 );
+			/* Faces */
 
-		}
+			// Top and bottom faces
 
-		// Create faces for the z-sides of the shape
+			buildLidFaces();
 
-		function buildSideFaces() {
+			// Sides faces
 
-			const start = verticesArray.length / 3;
-			let layeroffset = 0;
-			sidewalls( contour, layeroffset );
-			layeroffset += contour.length;
+			buildSideFaces();
 
-			for ( let h = 0, hl = holes.length; h < hl; h ++ ) {
 
-				const ahole = holes[ h ];
-				sidewalls( ahole, layeroffset );
+			/////  Internal functions
 
-				//, true
-				layeroffset += ahole.length;
+			function buildLidFaces() {
+
+				const start = verticesArray.length / 3;
+
+				if ( bevelEnabled ) {
+
+					let layer = 0; // steps + 1
+					let offset = vlen * layer;
+
+					// Bottom faces
+
+					for ( let i = 0; i < flen; i ++ ) {
+
+						const face = faces[ i ];
+						f3( face[ 2 ] + offset, face[ 1 ] + offset, face[ 0 ] + offset );
+
+					}
+
+					layer = steps + bevelSegments * 2;
+					offset = vlen * layer;
+
+					// Top faces
+
+					for ( let i = 0; i < flen; i ++ ) {
+
+						const face = faces[ i ];
+						f3( face[ 0 ] + offset, face[ 1 ] + offset, face[ 2 ] + offset );
+
+					}
+
+				} else {
+
+					// Bottom faces
+
+					for ( let i = 0; i < flen; i ++ ) {
+
+						const face = faces[ i ];
+						f3( face[ 2 ], face[ 1 ], face[ 0 ] );
+
+					}
+
+					// Top faces
+
+					for ( let i = 0; i < flen; i ++ ) {
+
+						const face = faces[ i ];
+						f3( face[ 0 ] + vlen * steps, face[ 1 ] + vlen * steps, face[ 2 ] + vlen * steps );
+
+					}
+
+				}
+
+				scope.addGroup( start, verticesArray.length / 3 - start, 0 );
 
 			}
 
+			// Create faces for the z-sides of the shape
 
-			scope.addGroup( start, verticesArray.length / 3 - start, 1 );
+			function buildSideFaces() {
+
+				const start = verticesArray.length / 3;
+				let layeroffset = 0;
+				sidewalls( contour, layeroffset );
+				layeroffset += contour.length;
+
+				for ( let h = 0, hl = holes.length; h < hl; h ++ ) {
+
+					const ahole = holes[ h ];
+					sidewalls( ahole, layeroffset );
+
+					//, true
+					layeroffset += ahole.length;
+
+				}
 
 
-		}
+				scope.addGroup( start, verticesArray.length / 3 - start, 1 );
 
-		function sidewalls( contour, layeroffset ) {
 
-			let i = contour.length;
+			}
 
-			while ( -- i >= 0 ) {
+			function sidewalls( contour, layeroffset ) {
 
-				const j = i;
-				let k = i - 1;
-				if ( k < 0 ) k = contour.length - 1;
+				let i = contour.length;
 
-				//console.log('b', i,j, i-1, k,vertices.length);
+				while ( -- i >= 0 ) {
 
-				for ( let s = 0, sl = ( steps + bevelSegments * 2 ); s < sl; s ++ ) {
+					const j = i;
+					let k = i - 1;
+					if ( k < 0 ) k = contour.length - 1;
 
-					const slen1 = vlen * s;
-					const slen2 = vlen * ( s + 1 );
+					//console.log('b', i,j, i-1, k,vertices.length);
 
-					const a = layeroffset + j + slen1,
-						b = layeroffset + k + slen1,
-						c = layeroffset + k + slen2,
-						d = layeroffset + j + slen2;
+					for ( let s = 0, sl = ( steps + bevelSegments * 2 ); s < sl; s ++ ) {
 
-					f4( a, b, c, d );
+						const slen1 = vlen * s;
+						const slen2 = vlen * ( s + 1 );
+
+						const a = layeroffset + j + slen1,
+							b = layeroffset + k + slen1,
+							c = layeroffset + k + slen2,
+							d = layeroffset + j + slen2;
+
+						f4( a, b, c, d );
+
+					}
 
 				}
 
 			}
 
-		}
+			function v( x, y, z ) {
 
-		function v( x, y, z ) {
+				placeholder.push( x );
+				placeholder.push( y );
+				placeholder.push( z );
 
-			placeholder.push( x );
-			placeholder.push( y );
-			placeholder.push( z );
-
-		}
+			}
 
 
-		function f3( a, b, c ) {
+			function f3( a, b, c ) {
 
-			addVertex( a );
-			addVertex( b );
-			addVertex( c );
+				addVertex( a );
+				addVertex( b );
+				addVertex( c );
 
-			const nextIndex = verticesArray.length / 3;
-			const uvs = uvgen.generateTopUV( scope, verticesArray, nextIndex - 3, nextIndex - 2, nextIndex - 1 );
+				const nextIndex = verticesArray.length / 3;
+				const uvs = uvgen.generateTopUV( scope, verticesArray, nextIndex - 3, nextIndex - 2, nextIndex - 1 );
 
-			addUV( uvs[ 0 ] );
-			addUV( uvs[ 1 ] );
-			addUV( uvs[ 2 ] );
+				addUV( uvs[ 0 ] );
+				addUV( uvs[ 1 ] );
+				addUV( uvs[ 2 ] );
 
-		}
+			}
 
-		function f4( a, b, c, d ) {
+			function f4( a, b, c, d ) {
 
-			addVertex( a );
-			addVertex( b );
-			addVertex( d );
+				addVertex( a );
+				addVertex( b );
+				addVertex( d );
 
-			addVertex( b );
-			addVertex( c );
-			addVertex( d );
-
-
-			const nextIndex = verticesArray.length / 3;
-			const uvs = uvgen.generateSideWallUV( scope, verticesArray, nextIndex - 6, nextIndex - 3, nextIndex - 2, nextIndex - 1 );
-
-			addUV( uvs[ 0 ] );
-			addUV( uvs[ 1 ] );
-			addUV( uvs[ 3 ] );
-
-			addUV( uvs[ 1 ] );
-			addUV( uvs[ 2 ] );
-			addUV( uvs[ 3 ] );
-
-		}
-
-		function addVertex( index ) {
-
-			verticesArray.push( placeholder[ index * 3 + 0 ] );
-			verticesArray.push( placeholder[ index * 3 + 1 ] );
-			verticesArray.push( placeholder[ index * 3 + 2 ] );
-
-		}
+				addVertex( b );
+				addVertex( c );
+				addVertex( d );
 
 
-		function addUV( vector2 ) {
+				const nextIndex = verticesArray.length / 3;
+				const uvs = uvgen.generateSideWallUV( scope, verticesArray, nextIndex - 6, nextIndex - 3, nextIndex - 2, nextIndex - 1 );
 
-			uvArray.push( vector2.x );
-			uvArray.push( vector2.y );
+				addUV( uvs[ 0 ] );
+				addUV( uvs[ 1 ] );
+				addUV( uvs[ 3 ] );
+
+				addUV( uvs[ 1 ] );
+				addUV( uvs[ 2 ] );
+				addUV( uvs[ 3 ] );
+
+			}
+
+			function addVertex( index ) {
+
+				verticesArray.push( placeholder[ index * 3 + 0 ] );
+				verticesArray.push( placeholder[ index * 3 + 1 ] );
+				verticesArray.push( placeholder[ index * 3 + 2 ] );
+
+			}
+
+
+			function addUV( vector2 ) {
+
+				uvArray.push( vector2.x );
+				uvArray.push( vector2.y );
+
+			}
 
 		}
 
 	}
 
+	toJSON() {
+
+		const data = BufferGeometry.prototype.toJSON.call( this );
+
+		const shapes = this.parameters.shapes;
+		const options = this.parameters.options;
+
+		return toJSON( shapes, options, data );
+
+	}
+
 }
-
-ExtrudeBufferGeometry.prototype = Object.create( BufferGeometry.prototype );
-ExtrudeBufferGeometry.prototype.constructor = ExtrudeBufferGeometry;
-
-ExtrudeBufferGeometry.prototype.toJSON = function () {
-
-	const data = BufferGeometry.prototype.toJSON.call( this );
-
-	const shapes = this.parameters.shapes;
-	const options = this.parameters.options;
-
-	return toJSON( shapes, options, data );
-
-};
-
-//
 
 const WorldUVGenerator = {
 
@@ -31642,8 +31771,6 @@ const WorldUVGenerator = {
 
 function toJSON( shapes, options, data ) {
 
-	//
-
 	data.shapes = [];
 
 	if ( Array.isArray( shapes ) ) {
@@ -31661,8 +31788,6 @@ function toJSON( shapes, options, data ) {
 		data.shapes.push( shapes.uuid );
 
 	}
-
-	//
 
 	if ( options.extrudePath !== undefined ) data.options.extrudePath = options.extrudePath.toJSON();
 
@@ -31689,678 +31814,517 @@ function toJSON( shapes, options, data ) {
 
 // TextGeometry
 
-function TextGeometry( text, parameters ) {
+class TextGeometry extends Geometry {
 
-	Geometry.call( this );
+	constructor( text, parameters ) {
 
-	this.type = 'TextGeometry';
+		super();
+		this.type = 'TextGeometry';
 
-	this.parameters = {
-		text: text,
-		parameters: parameters
-	};
+		this.parameters = {
+			text: text,
+			parameters: parameters
+		};
 
-	this.fromBufferGeometry( new TextBufferGeometry( text, parameters ) );
-	this.mergeVertices();
+		this.fromBufferGeometry( new TextBufferGeometry( text, parameters ) );
+		this.mergeVertices();
+
+	}
 
 }
 
-TextGeometry.prototype = Object.create( Geometry.prototype );
-TextGeometry.prototype.constructor = TextGeometry;
 
 // TextBufferGeometry
 
-function TextBufferGeometry( text, parameters ) {
+class TextBufferGeometry extends ExtrudeBufferGeometry {
 
-	parameters = parameters || {};
+	constructor( text, parameters ) {
 
-	const font = parameters.font;
+		parameters = parameters || {};
 
-	if ( ! ( font && font.isFont ) ) {
+		const font = parameters.font;
 
-		console.error( 'THREE.TextGeometry: font parameter is not an instance of THREE.Font.' );
-		return new Geometry();
+		if ( ! ( font && font.isFont ) ) {
+
+			console.error( 'THREE.TextGeometry: font parameter is not an instance of THREE.Font.' );
+			return new Geometry();
+
+		}
+
+		const shapes = font.generateShapes( text, parameters.size );
+
+		// translate parameters to ExtrudeGeometry API
+
+		parameters.depth = parameters.height !== undefined ? parameters.height : 50;
+
+		// defaults
+
+		if ( parameters.bevelThickness === undefined ) parameters.bevelThickness = 10;
+		if ( parameters.bevelSize === undefined ) parameters.bevelSize = 8;
+		if ( parameters.bevelEnabled === undefined ) parameters.bevelEnabled = false;
+
+		super( shapes, parameters );
+
+		this.type = 'TextBufferGeometry';
 
 	}
 
-	const shapes = font.generateShapes( text, parameters.size );
-
-	// translate parameters to ExtrudeGeometry API
-
-	parameters.depth = parameters.height !== undefined ? parameters.height : 50;
-
-	// defaults
-
-	if ( parameters.bevelThickness === undefined ) parameters.bevelThickness = 10;
-	if ( parameters.bevelSize === undefined ) parameters.bevelSize = 8;
-	if ( parameters.bevelEnabled === undefined ) parameters.bevelEnabled = false;
-
-	ExtrudeBufferGeometry.call( this, shapes, parameters );
-
-	this.type = 'TextBufferGeometry';
-
 }
-
-TextBufferGeometry.prototype = Object.create( ExtrudeBufferGeometry.prototype );
-TextBufferGeometry.prototype.constructor = TextBufferGeometry;
 
 // SphereGeometry
 
-function SphereGeometry( radius, widthSegments, heightSegments, phiStart, phiLength, thetaStart, thetaLength ) {
+class SphereGeometry extends Geometry {
 
-	Geometry.call( this );
+	constructor( radius, widthSegments, heightSegments, phiStart, phiLength, thetaStart, thetaLength ) {
 
-	this.type = 'SphereGeometry';
+		super();
+		this.type = 'SphereGeometry';
 
-	this.parameters = {
-		radius: radius,
-		widthSegments: widthSegments,
-		heightSegments: heightSegments,
-		phiStart: phiStart,
-		phiLength: phiLength,
-		thetaStart: thetaStart,
-		thetaLength: thetaLength
-	};
+		this.parameters = {
+			radius: radius,
+			widthSegments: widthSegments,
+			heightSegments: heightSegments,
+			phiStart: phiStart,
+			phiLength: phiLength,
+			thetaStart: thetaStart,
+			thetaLength: thetaLength
+		};
 
-	this.fromBufferGeometry( new SphereBufferGeometry( radius, widthSegments, heightSegments, phiStart, phiLength, thetaStart, thetaLength ) );
-	this.mergeVertices();
+		this.fromBufferGeometry( new SphereBufferGeometry( radius, widthSegments, heightSegments, phiStart, phiLength, thetaStart, thetaLength ) );
+		this.mergeVertices();
+
+	}
 
 }
-
-SphereGeometry.prototype = Object.create( Geometry.prototype );
-SphereGeometry.prototype.constructor = SphereGeometry;
 
 // SphereBufferGeometry
 
-function SphereBufferGeometry( radius, widthSegments, heightSegments, phiStart, phiLength, thetaStart, thetaLength ) {
+class SphereBufferGeometry extends BufferGeometry {
 
-	BufferGeometry.call( this );
+	constructor( radius, widthSegments, heightSegments, phiStart, phiLength, thetaStart, thetaLength ) {
 
-	this.type = 'SphereBufferGeometry';
+		super();
+		this.type = 'SphereBufferGeometry';
 
-	this.parameters = {
-		radius: radius,
-		widthSegments: widthSegments,
-		heightSegments: heightSegments,
-		phiStart: phiStart,
-		phiLength: phiLength,
-		thetaStart: thetaStart,
-		thetaLength: thetaLength
-	};
+		this.parameters = {
+			radius: radius,
+			widthSegments: widthSegments,
+			heightSegments: heightSegments,
+			phiStart: phiStart,
+			phiLength: phiLength,
+			thetaStart: thetaStart,
+			thetaLength: thetaLength
+		};
 
-	radius = radius || 1;
+		radius = radius || 1;
 
-	widthSegments = Math.max( 3, Math.floor( widthSegments ) || 8 );
-	heightSegments = Math.max( 2, Math.floor( heightSegments ) || 6 );
+		widthSegments = Math.max( 3, Math.floor( widthSegments ) || 8 );
+		heightSegments = Math.max( 2, Math.floor( heightSegments ) || 6 );
 
-	phiStart = phiStart !== undefined ? phiStart : 0;
-	phiLength = phiLength !== undefined ? phiLength : Math.PI * 2;
+		phiStart = phiStart !== undefined ? phiStart : 0;
+		phiLength = phiLength !== undefined ? phiLength : Math.PI * 2;
 
-	thetaStart = thetaStart !== undefined ? thetaStart : 0;
-	thetaLength = thetaLength !== undefined ? thetaLength : Math.PI;
+		thetaStart = thetaStart !== undefined ? thetaStart : 0;
+		thetaLength = thetaLength !== undefined ? thetaLength : Math.PI;
 
-	const thetaEnd = Math.min( thetaStart + thetaLength, Math.PI );
+		const thetaEnd = Math.min( thetaStart + thetaLength, Math.PI );
 
-	let index = 0;
-	const grid = [];
+		let index = 0;
+		const grid = [];
 
-	const vertex = new Vector3();
-	const normal = new Vector3();
+		const vertex = new Vector3();
+		const normal = new Vector3();
 
-	// buffers
+		// buffers
 
-	const indices = [];
-	const vertices = [];
-	const normals = [];
-	const uvs = [];
+		const indices = [];
+		const vertices = [];
+		const normals = [];
+		const uvs = [];
 
-	// generate vertices, normals and uvs
+		// generate vertices, normals and uvs
 
-	for ( let iy = 0; iy <= heightSegments; iy ++ ) {
+		for ( let iy = 0; iy <= heightSegments; iy ++ ) {
 
-		const verticesRow = [];
+			const verticesRow = [];
 
-		const v = iy / heightSegments;
+			const v = iy / heightSegments;
 
-		// special case for the poles
+			// special case for the poles
 
-		let uOffset = 0;
+			let uOffset = 0;
 
-		if ( iy == 0 && thetaStart == 0 ) {
+			if ( iy == 0 && thetaStart == 0 ) {
 
-			uOffset = 0.5 / widthSegments;
+				uOffset = 0.5 / widthSegments;
 
-		} else if ( iy == heightSegments && thetaEnd == Math.PI ) {
+			} else if ( iy == heightSegments && thetaEnd == Math.PI ) {
 
-			uOffset = - 0.5 / widthSegments;
+				uOffset = - 0.5 / widthSegments;
 
-		}
+			}
 
-		for ( let ix = 0; ix <= widthSegments; ix ++ ) {
+			for ( let ix = 0; ix <= widthSegments; ix ++ ) {
 
-			const u = ix / widthSegments;
+				const u = ix / widthSegments;
 
-			// vertex
+				// vertex
 
-			vertex.x = - radius * Math.cos( phiStart + u * phiLength ) * Math.sin( thetaStart + v * thetaLength );
-			vertex.y = radius * Math.cos( thetaStart + v * thetaLength );
-			vertex.z = radius * Math.sin( phiStart + u * phiLength ) * Math.sin( thetaStart + v * thetaLength );
+				vertex.x = - radius * Math.cos( phiStart + u * phiLength ) * Math.sin( thetaStart + v * thetaLength );
+				vertex.y = radius * Math.cos( thetaStart + v * thetaLength );
+				vertex.z = radius * Math.sin( phiStart + u * phiLength ) * Math.sin( thetaStart + v * thetaLength );
 
-			vertices.push( vertex.x, vertex.y, vertex.z );
+				vertices.push( vertex.x, vertex.y, vertex.z );
 
-			// normal
+				// normal
 
-			normal.copy( vertex ).normalize();
-			normals.push( normal.x, normal.y, normal.z );
+				normal.copy( vertex ).normalize();
+				normals.push( normal.x, normal.y, normal.z );
 
-			// uv
+				// uv
 
-			uvs.push( u + uOffset, 1 - v );
+				uvs.push( u + uOffset, 1 - v );
 
-			verticesRow.push( index ++ );
+				verticesRow.push( index ++ );
 
-		}
+			}
 
-		grid.push( verticesRow );
-
-	}
-
-	// indices
-
-	for ( let iy = 0; iy < heightSegments; iy ++ ) {
-
-		for ( let ix = 0; ix < widthSegments; ix ++ ) {
-
-			const a = grid[ iy ][ ix + 1 ];
-			const b = grid[ iy ][ ix ];
-			const c = grid[ iy + 1 ][ ix ];
-			const d = grid[ iy + 1 ][ ix + 1 ];
-
-			if ( iy !== 0 || thetaStart > 0 ) indices.push( a, b, d );
-			if ( iy !== heightSegments - 1 || thetaEnd < Math.PI ) indices.push( b, c, d );
+			grid.push( verticesRow );
 
 		}
 
-	}
+		// indices
 
-	// build geometry
+		for ( let iy = 0; iy < heightSegments; iy ++ ) {
 
-	this.setIndex( indices );
-	this.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
-	this.setAttribute( 'normal', new Float32BufferAttribute( normals, 3 ) );
-	this.setAttribute( 'uv', new Float32BufferAttribute( uvs, 2 ) );
+			for ( let ix = 0; ix < widthSegments; ix ++ ) {
 
-}
+				const a = grid[ iy ][ ix + 1 ];
+				const b = grid[ iy ][ ix ];
+				const c = grid[ iy + 1 ][ ix ];
+				const d = grid[ iy + 1 ][ ix + 1 ];
 
-SphereBufferGeometry.prototype = Object.create( BufferGeometry.prototype );
-SphereBufferGeometry.prototype.constructor = SphereBufferGeometry;
-
-// RingGeometry
-
-function RingGeometry( innerRadius, outerRadius, thetaSegments, phiSegments, thetaStart, thetaLength ) {
-
-	Geometry.call( this );
-
-	this.type = 'RingGeometry';
-
-	this.parameters = {
-		innerRadius: innerRadius,
-		outerRadius: outerRadius,
-		thetaSegments: thetaSegments,
-		phiSegments: phiSegments,
-		thetaStart: thetaStart,
-		thetaLength: thetaLength
-	};
-
-	this.fromBufferGeometry( new RingBufferGeometry( innerRadius, outerRadius, thetaSegments, phiSegments, thetaStart, thetaLength ) );
-	this.mergeVertices();
-
-}
-
-RingGeometry.prototype = Object.create( Geometry.prototype );
-RingGeometry.prototype.constructor = RingGeometry;
-
-// RingBufferGeometry
-
-function RingBufferGeometry( innerRadius, outerRadius, thetaSegments, phiSegments, thetaStart, thetaLength ) {
-
-	BufferGeometry.call( this );
-
-	this.type = 'RingBufferGeometry';
-
-	this.parameters = {
-		innerRadius: innerRadius,
-		outerRadius: outerRadius,
-		thetaSegments: thetaSegments,
-		phiSegments: phiSegments,
-		thetaStart: thetaStart,
-		thetaLength: thetaLength
-	};
-
-	innerRadius = innerRadius || 0.5;
-	outerRadius = outerRadius || 1;
-
-	thetaStart = thetaStart !== undefined ? thetaStart : 0;
-	thetaLength = thetaLength !== undefined ? thetaLength : Math.PI * 2;
-
-	thetaSegments = thetaSegments !== undefined ? Math.max( 3, thetaSegments ) : 8;
-	phiSegments = phiSegments !== undefined ? Math.max( 1, phiSegments ) : 1;
-
-	// buffers
-
-	const indices = [];
-	const vertices = [];
-	const normals = [];
-	const uvs = [];
-
-	// some helper variables
-
-	let radius = innerRadius;
-	const radiusStep = ( ( outerRadius - innerRadius ) / phiSegments );
-	const vertex = new Vector3();
-	const uv = new Vector2();
-
-	// generate vertices, normals and uvs
-
-	for ( let j = 0; j <= phiSegments; j ++ ) {
-
-		for ( let i = 0; i <= thetaSegments; i ++ ) {
-
-			// values are generate from the inside of the ring to the outside
-
-			const segment = thetaStart + i / thetaSegments * thetaLength;
-
-			// vertex
-
-			vertex.x = radius * Math.cos( segment );
-			vertex.y = radius * Math.sin( segment );
-
-			vertices.push( vertex.x, vertex.y, vertex.z );
-
-			// normal
-
-			normals.push( 0, 0, 1 );
-
-			// uv
-
-			uv.x = ( vertex.x / outerRadius + 1 ) / 2;
-			uv.y = ( vertex.y / outerRadius + 1 ) / 2;
-
-			uvs.push( uv.x, uv.y );
-
-		}
-
-		// increase the radius for next row of vertices
-
-		radius += radiusStep;
-
-	}
-
-	// indices
-
-	for ( let j = 0; j < phiSegments; j ++ ) {
-
-		const thetaSegmentLevel = j * ( thetaSegments + 1 );
-
-		for ( let i = 0; i < thetaSegments; i ++ ) {
-
-			const segment = i + thetaSegmentLevel;
-
-			const a = segment;
-			const b = segment + thetaSegments + 1;
-			const c = segment + thetaSegments + 2;
-			const d = segment + 1;
-
-			// faces
-
-			indices.push( a, b, d );
-			indices.push( b, c, d );
-
-		}
-
-	}
-
-	// build geometry
-
-	this.setIndex( indices );
-	this.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
-	this.setAttribute( 'normal', new Float32BufferAttribute( normals, 3 ) );
-	this.setAttribute( 'uv', new Float32BufferAttribute( uvs, 2 ) );
-
-}
-
-RingBufferGeometry.prototype = Object.create( BufferGeometry.prototype );
-RingBufferGeometry.prototype.constructor = RingBufferGeometry;
-
-// LatheGeometry
-
-function LatheGeometry( points, segments, phiStart, phiLength ) {
-
-	Geometry.call( this );
-
-	this.type = 'LatheGeometry';
-
-	this.parameters = {
-		points: points,
-		segments: segments,
-		phiStart: phiStart,
-		phiLength: phiLength
-	};
-
-	this.fromBufferGeometry( new LatheBufferGeometry( points, segments, phiStart, phiLength ) );
-	this.mergeVertices();
-
-}
-
-LatheGeometry.prototype = Object.create( Geometry.prototype );
-LatheGeometry.prototype.constructor = LatheGeometry;
-
-// LatheBufferGeometry
-
-function LatheBufferGeometry( points, segments, phiStart, phiLength ) {
-
-	BufferGeometry.call( this );
-
-	this.type = 'LatheBufferGeometry';
-
-	this.parameters = {
-		points: points,
-		segments: segments,
-		phiStart: phiStart,
-		phiLength: phiLength
-	};
-
-	segments = Math.floor( segments ) || 12;
-	phiStart = phiStart || 0;
-	phiLength = phiLength || Math.PI * 2;
-
-	// clamp phiLength so it's in range of [ 0, 2PI ]
-
-	phiLength = MathUtils.clamp( phiLength, 0, Math.PI * 2 );
-
-
-	// buffers
-
-	const indices = [];
-	const vertices = [];
-	const uvs = [];
-
-	// helper variables
-
-	const inverseSegments = 1.0 / segments;
-	const vertex = new Vector3();
-	const uv = new Vector2();
-
-	// generate vertices and uvs
-
-	for ( let i = 0; i <= segments; i ++ ) {
-
-		const phi = phiStart + i * inverseSegments * phiLength;
-
-		const sin = Math.sin( phi );
-		const cos = Math.cos( phi );
-
-		for ( let j = 0; j <= ( points.length - 1 ); j ++ ) {
-
-			// vertex
-
-			vertex.x = points[ j ].x * sin;
-			vertex.y = points[ j ].y;
-			vertex.z = points[ j ].x * cos;
-
-			vertices.push( vertex.x, vertex.y, vertex.z );
-
-			// uv
-
-			uv.x = i / segments;
-			uv.y = j / ( points.length - 1 );
-
-			uvs.push( uv.x, uv.y );
-
-
-		}
-
-	}
-
-	// indices
-
-	for ( let i = 0; i < segments; i ++ ) {
-
-		for ( let j = 0; j < ( points.length - 1 ); j ++ ) {
-
-			const base = j + i * points.length;
-
-			const a = base;
-			const b = base + points.length;
-			const c = base + points.length + 1;
-			const d = base + 1;
-
-			// faces
-
-			indices.push( a, b, d );
-			indices.push( b, c, d );
-
-		}
-
-	}
-
-	// build geometry
-
-	this.setIndex( indices );
-	this.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
-	this.setAttribute( 'uv', new Float32BufferAttribute( uvs, 2 ) );
-
-	// generate normals
-
-	this.computeVertexNormals();
-
-	// if the geometry is closed, we need to average the normals along the seam.
-	// because the corresponding vertices are identical (but still have different UVs).
-
-	if ( phiLength === Math.PI * 2 ) {
-
-		const normals = this.attributes.normal.array;
-		const n1 = new Vector3();
-		const n2 = new Vector3();
-		const n = new Vector3();
-
-		// this is the buffer offset for the last line of vertices
-
-		const base = segments * points.length * 3;
-
-		for ( let i = 0, j = 0; i < points.length; i ++, j += 3 ) {
-
-			// select the normal of the vertex in the first line
-
-			n1.x = normals[ j + 0 ];
-			n1.y = normals[ j + 1 ];
-			n1.z = normals[ j + 2 ];
-
-			// select the normal of the vertex in the last line
-
-			n2.x = normals[ base + j + 0 ];
-			n2.y = normals[ base + j + 1 ];
-			n2.z = normals[ base + j + 2 ];
-
-			// average normals
-
-			n.addVectors( n1, n2 ).normalize();
-
-			// assign the new values to both normals
-
-			normals[ j + 0 ] = normals[ base + j + 0 ] = n.x;
-			normals[ j + 1 ] = normals[ base + j + 1 ] = n.y;
-			normals[ j + 2 ] = normals[ base + j + 2 ] = n.z;
-
-		}
-
-	}
-
-}
-
-LatheBufferGeometry.prototype = Object.create( BufferGeometry.prototype );
-LatheBufferGeometry.prototype.constructor = LatheBufferGeometry;
-
-// ShapeGeometry
-
-function ShapeGeometry( shapes, curveSegments ) {
-
-	Geometry.call( this );
-
-	this.type = 'ShapeGeometry';
-
-	if ( typeof curveSegments === 'object' ) {
-
-		console.warn( 'THREE.ShapeGeometry: Options parameter has been removed.' );
-
-		curveSegments = curveSegments.curveSegments;
-
-	}
-
-	this.parameters = {
-		shapes: shapes,
-		curveSegments: curveSegments
-	};
-
-	this.fromBufferGeometry( new ShapeBufferGeometry( shapes, curveSegments ) );
-	this.mergeVertices();
-
-}
-
-ShapeGeometry.prototype = Object.create( Geometry.prototype );
-ShapeGeometry.prototype.constructor = ShapeGeometry;
-
-ShapeGeometry.prototype.toJSON = function () {
-
-	const data = Geometry.prototype.toJSON.call( this );
-
-	const shapes = this.parameters.shapes;
-
-	return toJSON$1( shapes, data );
-
-};
-
-// ShapeBufferGeometry
-
-function ShapeBufferGeometry( shapes, curveSegments ) {
-
-	BufferGeometry.call( this );
-
-	this.type = 'ShapeBufferGeometry';
-
-	this.parameters = {
-		shapes: shapes,
-		curveSegments: curveSegments
-	};
-
-	curveSegments = curveSegments || 12;
-
-	// buffers
-
-	const indices = [];
-	const vertices = [];
-	const normals = [];
-	const uvs = [];
-
-	// helper variables
-
-	let groupStart = 0;
-	let groupCount = 0;
-
-	// allow single and array values for "shapes" parameter
-
-	if ( Array.isArray( shapes ) === false ) {
-
-		addShape( shapes );
-
-	} else {
-
-		for ( let i = 0; i < shapes.length; i ++ ) {
-
-			addShape( shapes[ i ] );
-
-			this.addGroup( groupStart, groupCount, i ); // enables MultiMaterial support
-
-			groupStart += groupCount;
-			groupCount = 0;
-
-		}
-
-	}
-
-	// build geometry
-
-	this.setIndex( indices );
-	this.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
-	this.setAttribute( 'normal', new Float32BufferAttribute( normals, 3 ) );
-	this.setAttribute( 'uv', new Float32BufferAttribute( uvs, 2 ) );
-
-
-	// helper functions
-
-	function addShape( shape ) {
-
-		const indexOffset = vertices.length / 3;
-		const points = shape.extractPoints( curveSegments );
-
-		let shapeVertices = points.shape;
-		const shapeHoles = points.holes;
-
-		// check direction of vertices
-
-		if ( ShapeUtils.isClockWise( shapeVertices ) === false ) {
-
-			shapeVertices = shapeVertices.reverse();
-
-		}
-
-		for ( let i = 0, l = shapeHoles.length; i < l; i ++ ) {
-
-			const shapeHole = shapeHoles[ i ];
-
-			if ( ShapeUtils.isClockWise( shapeHole ) === true ) {
-
-				shapeHoles[ i ] = shapeHole.reverse();
+				if ( iy !== 0 || thetaStart > 0 ) indices.push( a, b, d );
+				if ( iy !== heightSegments - 1 || thetaEnd < Math.PI ) indices.push( b, c, d );
 
 			}
 
 		}
 
-		const faces = ShapeUtils.triangulateShape( shapeVertices, shapeHoles );
+		// build geometry
 
-		// join vertices of inner and outer paths to a single array
+		this.setIndex( indices );
+		this.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
+		this.setAttribute( 'normal', new Float32BufferAttribute( normals, 3 ) );
+		this.setAttribute( 'uv', new Float32BufferAttribute( uvs, 2 ) );
 
-		for ( let i = 0, l = shapeHoles.length; i < l; i ++ ) {
+	}
 
-			const shapeHole = shapeHoles[ i ];
-			shapeVertices = shapeVertices.concat( shapeHole );
+}
+
+// RingGeometry
+
+class RingGeometry extends Geometry {
+
+	constructor( innerRadius, outerRadius, thetaSegments, phiSegments, thetaStart, thetaLength ) {
+
+		super();
+
+		this.type = 'RingGeometry';
+
+		this.parameters = {
+			innerRadius: innerRadius,
+			outerRadius: outerRadius,
+			thetaSegments: thetaSegments,
+			phiSegments: phiSegments,
+			thetaStart: thetaStart,
+			thetaLength: thetaLength
+		};
+
+		this.fromBufferGeometry( new RingBufferGeometry( innerRadius, outerRadius, thetaSegments, phiSegments, thetaStart, thetaLength ) );
+		this.mergeVertices();
+
+	}
+
+}
+
+// RingBufferGeometry
+
+class RingBufferGeometry extends BufferGeometry {
+
+	constructor( innerRadius, outerRadius, thetaSegments, phiSegments, thetaStart, thetaLength ) {
+
+		super();
+
+		this.type = 'RingBufferGeometry';
+
+		this.parameters = {
+			innerRadius: innerRadius,
+			outerRadius: outerRadius,
+			thetaSegments: thetaSegments,
+			phiSegments: phiSegments,
+			thetaStart: thetaStart,
+			thetaLength: thetaLength
+		};
+
+		innerRadius = innerRadius || 0.5;
+		outerRadius = outerRadius || 1;
+
+		thetaStart = thetaStart !== undefined ? thetaStart : 0;
+		thetaLength = thetaLength !== undefined ? thetaLength : Math.PI * 2;
+
+		thetaSegments = thetaSegments !== undefined ? Math.max( 3, thetaSegments ) : 8;
+		phiSegments = phiSegments !== undefined ? Math.max( 1, phiSegments ) : 1;
+
+		// buffers
+
+		const indices = [];
+		const vertices = [];
+		const normals = [];
+		const uvs = [];
+
+		// some helper variables
+
+		let radius = innerRadius;
+		const radiusStep = ( ( outerRadius - innerRadius ) / phiSegments );
+		const vertex = new Vector3();
+		const uv = new Vector2();
+
+		// generate vertices, normals and uvs
+
+		for ( let j = 0; j <= phiSegments; j ++ ) {
+
+			for ( let i = 0; i <= thetaSegments; i ++ ) {
+
+				// values are generate from the inside of the ring to the outside
+
+				const segment = thetaStart + i / thetaSegments * thetaLength;
+
+				// vertex
+
+				vertex.x = radius * Math.cos( segment );
+				vertex.y = radius * Math.sin( segment );
+
+				vertices.push( vertex.x, vertex.y, vertex.z );
+
+				// normal
+
+				normals.push( 0, 0, 1 );
+
+				// uv
+
+				uv.x = ( vertex.x / outerRadius + 1 ) / 2;
+				uv.y = ( vertex.y / outerRadius + 1 ) / 2;
+
+				uvs.push( uv.x, uv.y );
+
+			}
+
+			// increase the radius for next row of vertices
+
+			radius += radiusStep;
 
 		}
 
-		// vertices, normals, uvs
+		// indices
 
-		for ( let i = 0, l = shapeVertices.length; i < l; i ++ ) {
+		for ( let j = 0; j < phiSegments; j ++ ) {
 
-			const vertex = shapeVertices[ i ];
+			const thetaSegmentLevel = j * ( thetaSegments + 1 );
 
-			vertices.push( vertex.x, vertex.y, 0 );
-			normals.push( 0, 0, 1 );
-			uvs.push( vertex.x, vertex.y ); // world uvs
+			for ( let i = 0; i < thetaSegments; i ++ ) {
+
+				const segment = i + thetaSegmentLevel;
+
+				const a = segment;
+				const b = segment + thetaSegments + 1;
+				const c = segment + thetaSegments + 2;
+				const d = segment + 1;
+
+				// faces
+
+				indices.push( a, b, d );
+				indices.push( b, c, d );
+
+			}
 
 		}
 
-		// incides
+		// build geometry
 
-		for ( let i = 0, l = faces.length; i < l; i ++ ) {
+		this.setIndex( indices );
+		this.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
+		this.setAttribute( 'normal', new Float32BufferAttribute( normals, 3 ) );
+		this.setAttribute( 'uv', new Float32BufferAttribute( uvs, 2 ) );
 
-			const face = faces[ i ];
+	}
 
-			const a = face[ 0 ] + indexOffset;
-			const b = face[ 1 ] + indexOffset;
-			const c = face[ 2 ] + indexOffset;
+}
 
-			indices.push( a, b, c );
-			groupCount += 3;
+// LatheGeometry
+
+class LatheGeometry extends Geometry {
+
+	constructor( points, segments, phiStart, phiLength ) {
+
+		super();
+
+		this.type = 'LatheGeometry';
+
+		this.parameters = {
+			points: points,
+			segments: segments,
+			phiStart: phiStart,
+			phiLength: phiLength
+		};
+
+		this.fromBufferGeometry( new LatheBufferGeometry( points, segments, phiStart, phiLength ) );
+		this.mergeVertices();
+
+	}
+
+}
+
+// LatheBufferGeometry
+
+class LatheBufferGeometry extends BufferGeometry {
+
+	constructor( points, segments, phiStart, phiLength ) {
+
+		super();
+
+		this.type = 'LatheBufferGeometry';
+
+		this.parameters = {
+			points: points,
+			segments: segments,
+			phiStart: phiStart,
+			phiLength: phiLength
+		};
+
+		segments = Math.floor( segments ) || 12;
+		phiStart = phiStart || 0;
+		phiLength = phiLength || Math.PI * 2;
+
+		// clamp phiLength so it's in range of [ 0, 2PI ]
+
+		phiLength = MathUtils.clamp( phiLength, 0, Math.PI * 2 );
+
+
+		// buffers
+
+		const indices = [];
+		const vertices = [];
+		const uvs = [];
+
+		// helper variables
+
+		const inverseSegments = 1.0 / segments;
+		const vertex = new Vector3();
+		const uv = new Vector2();
+
+		// generate vertices and uvs
+
+		for ( let i = 0; i <= segments; i ++ ) {
+
+			const phi = phiStart + i * inverseSegments * phiLength;
+
+			const sin = Math.sin( phi );
+			const cos = Math.cos( phi );
+
+			for ( let j = 0; j <= ( points.length - 1 ); j ++ ) {
+
+				// vertex
+
+				vertex.x = points[ j ].x * sin;
+				vertex.y = points[ j ].y;
+				vertex.z = points[ j ].x * cos;
+
+				vertices.push( vertex.x, vertex.y, vertex.z );
+
+				// uv
+
+				uv.x = i / segments;
+				uv.y = j / ( points.length - 1 );
+
+				uvs.push( uv.x, uv.y );
+
+
+			}
+
+		}
+
+		// indices
+
+		for ( let i = 0; i < segments; i ++ ) {
+
+			for ( let j = 0; j < ( points.length - 1 ); j ++ ) {
+
+				const base = j + i * points.length;
+
+				const a = base;
+				const b = base + points.length;
+				const c = base + points.length + 1;
+				const d = base + 1;
+
+				// faces
+
+				indices.push( a, b, d );
+				indices.push( b, c, d );
+
+			}
+
+		}
+
+		// build geometry
+
+		this.setIndex( indices );
+		this.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
+		this.setAttribute( 'uv', new Float32BufferAttribute( uvs, 2 ) );
+
+		// generate normals
+
+		this.computeVertexNormals();
+
+		// if the geometry is closed, we need to average the normals along the seam.
+		// because the corresponding vertices are identical (but still have different UVs).
+
+		if ( phiLength === Math.PI * 2 ) {
+
+			const normals = this.attributes.normal.array;
+			const n1 = new Vector3();
+			const n2 = new Vector3();
+			const n = new Vector3();
+
+			// this is the buffer offset for the last line of vertices
+
+			const base = segments * points.length * 3;
+
+			for ( let i = 0, j = 0; i < points.length; i ++, j += 3 ) {
+
+				// select the normal of the vertex in the first line
+
+				n1.x = normals[ j + 0 ];
+				n1.y = normals[ j + 1 ];
+				n1.z = normals[ j + 2 ];
+
+				// select the normal of the vertex in the last line
+
+				n2.x = normals[ base + j + 0 ];
+				n2.y = normals[ base + j + 1 ];
+				n2.z = normals[ base + j + 2 ];
+
+				// average normals
+
+				n.addVectors( n1, n2 ).normalize();
+
+				// assign the new values to both normals
+
+				normals[ j + 0 ] = normals[ base + j + 0 ] = n.x;
+				normals[ j + 1 ] = normals[ base + j + 1 ] = n.y;
+				normals[ j + 2 ] = normals[ base + j + 2 ] = n.z;
+
+			}
 
 		}
 
@@ -32368,18 +32332,185 @@ function ShapeBufferGeometry( shapes, curveSegments ) {
 
 }
 
-ShapeBufferGeometry.prototype = Object.create( BufferGeometry.prototype );
-ShapeBufferGeometry.prototype.constructor = ShapeBufferGeometry;
+// ShapeGeometry
 
-ShapeBufferGeometry.prototype.toJSON = function () {
+class ShapeGeometry extends Geometry {
 
-	const data = BufferGeometry.prototype.toJSON.call( this );
+	constructor( shapes, curveSegments ) {
 
-	const shapes = this.parameters.shapes;
+		super();
+		this.type = 'ShapeGeometry';
 
-	return toJSON$1( shapes, data );
+		if ( typeof curveSegments === 'object' ) {
 
-};
+			console.warn( 'THREE.ShapeGeometry: Options parameter has been removed.' );
+
+			curveSegments = curveSegments.curveSegments;
+
+		}
+
+		this.parameters = {
+			shapes: shapes,
+			curveSegments: curveSegments
+		};
+
+		this.fromBufferGeometry( new ShapeBufferGeometry( shapes, curveSegments ) );
+		this.mergeVertices();
+
+	}
+
+	toJSON() {
+
+		const data = Geometry.prototype.toJSON.call( this );
+
+		const shapes = this.parameters.shapes;
+
+		return toJSON$1( shapes, data );
+
+	}
+
+}
+
+// ShapeBufferGeometry
+
+class ShapeBufferGeometry extends BufferGeometry {
+
+	constructor( shapes, curveSegments ) {
+
+		super();
+		this.type = 'ShapeBufferGeometry';
+
+		this.parameters = {
+			shapes: shapes,
+			curveSegments: curveSegments
+		};
+
+		curveSegments = curveSegments || 12;
+
+		// buffers
+
+		const indices = [];
+		const vertices = [];
+		const normals = [];
+		const uvs = [];
+
+		// helper variables
+
+		let groupStart = 0;
+		let groupCount = 0;
+
+		// allow single and array values for "shapes" parameter
+
+		if ( Array.isArray( shapes ) === false ) {
+
+			addShape( shapes );
+
+		} else {
+
+			for ( let i = 0; i < shapes.length; i ++ ) {
+
+				addShape( shapes[ i ] );
+
+				this.addGroup( groupStart, groupCount, i ); // enables MultiMaterial support
+
+				groupStart += groupCount;
+				groupCount = 0;
+
+			}
+
+		}
+
+		// build geometry
+
+		this.setIndex( indices );
+		this.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
+		this.setAttribute( 'normal', new Float32BufferAttribute( normals, 3 ) );
+		this.setAttribute( 'uv', new Float32BufferAttribute( uvs, 2 ) );
+
+
+		// helper functions
+
+		function addShape( shape ) {
+
+			const indexOffset = vertices.length / 3;
+			const points = shape.extractPoints( curveSegments );
+
+			let shapeVertices = points.shape;
+			const shapeHoles = points.holes;
+
+			// check direction of vertices
+
+			if ( ShapeUtils.isClockWise( shapeVertices ) === false ) {
+
+				shapeVertices = shapeVertices.reverse();
+
+			}
+
+			for ( let i = 0, l = shapeHoles.length; i < l; i ++ ) {
+
+				const shapeHole = shapeHoles[ i ];
+
+				if ( ShapeUtils.isClockWise( shapeHole ) === true ) {
+
+					shapeHoles[ i ] = shapeHole.reverse();
+
+				}
+
+			}
+
+			const faces = ShapeUtils.triangulateShape( shapeVertices, shapeHoles );
+
+			// join vertices of inner and outer paths to a single array
+
+			for ( let i = 0, l = shapeHoles.length; i < l; i ++ ) {
+
+				const shapeHole = shapeHoles[ i ];
+				shapeVertices = shapeVertices.concat( shapeHole );
+
+			}
+
+			// vertices, normals, uvs
+
+			for ( let i = 0, l = shapeVertices.length; i < l; i ++ ) {
+
+				const vertex = shapeVertices[ i ];
+
+				vertices.push( vertex.x, vertex.y, 0 );
+				normals.push( 0, 0, 1 );
+				uvs.push( vertex.x, vertex.y ); // world uvs
+
+			}
+
+			// incides
+
+			for ( let i = 0, l = faces.length; i < l; i ++ ) {
+
+				const face = faces[ i ];
+
+				const a = face[ 0 ] + indexOffset;
+				const b = face[ 1 ] + indexOffset;
+				const c = face[ 2 ] + indexOffset;
+
+				indices.push( a, b, c );
+				groupCount += 3;
+
+			}
+
+		}
+
+	}
+
+	toJSON() {
+
+		const data = BufferGeometry.prototype.toJSON.call( this );
+
+		const shapes = this.parameters.shapes;
+
+		return toJSON$1( shapes, data );
+
+	}
+
+}
 
 //
 
@@ -32407,561 +32538,560 @@ function toJSON$1( shapes, data ) {
 
 }
 
-function EdgesGeometry( geometry, thresholdAngle ) {
+class EdgesGeometry extends BufferGeometry {
 
-	BufferGeometry.call( this );
+	constructor( geometry, thresholdAngle ) {
 
-	this.type = 'EdgesGeometry';
+		super();
 
-	this.parameters = {
-		thresholdAngle: thresholdAngle
-	};
+		this.type = 'EdgesGeometry';
 
-	thresholdAngle = ( thresholdAngle !== undefined ) ? thresholdAngle : 1;
+		this.parameters = {
+			thresholdAngle: thresholdAngle
+		};
 
-	// buffer
+		thresholdAngle = ( thresholdAngle !== undefined ) ? thresholdAngle : 1;
 
-	const vertices = [];
+		// buffer
 
-	// helper variables
+		const vertices = [];
 
-	const thresholdDot = Math.cos( MathUtils.DEG2RAD * thresholdAngle );
-	const edge = [ 0, 0 ], edges = {};
-	let edge1, edge2, key;
-	const keys = [ 'a', 'b', 'c' ];
+		// helper variables
 
-	// prepare source geometry
+		const thresholdDot = Math.cos( MathUtils.DEG2RAD * thresholdAngle );
+		const edge = [ 0, 0 ], edges = {};
+		let edge1, edge2, key;
+		const keys = [ 'a', 'b', 'c' ];
 
-	let geometry2;
+		// prepare source geometry
 
-	if ( geometry.isBufferGeometry ) {
+		let geometry2;
 
-		geometry2 = new Geometry();
-		geometry2.fromBufferGeometry( geometry );
+		if ( geometry.isBufferGeometry ) {
 
-	} else {
+			geometry2 = new Geometry();
+			geometry2.fromBufferGeometry( geometry );
 
-		geometry2 = geometry.clone();
+		} else {
 
-	}
+			geometry2 = geometry.clone();
 
-	geometry2.mergeVertices();
-	geometry2.computeFaceNormals();
+		}
 
-	const sourceVertices = geometry2.vertices;
-	const faces = geometry2.faces;
+		geometry2.mergeVertices();
+		geometry2.computeFaceNormals();
 
-	// now create a data structure where each entry represents an edge with its adjoining faces
+		const sourceVertices = geometry2.vertices;
+		const faces = geometry2.faces;
 
-	for ( let i = 0, l = faces.length; i < l; i ++ ) {
+		// now create a data structure where each entry represents an edge with its adjoining faces
 
-		const face = faces[ i ];
+		for ( let i = 0, l = faces.length; i < l; i ++ ) {
 
-		for ( let j = 0; j < 3; j ++ ) {
+			const face = faces[ i ];
 
-			edge1 = face[ keys[ j ] ];
-			edge2 = face[ keys[ ( j + 1 ) % 3 ] ];
-			edge[ 0 ] = Math.min( edge1, edge2 );
-			edge[ 1 ] = Math.max( edge1, edge2 );
+			for ( let j = 0; j < 3; j ++ ) {
 
-			key = edge[ 0 ] + ',' + edge[ 1 ];
+				edge1 = face[ keys[ j ] ];
+				edge2 = face[ keys[ ( j + 1 ) % 3 ] ];
+				edge[ 0 ] = Math.min( edge1, edge2 );
+				edge[ 1 ] = Math.max( edge1, edge2 );
 
-			if ( edges[ key ] === undefined ) {
+				key = edge[ 0 ] + ',' + edge[ 1 ];
 
-				edges[ key ] = { index1: edge[ 0 ], index2: edge[ 1 ], face1: i, face2: undefined };
+				if ( edges[ key ] === undefined ) {
 
-			} else {
+					edges[ key ] = { index1: edge[ 0 ], index2: edge[ 1 ], face1: i, face2: undefined };
 
-				edges[ key ].face2 = i;
+				} else {
+
+					edges[ key ].face2 = i;
+
+				}
 
 			}
 
 		}
 
-	}
+		// generate vertices
 
-	// generate vertices
+		for ( key in edges ) {
 
-	for ( key in edges ) {
+			const e = edges[ key ];
 
-		const e = edges[ key ];
+			// an edge is only rendered if the angle (in degrees) between the face normals of the adjoining faces exceeds this value. default = 1 degree.
 
-		// an edge is only rendered if the angle (in degrees) between the face normals of the adjoining faces exceeds this value. default = 1 degree.
+			if ( e.face2 === undefined || faces[ e.face1 ].normal.dot( faces[ e.face2 ].normal ) <= thresholdDot ) {
 
-		if ( e.face2 === undefined || faces[ e.face1 ].normal.dot( faces[ e.face2 ].normal ) <= thresholdDot ) {
+				let vertex = sourceVertices[ e.index1 ];
+				vertices.push( vertex.x, vertex.y, vertex.z );
 
-			let vertex = sourceVertices[ e.index1 ];
-			vertices.push( vertex.x, vertex.y, vertex.z );
+				vertex = sourceVertices[ e.index2 ];
+				vertices.push( vertex.x, vertex.y, vertex.z );
 
-			vertex = sourceVertices[ e.index2 ];
-			vertices.push( vertex.x, vertex.y, vertex.z );
+			}
 
 		}
 
+		// build geometry
+
+		this.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
+
 	}
 
-	// build geometry
-
-	this.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
-
 }
-
-EdgesGeometry.prototype = Object.create( BufferGeometry.prototype );
-EdgesGeometry.prototype.constructor = EdgesGeometry;
 
 // CylinderGeometry
 
-function CylinderGeometry( radiusTop, radiusBottom, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength ) {
+class CylinderGeometry extends Geometry {
 
-	Geometry.call( this );
+	constructor( radiusTop, radiusBottom, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength ) {
 
-	this.type = 'CylinderGeometry';
+		super();
+		this.type = 'CylinderGeometry';
 
-	this.parameters = {
-		radiusTop: radiusTop,
-		radiusBottom: radiusBottom,
-		height: height,
-		radialSegments: radialSegments,
-		heightSegments: heightSegments,
-		openEnded: openEnded,
-		thetaStart: thetaStart,
-		thetaLength: thetaLength
-	};
+		this.parameters = {
+			radiusTop: radiusTop,
+			radiusBottom: radiusBottom,
+			height: height,
+			radialSegments: radialSegments,
+			heightSegments: heightSegments,
+			openEnded: openEnded,
+			thetaStart: thetaStart,
+			thetaLength: thetaLength
+		};
 
-	this.fromBufferGeometry( new CylinderBufferGeometry( radiusTop, radiusBottom, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength ) );
-	this.mergeVertices();
-
-}
-
-CylinderGeometry.prototype = Object.create( Geometry.prototype );
-CylinderGeometry.prototype.constructor = CylinderGeometry;
-
-// CylinderBufferGeometry
-
-function CylinderBufferGeometry( radiusTop, radiusBottom, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength ) {
-
-	BufferGeometry.call( this );
-
-	this.type = 'CylinderBufferGeometry';
-
-	this.parameters = {
-		radiusTop: radiusTop,
-		radiusBottom: radiusBottom,
-		height: height,
-		radialSegments: radialSegments,
-		heightSegments: heightSegments,
-		openEnded: openEnded,
-		thetaStart: thetaStart,
-		thetaLength: thetaLength
-	};
-
-	const scope = this;
-
-	radiusTop = radiusTop !== undefined ? radiusTop : 1;
-	radiusBottom = radiusBottom !== undefined ? radiusBottom : 1;
-	height = height || 1;
-
-	radialSegments = Math.floor( radialSegments ) || 8;
-	heightSegments = Math.floor( heightSegments ) || 1;
-
-	openEnded = openEnded !== undefined ? openEnded : false;
-	thetaStart = thetaStart !== undefined ? thetaStart : 0.0;
-	thetaLength = thetaLength !== undefined ? thetaLength : Math.PI * 2;
-
-	// buffers
-
-	const indices = [];
-	const vertices = [];
-	const normals = [];
-	const uvs = [];
-
-	// helper variables
-
-	let index = 0;
-	const indexArray = [];
-	const halfHeight = height / 2;
-	let groupStart = 0;
-
-	// generate geometry
-
-	generateTorso();
-
-	if ( openEnded === false ) {
-
-		if ( radiusTop > 0 ) generateCap( true );
-		if ( radiusBottom > 0 ) generateCap( false );
+		this.fromBufferGeometry( new CylinderBufferGeometry( radiusTop, radiusBottom, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength ) );
+		this.mergeVertices();
 
 	}
 
-	// build geometry
+}
 
-	this.setIndex( indices );
-	this.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
-	this.setAttribute( 'normal', new Float32BufferAttribute( normals, 3 ) );
-	this.setAttribute( 'uv', new Float32BufferAttribute( uvs, 2 ) );
+// CylinderBufferGeometry
 
-	function generateTorso() {
+class CylinderBufferGeometry extends BufferGeometry {
 
-		const normal = new Vector3();
-		const vertex = new Vector3();
+	constructor( radiusTop, radiusBottom, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength ) {
 
-		let groupCount = 0;
+		super();
+		this.type = 'CylinderBufferGeometry';
 
-		// this will be used to calculate the normal
-		const slope = ( radiusBottom - radiusTop ) / height;
+		this.parameters = {
+			radiusTop: radiusTop,
+			radiusBottom: radiusBottom,
+			height: height,
+			radialSegments: radialSegments,
+			heightSegments: heightSegments,
+			openEnded: openEnded,
+			thetaStart: thetaStart,
+			thetaLength: thetaLength
+		};
 
-		// generate vertices, normals and uvs
+		const scope = this;
 
-		for ( let y = 0; y <= heightSegments; y ++ ) {
+		radiusTop = radiusTop !== undefined ? radiusTop : 1;
+		radiusBottom = radiusBottom !== undefined ? radiusBottom : 1;
+		height = height || 1;
 
-			const indexRow = [];
+		radialSegments = Math.floor( radialSegments ) || 8;
+		heightSegments = Math.floor( heightSegments ) || 1;
 
-			const v = y / heightSegments;
+		openEnded = openEnded !== undefined ? openEnded : false;
+		thetaStart = thetaStart !== undefined ? thetaStart : 0.0;
+		thetaLength = thetaLength !== undefined ? thetaLength : Math.PI * 2;
 
-			// calculate the radius of the current row
+		// buffers
 
-			const radius = v * ( radiusBottom - radiusTop ) + radiusTop;
+		const indices = [];
+		const vertices = [];
+		const normals = [];
+		const uvs = [];
+
+		// helper variables
+
+		let index = 0;
+		const indexArray = [];
+		const halfHeight = height / 2;
+		let groupStart = 0;
+
+		// generate geometry
+
+		generateTorso();
+
+		if ( openEnded === false ) {
+
+			if ( radiusTop > 0 ) generateCap( true );
+			if ( radiusBottom > 0 ) generateCap( false );
+
+		}
+
+		// build geometry
+
+		this.setIndex( indices );
+		this.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
+		this.setAttribute( 'normal', new Float32BufferAttribute( normals, 3 ) );
+		this.setAttribute( 'uv', new Float32BufferAttribute( uvs, 2 ) );
+
+		function generateTorso() {
+
+			const normal = new Vector3();
+			const vertex = new Vector3();
+
+			let groupCount = 0;
+
+			// this will be used to calculate the normal
+			const slope = ( radiusBottom - radiusTop ) / height;
+
+			// generate vertices, normals and uvs
+
+			for ( let y = 0; y <= heightSegments; y ++ ) {
+
+				const indexRow = [];
+
+				const v = y / heightSegments;
+
+				// calculate the radius of the current row
+
+				const radius = v * ( radiusBottom - radiusTop ) + radiusTop;
+
+				for ( let x = 0; x <= radialSegments; x ++ ) {
+
+					const u = x / radialSegments;
+
+					const theta = u * thetaLength + thetaStart;
+
+					const sinTheta = Math.sin( theta );
+					const cosTheta = Math.cos( theta );
+
+					// vertex
+
+					vertex.x = radius * sinTheta;
+					vertex.y = - v * height + halfHeight;
+					vertex.z = radius * cosTheta;
+					vertices.push( vertex.x, vertex.y, vertex.z );
+
+					// normal
+
+					normal.set( sinTheta, slope, cosTheta ).normalize();
+					normals.push( normal.x, normal.y, normal.z );
+
+					// uv
+
+					uvs.push( u, 1 - v );
+
+					// save index of vertex in respective row
+
+					indexRow.push( index ++ );
+
+				}
+
+				// now save vertices of the row in our index array
+
+				indexArray.push( indexRow );
+
+			}
+
+			// generate indices
+
+			for ( let x = 0; x < radialSegments; x ++ ) {
+
+				for ( let y = 0; y < heightSegments; y ++ ) {
+
+					// we use the index array to access the correct indices
+
+					const a = indexArray[ y ][ x ];
+					const b = indexArray[ y + 1 ][ x ];
+					const c = indexArray[ y + 1 ][ x + 1 ];
+					const d = indexArray[ y ][ x + 1 ];
+
+					// faces
+
+					indices.push( a, b, d );
+					indices.push( b, c, d );
+
+					// update group counter
+
+					groupCount += 6;
+
+				}
+
+			}
+
+			// add a group to the geometry. this will ensure multi material support
+
+			scope.addGroup( groupStart, groupCount, 0 );
+
+			// calculate new start value for groups
+
+			groupStart += groupCount;
+
+		}
+
+		function generateCap( top ) {
+
+			// save the index of the first center vertex
+			const centerIndexStart = index;
+
+			const uv = new Vector2();
+			const vertex = new Vector3();
+
+			let groupCount = 0;
+
+			const radius = ( top === true ) ? radiusTop : radiusBottom;
+			const sign = ( top === true ) ? 1 : - 1;
+
+			// first we generate the center vertex data of the cap.
+			// because the geometry needs one set of uvs per face,
+			// we must generate a center vertex per face/segment
+
+			for ( let x = 1; x <= radialSegments; x ++ ) {
+
+				// vertex
+
+				vertices.push( 0, halfHeight * sign, 0 );
+
+				// normal
+
+				normals.push( 0, sign, 0 );
+
+				// uv
+
+				uvs.push( 0.5, 0.5 );
+
+				// increase index
+
+				index ++;
+
+			}
+
+			// save the index of the last center vertex
+			const centerIndexEnd = index;
+
+			// now we generate the surrounding vertices, normals and uvs
 
 			for ( let x = 0; x <= radialSegments; x ++ ) {
 
 				const u = x / radialSegments;
-
 				const theta = u * thetaLength + thetaStart;
 
-				const sinTheta = Math.sin( theta );
 				const cosTheta = Math.cos( theta );
+				const sinTheta = Math.sin( theta );
 
 				// vertex
 
 				vertex.x = radius * sinTheta;
-				vertex.y = - v * height + halfHeight;
+				vertex.y = halfHeight * sign;
 				vertex.z = radius * cosTheta;
 				vertices.push( vertex.x, vertex.y, vertex.z );
 
 				// normal
 
-				normal.set( sinTheta, slope, cosTheta ).normalize();
-				normals.push( normal.x, normal.y, normal.z );
+				normals.push( 0, sign, 0 );
 
 				// uv
 
-				uvs.push( u, 1 - v );
+				uv.x = ( cosTheta * 0.5 ) + 0.5;
+				uv.y = ( sinTheta * 0.5 * sign ) + 0.5;
+				uvs.push( uv.x, uv.y );
 
-				// save index of vertex in respective row
+				// increase index
 
-				indexRow.push( index ++ );
-
-			}
-
-			// now save vertices of the row in our index array
-
-			indexArray.push( indexRow );
-
-		}
-
-		// generate indices
-
-		for ( let x = 0; x < radialSegments; x ++ ) {
-
-			for ( let y = 0; y < heightSegments; y ++ ) {
-
-				// we use the index array to access the correct indices
-
-				const a = indexArray[ y ][ x ];
-				const b = indexArray[ y + 1 ][ x ];
-				const c = indexArray[ y + 1 ][ x + 1 ];
-				const d = indexArray[ y ][ x + 1 ];
-
-				// faces
-
-				indices.push( a, b, d );
-				indices.push( b, c, d );
-
-				// update group counter
-
-				groupCount += 6;
+				index ++;
 
 			}
 
+			// generate indices
+
+			for ( let x = 0; x < radialSegments; x ++ ) {
+
+				const c = centerIndexStart + x;
+				const i = centerIndexEnd + x;
+
+				if ( top === true ) {
+
+					// face top
+
+					indices.push( i, i + 1, c );
+
+				} else {
+
+					// face bottom
+
+					indices.push( i + 1, i, c );
+
+				}
+
+				groupCount += 3;
+
+			}
+
+			// add a group to the geometry. this will ensure multi material support
+
+			scope.addGroup( groupStart, groupCount, top === true ? 1 : 2 );
+
+			// calculate new start value for groups
+
+			groupStart += groupCount;
+
 		}
-
-		// add a group to the geometry. this will ensure multi material support
-
-		scope.addGroup( groupStart, groupCount, 0 );
-
-		// calculate new start value for groups
-
-		groupStart += groupCount;
 
 	}
 
-	function generateCap( top ) {
+}
 
-		let centerIndexStart, centerIndexEnd;
+// ConeGeometry
 
-		const uv = new Vector2();
+class ConeGeometry extends CylinderGeometry {
+
+	constructor( radius, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength ) {
+
+		super( 0, radius, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength );
+		this.type = 'ConeGeometry';
+
+		this.parameters = {
+			radius: radius,
+			height: height,
+			radialSegments: radialSegments,
+			heightSegments: heightSegments,
+			openEnded: openEnded,
+			thetaStart: thetaStart,
+			thetaLength: thetaLength
+		};
+
+	}
+
+}
+
+// ConeBufferGeometry
+
+class ConeBufferGeometry extends CylinderBufferGeometry {
+
+	constructor( radius, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength ) {
+
+		super( 0, radius, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength );
+		this.type = 'ConeBufferGeometry';
+
+		this.parameters = {
+			radius: radius,
+			height: height,
+			radialSegments: radialSegments,
+			heightSegments: heightSegments,
+			openEnded: openEnded,
+			thetaStart: thetaStart,
+			thetaLength: thetaLength
+		};
+
+	}
+
+}
+
+// CircleGeometry
+
+class CircleGeometry extends Geometry {
+
+	constructor( radius, segments, thetaStart, thetaLength ) {
+
+		super();
+		this.type = 'CircleGeometry';
+
+		this.parameters = {
+			radius: radius,
+			segments: segments,
+			thetaStart: thetaStart,
+			thetaLength: thetaLength
+		};
+
+		this.fromBufferGeometry( new CircleBufferGeometry( radius, segments, thetaStart, thetaLength ) );
+		this.mergeVertices();
+
+	}
+
+}
+
+// CircleBufferGeometry
+
+class CircleBufferGeometry extends BufferGeometry {
+
+	constructor( radius, segments, thetaStart, thetaLength ) {
+
+		super();
+
+		this.type = 'CircleBufferGeometry';
+
+		this.parameters = {
+			radius: radius,
+			segments: segments,
+			thetaStart: thetaStart,
+			thetaLength: thetaLength
+		};
+
+		radius = radius || 1;
+		segments = segments !== undefined ? Math.max( 3, segments ) : 8;
+
+		thetaStart = thetaStart !== undefined ? thetaStart : 0;
+		thetaLength = thetaLength !== undefined ? thetaLength : Math.PI * 2;
+
+		// buffers
+
+		const indices = [];
+		const vertices = [];
+		const normals = [];
+		const uvs = [];
+
+		// helper variables
+
 		const vertex = new Vector3();
+		const uv = new Vector2();
 
-		let groupCount = 0;
+		// center point
 
-		const radius = ( top === true ) ? radiusTop : radiusBottom;
-		const sign = ( top === true ) ? 1 : - 1;
+		vertices.push( 0, 0, 0 );
+		normals.push( 0, 0, 1 );
+		uvs.push( 0.5, 0.5 );
 
-		// save the index of the first center vertex
-		centerIndexStart = index;
+		for ( let s = 0, i = 3; s <= segments; s ++, i += 3 ) {
 
-		// first we generate the center vertex data of the cap.
-		// because the geometry needs one set of uvs per face,
-		// we must generate a center vertex per face/segment
-
-		for ( let x = 1; x <= radialSegments; x ++ ) {
+			const segment = thetaStart + s / segments * thetaLength;
 
 			// vertex
 
-			vertices.push( 0, halfHeight * sign, 0 );
+			vertex.x = radius * Math.cos( segment );
+			vertex.y = radius * Math.sin( segment );
 
-			// normal
-
-			normals.push( 0, sign, 0 );
-
-			// uv
-
-			uvs.push( 0.5, 0.5 );
-
-			// increase index
-
-			index ++;
-
-		}
-
-		// save the index of the last center vertex
-
-		centerIndexEnd = index;
-
-		// now we generate the surrounding vertices, normals and uvs
-
-		for ( let x = 0; x <= radialSegments; x ++ ) {
-
-			const u = x / radialSegments;
-			const theta = u * thetaLength + thetaStart;
-
-			const cosTheta = Math.cos( theta );
-			const sinTheta = Math.sin( theta );
-
-			// vertex
-
-			vertex.x = radius * sinTheta;
-			vertex.y = halfHeight * sign;
-			vertex.z = radius * cosTheta;
 			vertices.push( vertex.x, vertex.y, vertex.z );
 
 			// normal
 
-			normals.push( 0, sign, 0 );
+			normals.push( 0, 0, 1 );
 
-			// uv
+			// uvs
 
-			uv.x = ( cosTheta * 0.5 ) + 0.5;
-			uv.y = ( sinTheta * 0.5 * sign ) + 0.5;
+			uv.x = ( vertices[ i ] / radius + 1 ) / 2;
+			uv.y = ( vertices[ i + 1 ] / radius + 1 ) / 2;
+
 			uvs.push( uv.x, uv.y );
 
-			// increase index
+		}
 
-			index ++;
+		// indices
+
+		for ( let i = 1; i <= segments; i ++ ) {
+
+			indices.push( i, i + 1, 0 );
 
 		}
 
-		// generate indices
+		// build geometry
 
-		for ( let x = 0; x < radialSegments; x ++ ) {
-
-			const c = centerIndexStart + x;
-			const i = centerIndexEnd + x;
-
-			if ( top === true ) {
-
-				// face top
-
-				indices.push( i, i + 1, c );
-
-			} else {
-
-				// face bottom
-
-				indices.push( i + 1, i, c );
-
-			}
-
-			groupCount += 3;
-
-		}
-
-		// add a group to the geometry. this will ensure multi material support
-
-		scope.addGroup( groupStart, groupCount, top === true ? 1 : 2 );
-
-		// calculate new start value for groups
-
-		groupStart += groupCount;
+		this.setIndex( indices );
+		this.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
+		this.setAttribute( 'normal', new Float32BufferAttribute( normals, 3 ) );
+		this.setAttribute( 'uv', new Float32BufferAttribute( uvs, 2 ) );
 
 	}
 
 }
-
-CylinderBufferGeometry.prototype = Object.create( BufferGeometry.prototype );
-CylinderBufferGeometry.prototype.constructor = CylinderBufferGeometry;
-
-// ConeGeometry
-
-function ConeGeometry( radius, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength ) {
-
-	CylinderGeometry.call( this, 0, radius, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength );
-
-	this.type = 'ConeGeometry';
-
-	this.parameters = {
-		radius: radius,
-		height: height,
-		radialSegments: radialSegments,
-		heightSegments: heightSegments,
-		openEnded: openEnded,
-		thetaStart: thetaStart,
-		thetaLength: thetaLength
-	};
-
-}
-
-ConeGeometry.prototype = Object.create( CylinderGeometry.prototype );
-ConeGeometry.prototype.constructor = ConeGeometry;
-
-// ConeBufferGeometry
-
-function ConeBufferGeometry( radius, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength ) {
-
-	CylinderBufferGeometry.call( this, 0, radius, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength );
-
-	this.type = 'ConeBufferGeometry';
-
-	this.parameters = {
-		radius: radius,
-		height: height,
-		radialSegments: radialSegments,
-		heightSegments: heightSegments,
-		openEnded: openEnded,
-		thetaStart: thetaStart,
-		thetaLength: thetaLength
-	};
-
-}
-
-ConeBufferGeometry.prototype = Object.create( CylinderBufferGeometry.prototype );
-ConeBufferGeometry.prototype.constructor = ConeBufferGeometry;
-
-// CircleGeometry
-
-function CircleGeometry( radius, segments, thetaStart, thetaLength ) {
-
-	Geometry.call( this );
-
-	this.type = 'CircleGeometry';
-
-	this.parameters = {
-		radius: radius,
-		segments: segments,
-		thetaStart: thetaStart,
-		thetaLength: thetaLength
-	};
-
-	this.fromBufferGeometry( new CircleBufferGeometry( radius, segments, thetaStart, thetaLength ) );
-	this.mergeVertices();
-
-}
-
-CircleGeometry.prototype = Object.create( Geometry.prototype );
-CircleGeometry.prototype.constructor = CircleGeometry;
-
-// CircleBufferGeometry
-
-function CircleBufferGeometry( radius, segments, thetaStart, thetaLength ) {
-
-	BufferGeometry.call( this );
-
-	this.type = 'CircleBufferGeometry';
-
-	this.parameters = {
-		radius: radius,
-		segments: segments,
-		thetaStart: thetaStart,
-		thetaLength: thetaLength
-	};
-
-	radius = radius || 1;
-	segments = segments !== undefined ? Math.max( 3, segments ) : 8;
-
-	thetaStart = thetaStart !== undefined ? thetaStart : 0;
-	thetaLength = thetaLength !== undefined ? thetaLength : Math.PI * 2;
-
-	// buffers
-
-	const indices = [];
-	const vertices = [];
-	const normals = [];
-	const uvs = [];
-
-	// helper variables
-
-	const vertex = new Vector3();
-	const uv = new Vector2();
-
-	// center point
-
-	vertices.push( 0, 0, 0 );
-	normals.push( 0, 0, 1 );
-	uvs.push( 0.5, 0.5 );
-
-	for ( let s = 0, i = 3; s <= segments; s ++, i += 3 ) {
-
-		const segment = thetaStart + s / segments * thetaLength;
-
-		// vertex
-
-		vertex.x = radius * Math.cos( segment );
-		vertex.y = radius * Math.sin( segment );
-
-		vertices.push( vertex.x, vertex.y, vertex.z );
-
-		// normal
-
-		normals.push( 0, 0, 1 );
-
-		// uvs
-
-		uv.x = ( vertices[ i ] / radius + 1 ) / 2;
-		uv.y = ( vertices[ i + 1 ] / radius + 1 ) / 2;
-
-		uvs.push( uv.x, uv.y );
-
-	}
-
-	// indices
-
-	for ( let i = 1; i <= segments; i ++ ) {
-
-		indices.push( i, i + 1, 0 );
-
-	}
-
-	// build geometry
-
-	this.setIndex( indices );
-	this.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
-	this.setAttribute( 'normal', new Float32BufferAttribute( normals, 3 ) );
-	this.setAttribute( 'uv', new Float32BufferAttribute( uvs, 2 ) );
-
-}
-
-CircleBufferGeometry.prototype = Object.create( BufferGeometry.prototype );
-CircleBufferGeometry.prototype.constructor = CircleBufferGeometry;
 
 var Geometries = /*#__PURE__*/Object.freeze({
 	__proto__: null,
@@ -34246,13 +34376,30 @@ const AnimationUtils = {
 			const targetTrack = targetClip.tracks.find( function ( track ) {
 
 				return track.name === referenceTrack.name
-				&& track.ValueTypeName === referenceTrackType;
+					&& track.ValueTypeName === referenceTrackType;
 
 			} );
 
 			if ( targetTrack === undefined ) continue;
 
-			const valueSize = referenceTrack.getValueSize();
+			let referenceOffset = 0;
+			const referenceValueSize = referenceTrack.getValueSize();
+
+			if ( referenceTrack.createInterpolant.isInterpolantFactoryMethodGLTFCubicSpline ) {
+
+				referenceOffset = referenceValueSize / 3;
+
+			}
+
+			let targetOffset = 0;
+			const targetValueSize = targetTrack.getValueSize();
+
+			if ( targetTrack.createInterpolant.isInterpolantFactoryMethodGLTFCubicSpline ) {
+
+				targetOffset = targetValueSize / 3;
+
+			}
+
 			const lastIndex = referenceTrack.times.length - 1;
 			let referenceValue;
 
@@ -34260,32 +34407,32 @@ const AnimationUtils = {
 			if ( referenceTime <= referenceTrack.times[ 0 ] ) {
 
 				// Reference frame is earlier than the first keyframe, so just use the first keyframe
-				referenceValue = AnimationUtils.arraySlice( referenceTrack.values, 0, referenceTrack.valueSize );
+				const startIndex = referenceOffset;
+				const endIndex = referenceValueSize - referenceOffset;
+				referenceValue = AnimationUtils.arraySlice( referenceTrack.values, startIndex, endIndex );
 
 			} else if ( referenceTime >= referenceTrack.times[ lastIndex ] ) {
 
 				// Reference frame is after the last keyframe, so just use the last keyframe
-				const startIndex = lastIndex * valueSize;
-				referenceValue = AnimationUtils.arraySlice( referenceTrack.values, startIndex );
+				const startIndex = lastIndex * referenceValueSize + referenceOffset;
+				const endIndex = startIndex + referenceValueSize - referenceOffset;
+				referenceValue = AnimationUtils.arraySlice( referenceTrack.values, startIndex, endIndex );
 
 			} else {
 
 				// Interpolate to the reference value
 				const interpolant = referenceTrack.createInterpolant();
+				const startIndex = referenceOffset;
+				const endIndex = referenceValueSize - referenceOffset;
 				interpolant.evaluate( referenceTime );
-				referenceValue = interpolant.resultBuffer;
+				referenceValue = AnimationUtils.arraySlice( interpolant.resultBuffer, startIndex, endIndex );
 
 			}
 
 			// Conjugate the quaternion
 			if ( referenceTrackType === 'quaternion' ) {
 
-				const referenceQuat = new Quaternion(
-					referenceValue[ 0 ],
-					referenceValue[ 1 ],
-					referenceValue[ 2 ],
-					referenceValue[ 3 ]
-				).normalize().conjugate();
+				const referenceQuat = new Quaternion().fromArray( referenceValue ).normalize().conjugate();
 				referenceQuat.toArray( referenceValue );
 
 			}
@@ -34295,7 +34442,7 @@ const AnimationUtils = {
 			const numTimes = targetTrack.times.length;
 			for ( let j = 0; j < numTimes; ++ j ) {
 
-				const valueStart = j * valueSize;
+				const valueStart = j * targetValueSize + targetOffset;
 
 				if ( referenceTrackType === 'quaternion' ) {
 
@@ -34311,8 +34458,10 @@ const AnimationUtils = {
 
 				} else {
 
+					const valueEnd = targetValueSize - targetOffset * 2;
+
 					// Subtract each value for all other numeric track types
-					for ( let k = 0; k < valueSize; ++ k ) {
+					for ( let k = 0; k < valueEnd; ++ k ) {
 
 						targetTrack.values[ valueStart + k ] -= referenceValue[ k ];
 
@@ -34369,9 +34518,8 @@ Object.assign( Interpolant.prototype, {
 
 	evaluate: function ( t ) {
 
-		let pp = this.parameterPositions,
-			i1 = this._cachedIndex,
-
+		const pp = this.parameterPositions;
+		let i1 = this._cachedIndex,
 			t1 = pp[ i1 ],
 			t0 = pp[ i1 - 1 ];
 
@@ -34620,8 +34768,8 @@ CubicInterpolant.prototype = Object.assign( Object.create( Interpolant.prototype
 
 	intervalChanged_: function ( i1, t0, t1 ) {
 
-		let pp = this.parameterPositions,
-			iPrev = i1 - 2,
+		const pp = this.parameterPositions;
+		let iPrev = i1 - 2,
 			iNext = i1 + 1,
 
 			tPrev = pp[ iPrev ],
@@ -36625,96 +36773,6 @@ CompressedTextureLoader.prototype = Object.assign( Object.create( Loader.prototy
 
 } );
 
-/**
- * Abstract Base class to load generic binary textures formats (rgbe, hdr, ...)
- *
- * Sub classes have to implement the parse() method which will be used in load().
- */
-
-function DataTextureLoader( manager ) {
-
-	Loader.call( this, manager );
-
-}
-
-DataTextureLoader.prototype = Object.assign( Object.create( Loader.prototype ), {
-
-	constructor: DataTextureLoader,
-
-	load: function ( url, onLoad, onProgress, onError ) {
-
-		const scope = this;
-
-		const texture = new DataTexture();
-
-		const loader = new FileLoader( this.manager );
-		loader.setResponseType( 'arraybuffer' );
-		loader.setRequestHeader( this.requestHeader );
-		loader.setPath( this.path );
-		loader.load( url, function ( buffer ) {
-
-			const texData = scope.parse( buffer );
-
-			if ( ! texData ) return;
-
-			if ( texData.image !== undefined ) {
-
-				texture.image = texData.image;
-
-			} else if ( texData.data !== undefined ) {
-
-				texture.image.width = texData.width;
-				texture.image.height = texData.height;
-				texture.image.data = texData.data;
-
-			}
-
-			texture.wrapS = texData.wrapS !== undefined ? texData.wrapS : ClampToEdgeWrapping;
-			texture.wrapT = texData.wrapT !== undefined ? texData.wrapT : ClampToEdgeWrapping;
-
-			texture.magFilter = texData.magFilter !== undefined ? texData.magFilter : LinearFilter;
-			texture.minFilter = texData.minFilter !== undefined ? texData.minFilter : LinearFilter;
-
-			texture.anisotropy = texData.anisotropy !== undefined ? texData.anisotropy : 1;
-
-			if ( texData.format !== undefined ) {
-
-				texture.format = texData.format;
-
-			}
-
-			if ( texData.type !== undefined ) {
-
-				texture.type = texData.type;
-
-			}
-
-			if ( texData.mipmaps !== undefined ) {
-
-				texture.mipmaps = texData.mipmaps;
-				texture.minFilter = LinearMipmapLinearFilter; // presumably...
-
-			}
-
-			if ( texData.mipmapCount === 1 ) {
-
-				texture.minFilter = LinearFilter;
-
-			}
-
-			texture.needsUpdate = true;
-
-			if ( onLoad ) onLoad( texture, texData );
-
-		}, onProgress, onError );
-
-
-		return texture;
-
-	}
-
-} );
-
 function ImageLoader( manager ) {
 
 	Loader.call( this, manager );
@@ -36842,6 +36900,96 @@ CubeTextureLoader.prototype = Object.assign( Object.create( Loader.prototype ), 
 			loadTexture( i );
 
 		}
+
+		return texture;
+
+	}
+
+} );
+
+/**
+ * Abstract Base class to load generic binary textures formats (rgbe, hdr, ...)
+ *
+ * Sub classes have to implement the parse() method which will be used in load().
+ */
+
+function DataTextureLoader( manager ) {
+
+	Loader.call( this, manager );
+
+}
+
+DataTextureLoader.prototype = Object.assign( Object.create( Loader.prototype ), {
+
+	constructor: DataTextureLoader,
+
+	load: function ( url, onLoad, onProgress, onError ) {
+
+		const scope = this;
+
+		const texture = new DataTexture();
+
+		const loader = new FileLoader( this.manager );
+		loader.setResponseType( 'arraybuffer' );
+		loader.setRequestHeader( this.requestHeader );
+		loader.setPath( this.path );
+		loader.load( url, function ( buffer ) {
+
+			const texData = scope.parse( buffer );
+
+			if ( ! texData ) return;
+
+			if ( texData.image !== undefined ) {
+
+				texture.image = texData.image;
+
+			} else if ( texData.data !== undefined ) {
+
+				texture.image.width = texData.width;
+				texture.image.height = texData.height;
+				texture.image.data = texData.data;
+
+			}
+
+			texture.wrapS = texData.wrapS !== undefined ? texData.wrapS : ClampToEdgeWrapping;
+			texture.wrapT = texData.wrapT !== undefined ? texData.wrapT : ClampToEdgeWrapping;
+
+			texture.magFilter = texData.magFilter !== undefined ? texData.magFilter : LinearFilter;
+			texture.minFilter = texData.minFilter !== undefined ? texData.minFilter : LinearFilter;
+
+			texture.anisotropy = texData.anisotropy !== undefined ? texData.anisotropy : 1;
+
+			if ( texData.format !== undefined ) {
+
+				texture.format = texData.format;
+
+			}
+
+			if ( texData.type !== undefined ) {
+
+				texture.type = texData.type;
+
+			}
+
+			if ( texData.mipmaps !== undefined ) {
+
+				texture.mipmaps = texData.mipmaps;
+				texture.minFilter = LinearMipmapLinearFilter; // presumably...
+
+			}
+
+			if ( texData.mipmapCount === 1 ) {
+
+				texture.minFilter = LinearFilter;
+
+			}
+
+			texture.needsUpdate = true;
+
+			if ( onLoad ) onLoad( texture, texData );
+
+		}, onProgress, onError );
+
 
 		return texture;
 
@@ -37046,7 +37194,8 @@ Object.assign( Curve.prototype, {
 
 		const arcLengths = this.getLengths();
 
-		let i = 0, il = arcLengths.length;
+		let i = 0;
+		const il = arcLengths.length;
 
 		let targetArcLength; // The targeted u distance value to get
 
@@ -37591,7 +37740,7 @@ CatmullRomCurve3.prototype.getPoint = function ( t, optionalTarget ) {
 
 	}
 
-	let p0, p1, p2, p3; // 4 points
+	let p0, p3; // 4 points (p1 & p2 defined below)
 
 	if ( this.closed || intPoint > 0 ) {
 
@@ -37605,8 +37754,8 @@ CatmullRomCurve3.prototype.getPoint = function ( t, optionalTarget ) {
 
 	}
 
-	p1 = points[ intPoint % l ];
-	p2 = points[ ( intPoint + 1 ) % l ];
+	const p1 = points[ intPoint % l ];
+	const p2 = points[ ( intPoint + 1 ) % l ];
 
 	if ( this.closed || intPoint + 2 < l ) {
 
@@ -39589,23 +39738,23 @@ RectAreaLight.prototype = Object.assign( Object.create( Light.prototype ), {
 
 // 3-band SH defined by 9 coefficients
 
-function SphericalHarmonics3() {
+class SphericalHarmonics3 {
 
-	this.coefficients = [];
+	constructor() {
 
-	for ( let i = 0; i < 9; i ++ ) {
+		Object.defineProperty( this, 'isSphericalHarmonics3', { value: true } );
 
-		this.coefficients.push( new Vector3() );
+		this.coefficients = [];
+
+		for ( let i = 0; i < 9; i ++ ) {
+
+			this.coefficients.push( new Vector3() );
+
+		}
 
 	}
 
-}
-
-Object.assign( SphericalHarmonics3.prototype, {
-
-	isSphericalHarmonics3: true,
-
-	set: function ( coefficients ) {
+	set( coefficients ) {
 
 		for ( let i = 0; i < 9; i ++ ) {
 
@@ -39615,9 +39764,9 @@ Object.assign( SphericalHarmonics3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	zero: function () {
+	zero() {
 
 		for ( let i = 0; i < 9; i ++ ) {
 
@@ -39627,11 +39776,11 @@ Object.assign( SphericalHarmonics3.prototype, {
 
 		return this;
 
-	},
+	}
 
 	// get the radiance in the direction of the normal
 	// target is a Vector3
-	getAt: function ( normal, target ) {
+	getAt( normal, target ) {
 
 		// normal is assumed to be unit length
 
@@ -39656,12 +39805,12 @@ Object.assign( SphericalHarmonics3.prototype, {
 
 		return target;
 
-	},
+	}
 
 	// get the irradiance (radiance convolved with cosine lobe) in the direction of the normal
 	// target is a Vector3
 	// https://graphics.stanford.edu/papers/envmap/envmap.pdf
-	getIrradianceAt: function ( normal, target ) {
+	getIrradianceAt( normal, target ) {
 
 		// normal is assumed to be unit length
 
@@ -39686,9 +39835,9 @@ Object.assign( SphericalHarmonics3.prototype, {
 
 		return target;
 
-	},
+	}
 
-	add: function ( sh ) {
+	add( sh ) {
 
 		for ( let i = 0; i < 9; i ++ ) {
 
@@ -39698,9 +39847,9 @@ Object.assign( SphericalHarmonics3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	addScaledSH: function ( sh, s ) {
+	addScaledSH( sh, s ) {
 
 		for ( let i = 0; i < 9; i ++ ) {
 
@@ -39710,9 +39859,9 @@ Object.assign( SphericalHarmonics3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	scale: function ( s ) {
+	scale( s ) {
 
 		for ( let i = 0; i < 9; i ++ ) {
 
@@ -39722,9 +39871,9 @@ Object.assign( SphericalHarmonics3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	lerp: function ( sh, alpha ) {
+	lerp( sh, alpha ) {
 
 		for ( let i = 0; i < 9; i ++ ) {
 
@@ -39734,9 +39883,9 @@ Object.assign( SphericalHarmonics3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	equals: function ( sh ) {
+	equals( sh ) {
 
 		for ( let i = 0; i < 9; i ++ ) {
 
@@ -39750,21 +39899,21 @@ Object.assign( SphericalHarmonics3.prototype, {
 
 		return true;
 
-	},
+	}
 
-	copy: function ( sh ) {
+	copy( sh ) {
 
 		return this.set( sh.coefficients );
 
-	},
+	}
 
-	clone: function () {
+	clone() {
 
 		return new this.constructor().copy( this );
 
-	},
+	}
 
-	fromArray: function ( array, offset ) {
+	fromArray( array, offset ) {
 
 		if ( offset === undefined ) offset = 0;
 
@@ -39778,9 +39927,9 @@ Object.assign( SphericalHarmonics3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	toArray: function ( array, offset ) {
+	toArray( array, offset ) {
 
 		if ( array === undefined ) array = [];
 		if ( offset === undefined ) offset = 0;
@@ -39797,13 +39946,9 @@ Object.assign( SphericalHarmonics3.prototype, {
 
 	}
 
-} );
-
-Object.assign( SphericalHarmonics3, {
-
 	// evaluate the basis functions
 	// shBasis is an Array[ 9 ]
-	getBasisAt: function ( normal, shBasis ) {
+	static getBasisAt( normal, shBasis ) {
 
 		// normal is assumed to be unit length
 
@@ -39826,7 +39971,7 @@ Object.assign( SphericalHarmonics3, {
 
 	}
 
-} );
+}
 
 function LightProbe( sh, intensity ) {
 
@@ -40047,6 +40192,7 @@ MaterialLoader.prototype = Object.assign( Object.create( Loader.prototype ), {
 
 					case 'm3':
 						material.uniforms[ name ].value = new Matrix3().fromArray( uniform.value );
+						break;
 
 					case 'm4':
 						material.uniforms[ name ].value = new Matrix4().fromArray( uniform.value );
@@ -41699,7 +41845,8 @@ Object.assign( ShapePath.prototype, {
 		if ( noHoles === true )	return	toShapesNoHoles( subPaths );
 
 
-		let solid, tmpPath, tmpShape, shapes = [];
+		let solid, tmpPath, tmpShape;
+		const shapes = [];
 
 		if ( subPaths.length === 1 ) {
 
@@ -42287,249 +42434,55 @@ Object.assign( StereoCamera.prototype, {
 
 } );
 
-function Clock( autoStart ) {
-
-	this.autoStart = ( autoStart !== undefined ) ? autoStart : true;
-
-	this.startTime = 0;
-	this.oldTime = 0;
-	this.elapsedTime = 0;
-
-	this.running = false;
-
-}
-
-Object.assign( Clock.prototype, {
-
-	start: function () {
-
-		this.startTime = ( typeof performance === 'undefined' ? Date : performance ).now(); // see #10732
-
-		this.oldTime = this.startTime;
-		this.elapsedTime = 0;
-		this.running = true;
-
-	},
-
-	stop: function () {
-
-		this.getElapsedTime();
-		this.running = false;
-		this.autoStart = false;
-
-	},
-
-	getElapsedTime: function () {
-
-		this.getDelta();
-		return this.elapsedTime;
-
-	},
-
-	getDelta: function () {
-
-		let diff = 0;
-
-		if ( this.autoStart && ! this.running ) {
-
-			this.start();
-			return 0;
-
-		}
-
-		if ( this.running ) {
-
-			const newTime = ( typeof performance === 'undefined' ? Date : performance ).now();
-
-			diff = ( newTime - this.oldTime ) / 1000;
-			this.oldTime = newTime;
-
-			this.elapsedTime += diff;
-
-		}
-
-		return diff;
-
-	}
-
-} );
-
 const _position$2 = new Vector3();
 const _quaternion$3 = new Quaternion();
 const _scale$1 = new Vector3();
 const _orientation = new Vector3();
 
-function AudioListener() {
+class Audio extends Object3D {
 
-	Object3D.call( this );
+	constructor( listener ) {
 
-	this.type = 'AudioListener';
+		super();
 
-	this.context = AudioContext.getContext();
+		this.type = 'Audio';
 
-	this.gain = this.context.createGain();
-	this.gain.connect( this.context.destination );
+		this.listener = listener;
+		this.context = listener.context;
 
-	this.filter = null;
+		this.gain = this.context.createGain();
+		this.gain.connect( listener.getInput() );
 
-	this.timeDelta = 0;
+		this.autoplay = false;
 
-	// private
+		this.buffer = null;
+		this.detune = 0;
+		this.loop = false;
+		this.loopStart = 0;
+		this.loopEnd = 0;
+		this.offset = 0;
+		this.duration = undefined;
+		this.playbackRate = 1;
+		this.isPlaying = false;
+		this.hasPlaybackControl = true;
+		this.source = null;
+		this.sourceType = 'empty';
 
-	this._clock = new Clock();
+		this._startedAt = 0;
+		this._progress = 0;
+		this._connected = false;
 
-}
-
-AudioListener.prototype = Object.assign( Object.create( Object3D.prototype ), {
-
-	constructor: AudioListener,
-
-	getInput: function () {
-
-		return this.gain;
-
-	},
-
-	removeFilter: function ( ) {
-
-		if ( this.filter !== null ) {
-
-			this.gain.disconnect( this.filter );
-			this.filter.disconnect( this.context.destination );
-			this.gain.connect( this.context.destination );
-			this.filter = null;
-
-		}
-
-		return this;
-
-	},
-
-	getFilter: function () {
-
-		return this.filter;
-
-	},
-
-	setFilter: function ( value ) {
-
-		if ( this.filter !== null ) {
-
-			this.gain.disconnect( this.filter );
-			this.filter.disconnect( this.context.destination );
-
-		} else {
-
-			this.gain.disconnect( this.context.destination );
-
-		}
-
-		this.filter = value;
-		this.gain.connect( this.filter );
-		this.filter.connect( this.context.destination );
-
-		return this;
-
-	},
-
-	getMasterVolume: function () {
-
-		return this.gain.gain.value;
-
-	},
-
-	setMasterVolume: function ( value ) {
-
-		this.gain.gain.setTargetAtTime( value, this.context.currentTime, 0.01 );
-
-		return this;
-
-	},
-
-	updateMatrixWorld: function ( force ) {
-
-		Object3D.prototype.updateMatrixWorld.call( this, force );
-
-		const listener = this.context.listener;
-		const up = this.up;
-
-		this.timeDelta = this._clock.getDelta();
-
-		this.matrixWorld.decompose( _position$2, _quaternion$3, _scale$1 );
-
-		_orientation.set( 0, 0, - 1 ).applyQuaternion( _quaternion$3 );
-
-		if ( listener.positionX ) {
-
-			// code path for Chrome (see #14393)
-
-			const endTime = this.context.currentTime + this.timeDelta;
-
-			listener.positionX.linearRampToValueAtTime( _position$2.x, endTime );
-			listener.positionY.linearRampToValueAtTime( _position$2.y, endTime );
-			listener.positionZ.linearRampToValueAtTime( _position$2.z, endTime );
-			listener.forwardX.linearRampToValueAtTime( _orientation.x, endTime );
-			listener.forwardY.linearRampToValueAtTime( _orientation.y, endTime );
-			listener.forwardZ.linearRampToValueAtTime( _orientation.z, endTime );
-			listener.upX.linearRampToValueAtTime( up.x, endTime );
-			listener.upY.linearRampToValueAtTime( up.y, endTime );
-			listener.upZ.linearRampToValueAtTime( up.z, endTime );
-
-		} else {
-
-			listener.setPosition( _position$2.x, _position$2.y, _position$2.z );
-			listener.setOrientation( _orientation.x, _orientation.y, _orientation.z, up.x, up.y, up.z );
-
-		}
+		this.filters = [];
 
 	}
 
-} );
-
-function Audio( listener ) {
-
-	Object3D.call( this );
-
-	this.type = 'Audio';
-
-	this.listener = listener;
-	this.context = listener.context;
-
-	this.gain = this.context.createGain();
-	this.gain.connect( listener.getInput() );
-
-	this.autoplay = false;
-
-	this.buffer = null;
-	this.detune = 0;
-	this.loop = false;
-	this.loopStart = 0;
-	this.loopEnd = 0;
-	this.offset = 0;
-	this.duration = undefined;
-	this.playbackRate = 1;
-	this.isPlaying = false;
-	this.hasPlaybackControl = true;
-	this.sourceType = 'empty';
-
-	this._startedAt = 0;
-	this._progress = 0;
-
-	this.filters = [];
-
-}
-
-Audio.prototype = Object.assign( Object.create( Object3D.prototype ), {
-
-	constructor: Audio,
-
-	getOutput: function () {
+	getOutput() {
 
 		return this.gain;
 
-	},
+	}
 
-	setNodeSource: function ( audioNode ) {
+	setNodeSource( audioNode ) {
 
 		this.hasPlaybackControl = false;
 		this.sourceType = 'audioNode';
@@ -42538,9 +42491,9 @@ Audio.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 		return this;
 
-	},
+	}
 
-	setMediaElementSource: function ( mediaElement ) {
+	setMediaElementSource( mediaElement ) {
 
 		this.hasPlaybackControl = false;
 		this.sourceType = 'mediaNode';
@@ -42549,9 +42502,9 @@ Audio.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 		return this;
 
-	},
+	}
 
-	setMediaStreamSource: function ( mediaStream ) {
+	setMediaStreamSource( mediaStream ) {
 
 		this.hasPlaybackControl = false;
 		this.sourceType = 'mediaStreamNode';
@@ -42560,9 +42513,9 @@ Audio.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 		return this;
 
-	},
+	}
 
-	setBuffer: function ( audioBuffer ) {
+	setBuffer( audioBuffer ) {
 
 		this.buffer = audioBuffer;
 		this.sourceType = 'buffer';
@@ -42571,9 +42524,9 @@ Audio.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 		return this;
 
-	},
+	}
 
-	play: function ( delay ) {
+	play( delay ) {
 
 		if ( delay === undefined ) delay = 0;
 
@@ -42610,9 +42563,9 @@ Audio.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 		return this.connect();
 
-	},
+	}
 
-	pause: function () {
+	pause() {
 
 		if ( this.hasPlaybackControl === false ) {
 
@@ -42644,9 +42597,9 @@ Audio.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 		return this;
 
-	},
+	}
 
-	stop: function () {
+	stop() {
 
 		if ( this.hasPlaybackControl === false ) {
 
@@ -42663,9 +42616,9 @@ Audio.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 		return this;
 
-	},
+	}
 
-	connect: function () {
+	connect() {
 
 		if ( this.filters.length > 0 ) {
 
@@ -42685,11 +42638,13 @@ Audio.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 		}
 
+		this._connected = true;
+
 		return this;
 
-	},
+	}
 
-	disconnect: function () {
+	disconnect() {
 
 		if ( this.filters.length > 0 ) {
 
@@ -42709,21 +42664,23 @@ Audio.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 		}
 
+		this._connected = false;
+
 		return this;
 
-	},
+	}
 
-	getFilters: function () {
+	getFilters() {
 
 		return this.filters;
 
-	},
+	}
 
-	setFilters: function ( value ) {
+	setFilters( value ) {
 
 		if ( ! value ) value = [];
 
-		if ( this.isPlaying === true ) {
+		if ( this._connected === true ) {
 
 			this.disconnect();
 			this.filters = value;
@@ -42737,9 +42694,9 @@ Audio.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 		return this;
 
-	},
+	}
 
-	setDetune: function ( value ) {
+	setDetune( value ) {
 
 		this.detune = value;
 
@@ -42753,27 +42710,27 @@ Audio.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 		return this;
 
-	},
+	}
 
-	getDetune: function () {
+	getDetune() {
 
 		return this.detune;
 
-	},
+	}
 
-	getFilter: function () {
+	getFilter() {
 
 		return this.getFilters()[ 0 ];
 
-	},
+	}
 
-	setFilter: function ( filter ) {
+	setFilter( filter ) {
 
 		return this.setFilters( filter ? [ filter ] : [] );
 
-	},
+	}
 
-	setPlaybackRate: function ( value ) {
+	setPlaybackRate( value ) {
 
 		if ( this.hasPlaybackControl === false ) {
 
@@ -42792,21 +42749,21 @@ Audio.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 		return this;
 
-	},
+	}
 
-	getPlaybackRate: function () {
+	getPlaybackRate() {
 
 		return this.playbackRate;
 
-	},
+	}
 
-	onEnded: function () {
+	onEnded() {
 
 		this.isPlaying = false;
 
-	},
+	}
 
-	getLoop: function () {
+	getLoop() {
 
 		if ( this.hasPlaybackControl === false ) {
 
@@ -42817,9 +42774,9 @@ Audio.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 		return this.loop;
 
-	},
+	}
 
-	setLoop: function ( value ) {
+	setLoop( value ) {
 
 		if ( this.hasPlaybackControl === false ) {
 
@@ -42838,31 +42795,31 @@ Audio.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 		return this;
 
-	},
+	}
 
-	setLoopStart: function ( value ) {
+	setLoopStart( value ) {
 
 		this.loopStart = value;
 
 		return this;
 
-	},
+	}
 
-	setLoopEnd: function ( value ) {
+	setLoopEnd( value ) {
 
 		this.loopEnd = value;
 
 		return this;
 
-	},
+	}
 
-	getVolume: function () {
+	getVolume() {
 
 		return this.gain.gain.value;
 
-	},
+	}
 
-	setVolume: function ( value ) {
+	setVolume( value ) {
 
 		this.gain.gain.setTargetAtTime( value, this.context.currentTime, 0.01 );
 
@@ -42870,172 +42827,12 @@ Audio.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 	}
 
-} );
+}
 
 const _position$3 = new Vector3();
 const _quaternion$4 = new Quaternion();
 const _scale$2 = new Vector3();
 const _orientation$1 = new Vector3();
-
-function PositionalAudio( listener ) {
-
-	Audio.call( this, listener );
-
-	this.panner = this.context.createPanner();
-	this.panner.panningModel = 'HRTF';
-	this.panner.connect( this.gain );
-
-}
-
-PositionalAudio.prototype = Object.assign( Object.create( Audio.prototype ), {
-
-	constructor: PositionalAudio,
-
-	getOutput: function () {
-
-		return this.panner;
-
-	},
-
-	getRefDistance: function () {
-
-		return this.panner.refDistance;
-
-	},
-
-	setRefDistance: function ( value ) {
-
-		this.panner.refDistance = value;
-
-		return this;
-
-	},
-
-	getRolloffFactor: function () {
-
-		return this.panner.rolloffFactor;
-
-	},
-
-	setRolloffFactor: function ( value ) {
-
-		this.panner.rolloffFactor = value;
-
-		return this;
-
-	},
-
-	getDistanceModel: function () {
-
-		return this.panner.distanceModel;
-
-	},
-
-	setDistanceModel: function ( value ) {
-
-		this.panner.distanceModel = value;
-
-		return this;
-
-	},
-
-	getMaxDistance: function () {
-
-		return this.panner.maxDistance;
-
-	},
-
-	setMaxDistance: function ( value ) {
-
-		this.panner.maxDistance = value;
-
-		return this;
-
-	},
-
-	setDirectionalCone: function ( coneInnerAngle, coneOuterAngle, coneOuterGain ) {
-
-		this.panner.coneInnerAngle = coneInnerAngle;
-		this.panner.coneOuterAngle = coneOuterAngle;
-		this.panner.coneOuterGain = coneOuterGain;
-
-		return this;
-
-	},
-
-	updateMatrixWorld: function ( force ) {
-
-		Object3D.prototype.updateMatrixWorld.call( this, force );
-
-		if ( this.hasPlaybackControl === true && this.isPlaying === false ) return;
-
-		this.matrixWorld.decompose( _position$3, _quaternion$4, _scale$2 );
-
-		_orientation$1.set( 0, 0, 1 ).applyQuaternion( _quaternion$4 );
-
-		const panner = this.panner;
-
-		if ( panner.positionX ) {
-
-			// code path for Chrome and Firefox (see #14393)
-
-			const endTime = this.context.currentTime + this.listener.timeDelta;
-
-			panner.positionX.linearRampToValueAtTime( _position$3.x, endTime );
-			panner.positionY.linearRampToValueAtTime( _position$3.y, endTime );
-			panner.positionZ.linearRampToValueAtTime( _position$3.z, endTime );
-			panner.orientationX.linearRampToValueAtTime( _orientation$1.x, endTime );
-			panner.orientationY.linearRampToValueAtTime( _orientation$1.y, endTime );
-			panner.orientationZ.linearRampToValueAtTime( _orientation$1.z, endTime );
-
-		} else {
-
-			panner.setPosition( _position$3.x, _position$3.y, _position$3.z );
-			panner.setOrientation( _orientation$1.x, _orientation$1.y, _orientation$1.z );
-
-		}
-
-	}
-
-} );
-
-function AudioAnalyser( audio, fftSize ) {
-
-	this.analyser = audio.context.createAnalyser();
-	this.analyser.fftSize = fftSize !== undefined ? fftSize : 2048;
-
-	this.data = new Uint8Array( this.analyser.frequencyBinCount );
-
-	audio.getOutput().connect( this.analyser );
-
-}
-
-Object.assign( AudioAnalyser.prototype, {
-
-	getFrequencyData: function () {
-
-		this.analyser.getByteFrequencyData( this.data );
-
-		return this.data;
-
-	},
-
-	getAverageFrequency: function () {
-
-		let value = 0;
-		const data = this.getFrequencyData();
-
-		for ( let i = 0; i < data.length; i ++ ) {
-
-			value += data[ i ];
-
-		}
-
-		return value / data.length;
-
-	}
-
-} );
 
 function PropertyMixer( binding, typeName, valueSize ) {
 
@@ -43271,7 +43068,7 @@ Object.assign( PropertyMixer.prototype, {
 	_setAdditiveIdentityQuaternion: function () {
 
 		this._setAdditiveIdentityNumeric();
-		this.buffer[ this._addIndex * 4 + 3 ] = 1;
+		this.buffer[ this._addIndex * this.valueSize + 3 ] = 1;
 
 	},
 
@@ -43798,12 +43595,12 @@ Object.assign( PropertyBinding.prototype, { // prototype, continued
 	// create getter / setter pair for a property in the scene graph
 	bind: function () {
 
-		let targetObject = this.node,
-			parsedPath = this.parsedPath,
+		let targetObject = this.node;
+		const parsedPath = this.parsedPath;
 
-			objectName = parsedPath.objectName,
-			propertyName = parsedPath.propertyName,
-			propertyIndex = parsedPath.propertyIndex;
+		const objectName = parsedPath.objectName;
+		const propertyName = parsedPath.propertyName;
+		let propertyIndex = parsedPath.propertyIndex;
 
 		if ( ! targetObject ) {
 
@@ -44346,9 +44143,9 @@ Object.assign( AnimationObjectGroup.prototype, {
 		// returns an array of bindings for the given path that is changed
 		// according to the contained objects in the group
 
-		let indicesByPath = this._bindingsIndicesByPath,
-			index = indicesByPath[ path ],
-			bindings = this._bindings;
+		const indicesByPath = this._bindingsIndicesByPath;
+		let index = indicesByPath[ path ];
+		const bindings = this._bindings;
 
 		if ( index !== undefined ) return bindings[ index ];
 
@@ -44412,93 +44209,93 @@ Object.assign( AnimationObjectGroup.prototype, {
 
 } );
 
-function AnimationAction( mixer, clip, localRoot, blendMode ) {
+class AnimationAction {
 
-	this._mixer = mixer;
-	this._clip = clip;
-	this._localRoot = localRoot || null;
-	this.blendMode = blendMode || clip.blendMode;
+	constructor( mixer, clip, localRoot, blendMode ) {
 
-	const tracks = clip.tracks,
-		nTracks = tracks.length,
-		interpolants = new Array( nTracks );
+		this._mixer = mixer;
+		this._clip = clip;
+		this._localRoot = localRoot || null;
+		this.blendMode = blendMode || clip.blendMode;
 
-	const interpolantSettings = {
-		endingStart: ZeroCurvatureEnding,
-		endingEnd: ZeroCurvatureEnding
-	};
+		const tracks = clip.tracks,
+			nTracks = tracks.length,
+			interpolants = new Array( nTracks );
 
-	for ( let i = 0; i !== nTracks; ++ i ) {
+		const interpolantSettings = {
+			endingStart: ZeroCurvatureEnding,
+			endingEnd: ZeroCurvatureEnding
+		};
 
-		const interpolant = tracks[ i ].createInterpolant( null );
-		interpolants[ i ] = interpolant;
-		interpolant.settings = interpolantSettings;
+		for ( let i = 0; i !== nTracks; ++ i ) {
+
+			const interpolant = tracks[ i ].createInterpolant( null );
+			interpolants[ i ] = interpolant;
+			interpolant.settings = interpolantSettings;
+
+		}
+
+		this._interpolantSettings = interpolantSettings;
+
+		this._interpolants = interpolants; // bound by the mixer
+
+		// inside: PropertyMixer (managed by the mixer)
+		this._propertyBindings = new Array( nTracks );
+
+		this._cacheIndex = null; // for the memory manager
+		this._byClipCacheIndex = null; // for the memory manager
+
+		this._timeScaleInterpolant = null;
+		this._weightInterpolant = null;
+
+		this.loop = LoopRepeat;
+		this._loopCount = - 1;
+
+		// global mixer time when the action is to be started
+		// it's set back to 'null' upon start of the action
+		this._startTime = null;
+
+		// scaled local time of the action
+		// gets clamped or wrapped to 0..clip.duration according to loop
+		this.time = 0;
+
+		this.timeScale = 1;
+		this._effectiveTimeScale = 1;
+
+		this.weight = 1;
+		this._effectiveWeight = 1;
+
+		this.repetitions = Infinity; // no. of repetitions when looping
+
+		this.paused = false; // true -> zero effective time scale
+		this.enabled = true; // false -> zero effective weight
+
+		this.clampWhenFinished = false;// keep feeding the last frame?
+
+		this.zeroSlopeAtStart = true;// for smooth interpolation w/o separate
+		this.zeroSlopeAtEnd = true;// clips for start, loop and end
 
 	}
 
-	this._interpolantSettings = interpolantSettings;
-
-	this._interpolants = interpolants; // bound by the mixer
-
-	// inside: PropertyMixer (managed by the mixer)
-	this._propertyBindings = new Array( nTracks );
-
-	this._cacheIndex = null; // for the memory manager
-	this._byClipCacheIndex = null; // for the memory manager
-
-	this._timeScaleInterpolant = null;
-	this._weightInterpolant = null;
-
-	this.loop = LoopRepeat;
-	this._loopCount = - 1;
-
-	// global mixer time when the action is to be started
-	// it's set back to 'null' upon start of the action
-	this._startTime = null;
-
-	// scaled local time of the action
-	// gets clamped or wrapped to 0..clip.duration according to loop
-	this.time = 0;
-
-	this.timeScale = 1;
-	this._effectiveTimeScale = 1;
-
-	this.weight = 1;
-	this._effectiveWeight = 1;
-
-	this.repetitions = Infinity; // no. of repetitions when looping
-
-	this.paused = false; // true -> zero effective time scale
-	this.enabled = true; // false -> zero effective weight
-
-	this.clampWhenFinished = false;// keep feeding the last frame?
-
-	this.zeroSlopeAtStart = true;// for smooth interpolation w/o separate
-	this.zeroSlopeAtEnd = true;// clips for start, loop and end
-
-}
-
-Object.assign( AnimationAction.prototype, {
-
 	// State & Scheduling
 
-	play: function () {
+	play() {
 
 		this._mixer._activateAction( this );
 
 		return this;
 
-	},
+	}
 
-	stop: function () {
+	stop() {
 
 		this._mixer._deactivateAction( this );
 
 		return this.reset();
 
-	},
+	}
 
-	reset: function () {
+	reset() {
 
 		this.paused = false;
 		this.enabled = true;
@@ -44509,45 +44306,45 @@ Object.assign( AnimationAction.prototype, {
 
 		return this.stopFading().stopWarping();
 
-	},
+	}
 
-	isRunning: function () {
+	isRunning() {
 
 		return this.enabled && ! this.paused && this.timeScale !== 0 &&
 			this._startTime === null && this._mixer._isActiveAction( this );
 
-	},
+	}
 
 	// return true when play has been called
-	isScheduled: function () {
+	isScheduled() {
 
 		return this._mixer._isActiveAction( this );
 
-	},
+	}
 
-	startAt: function ( time ) {
+	startAt( time ) {
 
 		this._startTime = time;
 
 		return this;
 
-	},
+	}
 
-	setLoop: function ( mode, repetitions ) {
+	setLoop( mode, repetitions ) {
 
 		this.loop = mode;
 		this.repetitions = repetitions;
 
 		return this;
 
-	},
+	}
 
 	// Weight
 
 	// set the weight stopping any scheduled fading
 	// although .enabled = false yields an effective weight of zero, this
 	// method does *not* change .enabled, because it would be confusing
-	setEffectiveWeight: function ( weight ) {
+	setEffectiveWeight( weight ) {
 
 		this.weight = weight;
 
@@ -44556,28 +44353,28 @@ Object.assign( AnimationAction.prototype, {
 
 		return this.stopFading();
 
-	},
+	}
 
 	// return the weight considering fading and .enabled
-	getEffectiveWeight: function () {
+	getEffectiveWeight() {
 
 		return this._effectiveWeight;
 
-	},
+	}
 
-	fadeIn: function ( duration ) {
+	fadeIn( duration ) {
 
 		return this._scheduleFading( duration, 0, 1 );
 
-	},
+	}
 
-	fadeOut: function ( duration ) {
+	fadeOut( duration ) {
 
 		return this._scheduleFading( duration, 1, 0 );
 
-	},
+	}
 
-	crossFadeFrom: function ( fadeOutAction, duration, warp ) {
+	crossFadeFrom( fadeOutAction, duration, warp ) {
 
 		fadeOutAction.fadeOut( duration );
 		this.fadeIn( duration );
@@ -44597,17 +44394,17 @@ Object.assign( AnimationAction.prototype, {
 
 		return this;
 
-	},
+	}
 
-	crossFadeTo: function ( fadeInAction, duration, warp ) {
+	crossFadeTo( fadeInAction, duration, warp ) {
 
 		return fadeInAction.crossFadeFrom( this, duration, warp );
 
-	},
+	}
 
-	stopFading: function () {
+	stopFading() {
 
-		let weightInterpolant = this._weightInterpolant;
+		const weightInterpolant = this._weightInterpolant;
 
 		if ( weightInterpolant !== null ) {
 
@@ -44618,53 +44415,53 @@ Object.assign( AnimationAction.prototype, {
 
 		return this;
 
-	},
+	}
 
 	// Time Scale Control
 
 	// set the time scale stopping any scheduled warping
 	// although .paused = true yields an effective time scale of zero, this
 	// method does *not* change .paused, because it would be confusing
-	setEffectiveTimeScale: function ( timeScale ) {
+	setEffectiveTimeScale( timeScale ) {
 
 		this.timeScale = timeScale;
 		this._effectiveTimeScale = this.paused ? 0 : timeScale;
 
 		return this.stopWarping();
 
-	},
+	}
 
 	// return the time scale considering warping and .paused
-	getEffectiveTimeScale: function () {
+	getEffectiveTimeScale() {
 
 		return this._effectiveTimeScale;
 
-	},
+	}
 
-	setDuration: function ( duration ) {
+	setDuration( duration ) {
 
 		this.timeScale = this._clip.duration / duration;
 
 		return this.stopWarping();
 
-	},
+	}
 
-	syncWith: function ( action ) {
+	syncWith( action ) {
 
 		this.time = action.time;
 		this.timeScale = action.timeScale;
 
 		return this.stopWarping();
 
-	},
+	}
 
-	halt: function ( duration ) {
+	halt( duration ) {
 
 		return this.warp( this._effectiveTimeScale, 0, duration );
 
-	},
+	}
 
-	warp: function ( startTimeScale, endTimeScale, duration ) {
+	warp( startTimeScale, endTimeScale, duration ) {
 
 		const mixer = this._mixer,
 			now = mixer.time,
@@ -44690,11 +44487,11 @@ Object.assign( AnimationAction.prototype, {
 
 		return this;
 
-	},
+	}
 
-	stopWarping: function () {
+	stopWarping() {
 
-		let timeScaleInterpolant = this._timeScaleInterpolant;
+		const timeScaleInterpolant = this._timeScaleInterpolant;
 
 		if ( timeScaleInterpolant !== null ) {
 
@@ -44705,31 +44502,31 @@ Object.assign( AnimationAction.prototype, {
 
 		return this;
 
-	},
+	}
 
 	// Object Accessors
 
-	getMixer: function () {
+	getMixer() {
 
 		return this._mixer;
 
-	},
+	}
 
-	getClip: function () {
+	getClip() {
 
 		return this._clip;
 
-	},
+	}
 
-	getRoot: function () {
+	getRoot() {
 
 		return this._localRoot || this._mixer._root;
 
-	},
+	}
 
 	// Interna
 
-	_update: function ( time, deltaTime, timeDirection, accuIndex ) {
+	_update( time, deltaTime, timeDirection, accuIndex ) {
 
 		// called by the mixer
 
@@ -44804,9 +44601,9 @@ Object.assign( AnimationAction.prototype, {
 
 		}
 
-	},
+	}
 
-	_updateWeight: function ( time ) {
+	_updateWeight( time ) {
 
 		let weight = 0;
 
@@ -44841,9 +44638,9 @@ Object.assign( AnimationAction.prototype, {
 		this._effectiveWeight = weight;
 		return weight;
 
-	},
+	}
 
-	_updateTimeScale: function ( time ) {
+	_updateTimeScale( time ) {
 
 		let timeScale = 0;
 
@@ -44884,9 +44681,9 @@ Object.assign( AnimationAction.prototype, {
 		this._effectiveTimeScale = timeScale;
 		return timeScale;
 
-	},
+	}
 
-	_updateTime: function ( deltaTime ) {
+	_updateTime( deltaTime ) {
 
 		const duration = this._clip.duration;
 		const loop = this.loop;
@@ -45041,9 +44838,9 @@ Object.assign( AnimationAction.prototype, {
 
 		return time;
 
-	},
+	}
 
-	_setEndings: function ( atStart, atEnd, pingPong ) {
+	_setEndings( atStart, atEnd, pingPong ) {
 
 		const settings = this._interpolantSettings;
 
@@ -45078,9 +44875,9 @@ Object.assign( AnimationAction.prototype, {
 
 		}
 
-	},
+	}
 
-	_scheduleFading: function ( duration, weightNow, weightThen ) {
+	_scheduleFading( duration, weightNow, weightThen ) {
 
 		const mixer = this._mixer, now = mixer.time;
 		let interpolant = this._weightInterpolant;
@@ -45104,7 +44901,7 @@ Object.assign( AnimationAction.prototype, {
 
 	}
 
-} );
+}
 
 function AnimationMixer( root ) {
 
@@ -45621,8 +45418,8 @@ AnimationMixer.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 		const clipUuid = clipObject !== null ? clipObject.uuid : clip;
 
-		let actionsForClip = this._actionsByClip[ clipUuid ],
-			prototypeAction = null;
+		const actionsForClip = this._actionsByClip[ clipUuid ];
+		let prototypeAction = null;
 
 		if ( blendMode === undefined ) {
 
@@ -45866,24 +45663,28 @@ AnimationMixer.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 } );
 
-function Uniform( value ) {
+class Uniform {
 
-	if ( typeof value === 'string' ) {
+	constructor( value ) {
 
-		console.warn( 'THREE.Uniform: Type parameter is no longer needed.' );
-		value = arguments[ 1 ];
+		if ( typeof value === 'string' ) {
+
+			console.warn( 'THREE.Uniform: Type parameter is no longer needed.' );
+			value = arguments[ 1 ];
+
+		}
+
+		this.value = value;
 
 	}
 
-	this.value = value;
+	clone() {
+
+		return new Uniform( this.value.clone === undefined ? this.value : this.value.clone() );
+
+	}
 
 }
-
-Uniform.prototype.clone = function () {
-
-	return new Uniform( this.value.clone === undefined ? this.value : this.value.clone() );
-
-};
 
 function InstancedInterleavedBuffer( array, stride, meshPerAttribute ) {
 
@@ -45929,6 +45730,81 @@ InstancedInterleavedBuffer.prototype = Object.assign( Object.create( Interleaved
 		return json;
 
 	}
+
+} );
+
+/**
+ * @author raub / https://github.com/raub
+ */
+
+/**
+ * Element size is one of:
+ * 5126: 4
+ * 5123: 2
+ * 5122: 2
+ * 5125: 4
+ * 5124: 4
+ * 5120: 1
+ * 5121: 1
+ */
+function GLBufferAttribute( buffer, type, itemSize, elementSize, count ) {
+
+	this.buffer = buffer;
+	this.type = type;
+	this.itemSize = itemSize;
+	this.elementSize = elementSize;
+	this.count = count;
+
+	this.version = 0;
+
+}
+
+Object.defineProperty( GLBufferAttribute.prototype, 'needsUpdate', {
+
+	set: function ( value ) {
+
+		if ( value === true ) this.version ++;
+
+	}
+
+} );
+
+Object.assign( GLBufferAttribute.prototype, {
+
+	isGLBufferAttribute: true,
+
+	setBuffer: function ( buffer ) {
+
+		this.buffer = buffer;
+
+		return this;
+
+	},
+
+	setType: function ( type, elementSize ) {
+
+		this.type = type;
+		this.elementSize = elementSize;
+
+		return this;
+
+	},
+
+	setItemSize: function ( itemSize ) {
+
+		this.itemSize = itemSize;
+
+		return this;
+
+	},
+
+	setCount: function ( count ) {
+
+		this.count = count;
+
+		return this;
+
+	},
 
 } );
 
@@ -46143,87 +46019,29 @@ class Spherical {
 
 }
 
-/**
- * Ref: https://en.wikipedia.org/wiki/Cylindrical_coordinate_system
- */
+const _vector$7 = new Vector2();
 
-function Cylindrical( radius, theta, y ) {
+class Box2 {
 
-	this.radius = ( radius !== undefined ) ? radius : 1.0; // distance from the origin to a point in the x-z plane
-	this.theta = ( theta !== undefined ) ? theta : 0; // counterclockwise angle in the x-z plane measured in radians from the positive z-axis
-	this.y = ( y !== undefined ) ? y : 0; // height above the x-z plane
+	constructor( min, max ) {
 
-	return this;
+		Object.defineProperty( this, 'isBox2', { value: true } );
 
-}
-
-Object.assign( Cylindrical.prototype, {
-
-	set: function ( radius, theta, y ) {
-
-		this.radius = radius;
-		this.theta = theta;
-		this.y = y;
-
-		return this;
-
-	},
-
-	clone: function () {
-
-		return new this.constructor().copy( this );
-
-	},
-
-	copy: function ( other ) {
-
-		this.radius = other.radius;
-		this.theta = other.theta;
-		this.y = other.y;
-
-		return this;
-
-	},
-
-	setFromVector3: function ( v ) {
-
-		return this.setFromCartesianCoords( v.x, v.y, v.z );
-
-	},
-
-	setFromCartesianCoords: function ( x, y, z ) {
-
-		this.radius = Math.sqrt( x * x + z * z );
-		this.theta = Math.atan2( x, z );
-		this.y = y;
-
-		return this;
+		this.min = ( min !== undefined ) ? min : new Vector2( + Infinity, + Infinity );
+		this.max = ( max !== undefined ) ? max : new Vector2( - Infinity, - Infinity );
 
 	}
 
-} );
-
-const _vector$7 = new Vector2();
-
-function Box2( min, max ) {
-
-	this.min = ( min !== undefined ) ? min : new Vector2( + Infinity, + Infinity );
-	this.max = ( max !== undefined ) ? max : new Vector2( - Infinity, - Infinity );
-
-}
-
-Object.assign( Box2.prototype, {
-
-	set: function ( min, max ) {
+	set( min, max ) {
 
 		this.min.copy( min );
 		this.max.copy( max );
 
 		return this;
 
-	},
+	}
 
-	setFromPoints: function ( points ) {
+	setFromPoints( points ) {
 
 		this.makeEmpty();
 
@@ -46235,9 +46053,9 @@ Object.assign( Box2.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setFromCenterAndSize: function ( center, size ) {
+	setFromCenterAndSize( center, size ) {
 
 		const halfSize = _vector$7.copy( size ).multiplyScalar( 0.5 );
 		this.min.copy( center ).sub( halfSize );
@@ -46245,41 +46063,41 @@ Object.assign( Box2.prototype, {
 
 		return this;
 
-	},
+	}
 
-	clone: function () {
+	clone() {
 
 		return new this.constructor().copy( this );
 
-	},
+	}
 
-	copy: function ( box ) {
+	copy( box ) {
 
 		this.min.copy( box.min );
 		this.max.copy( box.max );
 
 		return this;
 
-	},
+	}
 
-	makeEmpty: function () {
+	makeEmpty() {
 
 		this.min.x = this.min.y = + Infinity;
 		this.max.x = this.max.y = - Infinity;
 
 		return this;
 
-	},
+	}
 
-	isEmpty: function () {
+	isEmpty() {
 
 		// this is a more robust check for empty than ( volume <= 0 ) because volume can get positive with two negative axes
 
 		return ( this.max.x < this.min.x ) || ( this.max.y < this.min.y );
 
-	},
+	}
 
-	getCenter: function ( target ) {
+	getCenter( target ) {
 
 		if ( target === undefined ) {
 
@@ -46290,9 +46108,9 @@ Object.assign( Box2.prototype, {
 
 		return this.isEmpty() ? target.set( 0, 0 ) : target.addVectors( this.min, this.max ).multiplyScalar( 0.5 );
 
-	},
+	}
 
-	getSize: function ( target ) {
+	getSize( target ) {
 
 		if ( target === undefined ) {
 
@@ -46303,50 +46121,50 @@ Object.assign( Box2.prototype, {
 
 		return this.isEmpty() ? target.set( 0, 0 ) : target.subVectors( this.max, this.min );
 
-	},
+	}
 
-	expandByPoint: function ( point ) {
+	expandByPoint( point ) {
 
 		this.min.min( point );
 		this.max.max( point );
 
 		return this;
 
-	},
+	}
 
-	expandByVector: function ( vector ) {
+	expandByVector( vector ) {
 
 		this.min.sub( vector );
 		this.max.add( vector );
 
 		return this;
 
-	},
+	}
 
-	expandByScalar: function ( scalar ) {
+	expandByScalar( scalar ) {
 
 		this.min.addScalar( - scalar );
 		this.max.addScalar( scalar );
 
 		return this;
 
-	},
+	}
 
-	containsPoint: function ( point ) {
+	containsPoint( point ) {
 
 		return point.x < this.min.x || point.x > this.max.x ||
 			point.y < this.min.y || point.y > this.max.y ? false : true;
 
-	},
+	}
 
-	containsBox: function ( box ) {
+	containsBox( box ) {
 
 		return this.min.x <= box.min.x && box.max.x <= this.max.x &&
 			this.min.y <= box.min.y && box.max.y <= this.max.y;
 
-	},
+	}
 
-	getParameter: function ( point, target ) {
+	getParameter( point, target ) {
 
 		// This can potentially have a divide by zero if the box
 		// has a size dimension of 0.
@@ -46363,18 +46181,18 @@ Object.assign( Box2.prototype, {
 			( point.y - this.min.y ) / ( this.max.y - this.min.y )
 		);
 
-	},
+	}
 
-	intersectsBox: function ( box ) {
+	intersectsBox( box ) {
 
 		// using 4 splitting planes to rule out intersections
 
 		return box.max.x < this.min.x || box.min.x > this.max.x ||
 			box.max.y < this.min.y || box.min.y > this.max.y ? false : true;
 
-	},
+	}
 
-	clampPoint: function ( point, target ) {
+	clampPoint( point, target ) {
 
 		if ( target === undefined ) {
 
@@ -46385,188 +46203,52 @@ Object.assign( Box2.prototype, {
 
 		return target.copy( point ).clamp( this.min, this.max );
 
-	},
+	}
 
-	distanceToPoint: function ( point ) {
+	distanceToPoint( point ) {
 
 		const clampedPoint = _vector$7.copy( point ).clamp( this.min, this.max );
 		return clampedPoint.sub( point ).length();
 
-	},
+	}
 
-	intersect: function ( box ) {
+	intersect( box ) {
 
 		this.min.max( box.min );
 		this.max.min( box.max );
 
 		return this;
 
-	},
+	}
 
-	union: function ( box ) {
+	union( box ) {
 
 		this.min.min( box.min );
 		this.max.max( box.max );
 
 		return this;
 
-	},
+	}
 
-	translate: function ( offset ) {
+	translate( offset ) {
 
 		this.min.add( offset );
 		this.max.add( offset );
 
 		return this;
 
-	},
+	}
 
-	equals: function ( box ) {
+	equals( box ) {
 
 		return box.min.equals( this.min ) && box.max.equals( this.max );
 
 	}
 
-} );
+}
 
 const _startP = new Vector3();
 const _startEnd = new Vector3();
-
-function Line3( start, end ) {
-
-	this.start = ( start !== undefined ) ? start : new Vector3();
-	this.end = ( end !== undefined ) ? end : new Vector3();
-
-}
-
-Object.assign( Line3.prototype, {
-
-	set: function ( start, end ) {
-
-		this.start.copy( start );
-		this.end.copy( end );
-
-		return this;
-
-	},
-
-	clone: function () {
-
-		return new this.constructor().copy( this );
-
-	},
-
-	copy: function ( line ) {
-
-		this.start.copy( line.start );
-		this.end.copy( line.end );
-
-		return this;
-
-	},
-
-	getCenter: function ( target ) {
-
-		if ( target === undefined ) {
-
-			console.warn( 'THREE.Line3: .getCenter() target is now required' );
-			target = new Vector3();
-
-		}
-
-		return target.addVectors( this.start, this.end ).multiplyScalar( 0.5 );
-
-	},
-
-	delta: function ( target ) {
-
-		if ( target === undefined ) {
-
-			console.warn( 'THREE.Line3: .delta() target is now required' );
-			target = new Vector3();
-
-		}
-
-		return target.subVectors( this.end, this.start );
-
-	},
-
-	distanceSq: function () {
-
-		return this.start.distanceToSquared( this.end );
-
-	},
-
-	distance: function () {
-
-		return this.start.distanceTo( this.end );
-
-	},
-
-	at: function ( t, target ) {
-
-		if ( target === undefined ) {
-
-			console.warn( 'THREE.Line3: .at() target is now required' );
-			target = new Vector3();
-
-		}
-
-		return this.delta( target ).multiplyScalar( t ).add( this.start );
-
-	},
-
-	closestPointToPointParameter: function ( point, clampToLine ) {
-
-		_startP.subVectors( point, this.start );
-		_startEnd.subVectors( this.end, this.start );
-
-		const startEnd2 = _startEnd.dot( _startEnd );
-		const startEnd_startP = _startEnd.dot( _startP );
-
-		let t = startEnd_startP / startEnd2;
-
-		if ( clampToLine ) {
-
-			t = MathUtils.clamp( t, 0, 1 );
-
-		}
-
-		return t;
-
-	},
-
-	closestPointToPoint: function ( point, clampToLine, target ) {
-
-		const t = this.closestPointToPointParameter( point, clampToLine );
-
-		if ( target === undefined ) {
-
-			console.warn( 'THREE.Line3: .closestPointToPoint() target is now required' );
-			target = new Vector3();
-
-		}
-
-		return this.delta( target ).multiplyScalar( t ).add( this.start );
-
-	},
-
-	applyMatrix4: function ( matrix ) {
-
-		this.start.applyMatrix4( matrix );
-		this.end.applyMatrix4( matrix );
-
-		return this;
-
-	},
-
-	equals: function ( line ) {
-
-		return line.start.equals( this.start ) && line.end.equals( this.end );
-
-	}
-
-} );
 
 function ImmediateRenderObject( material ) {
 
@@ -46596,1071 +46278,24 @@ ImmediateRenderObject.prototype.isImmediateRenderObject = true;
 
 const _vector$8 = new Vector3();
 
-function SpotLightHelper( light, color ) {
-
-	Object3D.call( this );
-
-	this.light = light;
-	this.light.updateMatrixWorld();
-
-	this.matrix = light.matrixWorld;
-	this.matrixAutoUpdate = false;
-
-	this.color = color;
-
-	const geometry = new BufferGeometry();
-
-	const positions = [
-		0, 0, 0, 	0, 0, 1,
-		0, 0, 0, 	1, 0, 1,
-		0, 0, 0,	- 1, 0, 1,
-		0, 0, 0, 	0, 1, 1,
-		0, 0, 0, 	0, - 1, 1
-	];
-
-	for ( let i = 0, j = 1, l = 32; i < l; i ++, j ++ ) {
-
-		const p1 = ( i / l ) * Math.PI * 2;
-		const p2 = ( j / l ) * Math.PI * 2;
-
-		positions.push(
-			Math.cos( p1 ), Math.sin( p1 ), 1,
-			Math.cos( p2 ), Math.sin( p2 ), 1
-		);
-
-	}
-
-	geometry.setAttribute( 'position', new Float32BufferAttribute( positions, 3 ) );
-
-	const material = new LineBasicMaterial( { fog: false, toneMapped: false } );
-
-	this.cone = new LineSegments( geometry, material );
-	this.add( this.cone );
-
-	this.update();
-
-}
-
-SpotLightHelper.prototype = Object.create( Object3D.prototype );
-SpotLightHelper.prototype.constructor = SpotLightHelper;
-
-SpotLightHelper.prototype.dispose = function () {
-
-	this.cone.geometry.dispose();
-	this.cone.material.dispose();
-
-};
-
-SpotLightHelper.prototype.update = function () {
-
-	this.light.updateMatrixWorld();
-
-	const coneLength = this.light.distance ? this.light.distance : 1000;
-	const coneWidth = coneLength * Math.tan( this.light.angle );
-
-	this.cone.scale.set( coneWidth, coneWidth, coneLength );
-
-	_vector$8.setFromMatrixPosition( this.light.target.matrixWorld );
-
-	this.cone.lookAt( _vector$8 );
-
-	if ( this.color !== undefined ) {
-
-		this.cone.material.color.set( this.color );
-
-	} else {
-
-		this.cone.material.color.copy( this.light.color );
-
-	}
-
-};
-
 const _vector$9 = new Vector3();
 const _boneMatrix = new Matrix4();
 const _matrixWorldInv = new Matrix4();
-
-function getBoneList( object ) {
-
-	const boneList = [];
-
-	if ( object && object.isBone ) {
-
-		boneList.push( object );
-
-	}
-
-	for ( let i = 0; i < object.children.length; i ++ ) {
-
-		boneList.push.apply( boneList, getBoneList( object.children[ i ] ) );
-
-	}
-
-	return boneList;
-
-}
-
-function SkeletonHelper( object ) {
-
-	const bones = getBoneList( object );
-
-	const geometry = new BufferGeometry();
-
-	const vertices = [];
-	const colors = [];
-
-	const color1 = new Color( 0, 0, 1 );
-	const color2 = new Color( 0, 1, 0 );
-
-	for ( let i = 0; i < bones.length; i ++ ) {
-
-		const bone = bones[ i ];
-
-		if ( bone.parent && bone.parent.isBone ) {
-
-			vertices.push( 0, 0, 0 );
-			vertices.push( 0, 0, 0 );
-			colors.push( color1.r, color1.g, color1.b );
-			colors.push( color2.r, color2.g, color2.b );
-
-		}
-
-	}
-
-	geometry.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
-	geometry.setAttribute( 'color', new Float32BufferAttribute( colors, 3 ) );
-
-	const material = new LineBasicMaterial( { vertexColors: true, depthTest: false, depthWrite: false, toneMapped: false, transparent: true } );
-
-	LineSegments.call( this, geometry, material );
-
-	this.type = 'SkeletonHelper';
-
-	this.root = object;
-	this.bones = bones;
-
-	this.matrix = object.matrixWorld;
-	this.matrixAutoUpdate = false;
-
-}
-
-SkeletonHelper.prototype = Object.create( LineSegments.prototype );
-SkeletonHelper.prototype.constructor = SkeletonHelper;
-
-SkeletonHelper.prototype.isSkeletonHelper = true;
-
-SkeletonHelper.prototype.updateMatrixWorld = function ( force ) {
-
-	const bones = this.bones;
-
-	const geometry = this.geometry;
-	const position = geometry.getAttribute( 'position' );
-
-	_matrixWorldInv.getInverse( this.root.matrixWorld );
-
-	for ( let i = 0, j = 0; i < bones.length; i ++ ) {
-
-		const bone = bones[ i ];
-
-		if ( bone.parent && bone.parent.isBone ) {
-
-			_boneMatrix.multiplyMatrices( _matrixWorldInv, bone.matrixWorld );
-			_vector$9.setFromMatrixPosition( _boneMatrix );
-			position.setXYZ( j, _vector$9.x, _vector$9.y, _vector$9.z );
-
-			_boneMatrix.multiplyMatrices( _matrixWorldInv, bone.parent.matrixWorld );
-			_vector$9.setFromMatrixPosition( _boneMatrix );
-			position.setXYZ( j + 1, _vector$9.x, _vector$9.y, _vector$9.z );
-
-			j += 2;
-
-		}
-
-	}
-
-	geometry.getAttribute( 'position' ).needsUpdate = true;
-
-	Object3D.prototype.updateMatrixWorld.call( this, force );
-
-};
-
-function PointLightHelper( light, sphereSize, color ) {
-
-	this.light = light;
-	this.light.updateMatrixWorld();
-
-	this.color = color;
-
-	const geometry = new SphereBufferGeometry( sphereSize, 4, 2 );
-	const material = new MeshBasicMaterial( { wireframe: true, fog: false, toneMapped: false } );
-
-	Mesh.call( this, geometry, material );
-
-	this.type = 'PointLightHelper';
-
-	this.matrix = this.light.matrixWorld;
-	this.matrixAutoUpdate = false;
-
-	this.update();
-
-
-	/*
-	const distanceGeometry = new THREE.IcosahedronBufferGeometry( 1, 2 );
-	const distanceMaterial = new THREE.MeshBasicMaterial( { color: hexColor, fog: false, wireframe: true, opacity: 0.1, transparent: true } );
-
-	this.lightSphere = new THREE.Mesh( bulbGeometry, bulbMaterial );
-	this.lightDistance = new THREE.Mesh( distanceGeometry, distanceMaterial );
-
-	const d = light.distance;
-
-	if ( d === 0.0 ) {
-
-		this.lightDistance.visible = false;
-
-	} else {
-
-		this.lightDistance.scale.set( d, d, d );
-
-	}
-
-	this.add( this.lightDistance );
-	*/
-
-}
-
-PointLightHelper.prototype = Object.create( Mesh.prototype );
-PointLightHelper.prototype.constructor = PointLightHelper;
-
-PointLightHelper.prototype.dispose = function () {
-
-	this.geometry.dispose();
-	this.material.dispose();
-
-};
-
-PointLightHelper.prototype.update = function () {
-
-	if ( this.color !== undefined ) {
-
-		this.material.color.set( this.color );
-
-	} else {
-
-		this.material.color.copy( this.light.color );
-
-	}
-
-	/*
-	const d = this.light.distance;
-
-	if ( d === 0.0 ) {
-
-		this.lightDistance.visible = false;
-
-	} else {
-
-		this.lightDistance.visible = true;
-		this.lightDistance.scale.set( d, d, d );
-
-	}
-	*/
-
-};
 
 const _vector$a = new Vector3();
 const _color1 = new Color();
 const _color2 = new Color();
 
-function HemisphereLightHelper( light, size, color ) {
-
-	Object3D.call( this );
-
-	this.light = light;
-	this.light.updateMatrixWorld();
-
-	this.matrix = light.matrixWorld;
-	this.matrixAutoUpdate = false;
-
-	this.color = color;
-
-	const geometry = new OctahedronBufferGeometry( size );
-	geometry.rotateY( Math.PI * 0.5 );
-
-	this.material = new MeshBasicMaterial( { wireframe: true, fog: false, toneMapped: false } );
-	if ( this.color === undefined ) this.material.vertexColors = true;
-
-	const position = geometry.getAttribute( 'position' );
-	const colors = new Float32Array( position.count * 3 );
-
-	geometry.setAttribute( 'color', new BufferAttribute( colors, 3 ) );
-
-	this.add( new Mesh( geometry, this.material ) );
-
-	this.update();
-
-}
-
-HemisphereLightHelper.prototype = Object.create( Object3D.prototype );
-HemisphereLightHelper.prototype.constructor = HemisphereLightHelper;
-
-HemisphereLightHelper.prototype.dispose = function () {
-
-	this.children[ 0 ].geometry.dispose();
-	this.children[ 0 ].material.dispose();
-
-};
-
-HemisphereLightHelper.prototype.update = function () {
-
-	const mesh = this.children[ 0 ];
-
-	if ( this.color !== undefined ) {
-
-		this.material.color.set( this.color );
-
-	} else {
-
-		const colors = mesh.geometry.getAttribute( 'color' );
-
-		_color1.copy( this.light.color );
-		_color2.copy( this.light.groundColor );
-
-		for ( let i = 0, l = colors.count; i < l; i ++ ) {
-
-			const color = ( i < ( l / 2 ) ) ? _color1 : _color2;
-
-			colors.setXYZ( i, color.r, color.g, color.b );
-
-		}
-
-		colors.needsUpdate = true;
-
-	}
-
-	mesh.lookAt( _vector$a.setFromMatrixPosition( this.light.matrixWorld ).negate() );
-
-};
-
-function GridHelper( size, divisions, color1, color2 ) {
-
-	size = size || 10;
-	divisions = divisions || 10;
-	color1 = new Color( color1 !== undefined ? color1 : 0x444444 );
-	color2 = new Color( color2 !== undefined ? color2 : 0x888888 );
-
-	const center = divisions / 2;
-	const step = size / divisions;
-	const halfSize = size / 2;
-
-	const vertices = [], colors = [];
-
-	for ( let i = 0, j = 0, k = - halfSize; i <= divisions; i ++, k += step ) {
-
-		vertices.push( - halfSize, 0, k, halfSize, 0, k );
-		vertices.push( k, 0, - halfSize, k, 0, halfSize );
-
-		const color = i === center ? color1 : color2;
-
-		color.toArray( colors, j ); j += 3;
-		color.toArray( colors, j ); j += 3;
-		color.toArray( colors, j ); j += 3;
-		color.toArray( colors, j ); j += 3;
-
-	}
-
-	const geometry = new BufferGeometry();
-	geometry.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
-	geometry.setAttribute( 'color', new Float32BufferAttribute( colors, 3 ) );
-
-	const material = new LineBasicMaterial( { vertexColors: true, toneMapped: false } );
-
-	LineSegments.call( this, geometry, material );
-
-	this.type = 'GridHelper';
-
-}
-
-GridHelper.prototype = Object.create( LineSegments.prototype );
-GridHelper.prototype.constructor = GridHelper;
-
-function PolarGridHelper( radius, radials, circles, divisions, color1, color2 ) {
-
-	radius = radius || 10;
-	radials = radials || 16;
-	circles = circles || 8;
-	divisions = divisions || 64;
-	color1 = new Color( color1 !== undefined ? color1 : 0x444444 );
-	color2 = new Color( color2 !== undefined ? color2 : 0x888888 );
-
-	const vertices = [];
-	const colors = [];
-
-	// create the radials
-
-	for ( let i = 0; i <= radials; i ++ ) {
-
-		const v = ( i / radials ) * ( Math.PI * 2 );
-
-		const x = Math.sin( v ) * radius;
-		const z = Math.cos( v ) * radius;
-
-		vertices.push( 0, 0, 0 );
-		vertices.push( x, 0, z );
-
-		const color = ( i & 1 ) ? color1 : color2;
-
-		colors.push( color.r, color.g, color.b );
-		colors.push( color.r, color.g, color.b );
-
-	}
-
-	// create the circles
-
-	for ( let i = 0; i <= circles; i ++ ) {
-
-		const color = ( i & 1 ) ? color1 : color2;
-
-		const r = radius - ( radius / circles * i );
-
-		for ( let j = 0; j < divisions; j ++ ) {
-
-			// first vertex
-
-			let v = ( j / divisions ) * ( Math.PI * 2 );
-
-			let x = Math.sin( v ) * r;
-			let z = Math.cos( v ) * r;
-
-			vertices.push( x, 0, z );
-			colors.push( color.r, color.g, color.b );
-
-			// second vertex
-
-			v = ( ( j + 1 ) / divisions ) * ( Math.PI * 2 );
-
-			x = Math.sin( v ) * r;
-			z = Math.cos( v ) * r;
-
-			vertices.push( x, 0, z );
-			colors.push( color.r, color.g, color.b );
-
-		}
-
-	}
-
-	const geometry = new BufferGeometry();
-	geometry.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
-	geometry.setAttribute( 'color', new Float32BufferAttribute( colors, 3 ) );
-
-	const material = new LineBasicMaterial( { vertexColors: true, toneMapped: false } );
-
-	LineSegments.call( this, geometry, material );
-
-	this.type = 'PolarGridHelper';
-
-}
-
-PolarGridHelper.prototype = Object.create( LineSegments.prototype );
-PolarGridHelper.prototype.constructor = PolarGridHelper;
-
 const _v1$5 = new Vector3();
 const _v2$3 = new Vector3();
 const _v3$1 = new Vector3();
 
-function DirectionalLightHelper( light, size, color ) {
-
-	Object3D.call( this );
-
-	this.light = light;
-	this.light.updateMatrixWorld();
-
-	this.matrix = light.matrixWorld;
-	this.matrixAutoUpdate = false;
-
-	this.color = color;
-
-	if ( size === undefined ) size = 1;
-
-	let geometry = new BufferGeometry();
-	geometry.setAttribute( 'position', new Float32BufferAttribute( [
-		- size, size, 0,
-		size, size, 0,
-		size, - size, 0,
-		- size, - size, 0,
-		- size, size, 0
-	], 3 ) );
-
-	const material = new LineBasicMaterial( { fog: false, toneMapped: false } );
-
-	this.lightPlane = new Line( geometry, material );
-	this.add( this.lightPlane );
-
-	geometry = new BufferGeometry();
-	geometry.setAttribute( 'position', new Float32BufferAttribute( [ 0, 0, 0, 0, 0, 1 ], 3 ) );
-
-	this.targetLine = new Line( geometry, material );
-	this.add( this.targetLine );
-
-	this.update();
-
-}
-
-DirectionalLightHelper.prototype = Object.create( Object3D.prototype );
-DirectionalLightHelper.prototype.constructor = DirectionalLightHelper;
-
-DirectionalLightHelper.prototype.dispose = function () {
-
-	this.lightPlane.geometry.dispose();
-	this.lightPlane.material.dispose();
-	this.targetLine.geometry.dispose();
-	this.targetLine.material.dispose();
-
-};
-
-DirectionalLightHelper.prototype.update = function () {
-
-	_v1$5.setFromMatrixPosition( this.light.matrixWorld );
-	_v2$3.setFromMatrixPosition( this.light.target.matrixWorld );
-	_v3$1.subVectors( _v2$3, _v1$5 );
-
-	this.lightPlane.lookAt( _v2$3 );
-
-	if ( this.color !== undefined ) {
-
-		this.lightPlane.material.color.set( this.color );
-		this.targetLine.material.color.set( this.color );
-
-	} else {
-
-		this.lightPlane.material.color.copy( this.light.color );
-		this.targetLine.material.color.copy( this.light.color );
-
-	}
-
-	this.targetLine.lookAt( _v2$3 );
-	this.targetLine.scale.z = _v3$1.length();
-
-};
-
 const _vector$b = new Vector3();
 const _camera = new Camera();
 
-/**
- *	- shows frustum, line of sight and up of the camera
- *	- suitable for fast updates
- * 	- based on frustum visualization in lightgl.js shadowmap example
- *		http://evanw.github.com/lightgl.js/tests/shadowmap.html
- */
-
-function CameraHelper( camera ) {
-
-	const geometry = new BufferGeometry();
-	const material = new LineBasicMaterial( { color: 0xffffff, vertexColors: true, toneMapped: false } );
-
-	const vertices = [];
-	const colors = [];
-
-	const pointMap = {};
-
-	// colors
-
-	const colorFrustum = new Color( 0xffaa00 );
-	const colorCone = new Color( 0xff0000 );
-	const colorUp = new Color( 0x00aaff );
-	const colorTarget = new Color( 0xffffff );
-	const colorCross = new Color( 0x333333 );
-
-	// near
-
-	addLine( 'n1', 'n2', colorFrustum );
-	addLine( 'n2', 'n4', colorFrustum );
-	addLine( 'n4', 'n3', colorFrustum );
-	addLine( 'n3', 'n1', colorFrustum );
-
-	// far
-
-	addLine( 'f1', 'f2', colorFrustum );
-	addLine( 'f2', 'f4', colorFrustum );
-	addLine( 'f4', 'f3', colorFrustum );
-	addLine( 'f3', 'f1', colorFrustum );
-
-	// sides
-
-	addLine( 'n1', 'f1', colorFrustum );
-	addLine( 'n2', 'f2', colorFrustum );
-	addLine( 'n3', 'f3', colorFrustum );
-	addLine( 'n4', 'f4', colorFrustum );
-
-	// cone
-
-	addLine( 'p', 'n1', colorCone );
-	addLine( 'p', 'n2', colorCone );
-	addLine( 'p', 'n3', colorCone );
-	addLine( 'p', 'n4', colorCone );
-
-	// up
-
-	addLine( 'u1', 'u2', colorUp );
-	addLine( 'u2', 'u3', colorUp );
-	addLine( 'u3', 'u1', colorUp );
-
-	// target
-
-	addLine( 'c', 't', colorTarget );
-	addLine( 'p', 'c', colorCross );
-
-	// cross
-
-	addLine( 'cn1', 'cn2', colorCross );
-	addLine( 'cn3', 'cn4', colorCross );
-
-	addLine( 'cf1', 'cf2', colorCross );
-	addLine( 'cf3', 'cf4', colorCross );
-
-	function addLine( a, b, color ) {
-
-		addPoint( a, color );
-		addPoint( b, color );
-
-	}
-
-	function addPoint( id, color ) {
-
-		vertices.push( 0, 0, 0 );
-		colors.push( color.r, color.g, color.b );
-
-		if ( pointMap[ id ] === undefined ) {
-
-			pointMap[ id ] = [];
-
-		}
-
-		pointMap[ id ].push( ( vertices.length / 3 ) - 1 );
-
-	}
-
-	geometry.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
-	geometry.setAttribute( 'color', new Float32BufferAttribute( colors, 3 ) );
-
-	LineSegments.call( this, geometry, material );
-
-	this.type = 'CameraHelper';
-
-	this.camera = camera;
-	if ( this.camera.updateProjectionMatrix ) this.camera.updateProjectionMatrix();
-
-	this.matrix = camera.matrixWorld;
-	this.matrixAutoUpdate = false;
-
-	this.pointMap = pointMap;
-
-	this.update();
-
-}
-
-CameraHelper.prototype = Object.create( LineSegments.prototype );
-CameraHelper.prototype.constructor = CameraHelper;
-
-CameraHelper.prototype.update = function () {
-
-	const geometry = this.geometry;
-	const pointMap = this.pointMap;
-
-	const w = 1, h = 1;
-
-	// we need just camera projection matrix inverse
-	// world matrix must be identity
-
-	_camera.projectionMatrixInverse.copy( this.camera.projectionMatrixInverse );
-
-	// center / target
-
-	setPoint( 'c', pointMap, geometry, _camera, 0, 0, - 1 );
-	setPoint( 't', pointMap, geometry, _camera, 0, 0, 1 );
-
-	// near
-
-	setPoint( 'n1', pointMap, geometry, _camera, - w, - h, - 1 );
-	setPoint( 'n2', pointMap, geometry, _camera, w, - h, - 1 );
-	setPoint( 'n3', pointMap, geometry, _camera, - w, h, - 1 );
-	setPoint( 'n4', pointMap, geometry, _camera, w, h, - 1 );
-
-	// far
-
-	setPoint( 'f1', pointMap, geometry, _camera, - w, - h, 1 );
-	setPoint( 'f2', pointMap, geometry, _camera, w, - h, 1 );
-	setPoint( 'f3', pointMap, geometry, _camera, - w, h, 1 );
-	setPoint( 'f4', pointMap, geometry, _camera, w, h, 1 );
-
-	// up
-
-	setPoint( 'u1', pointMap, geometry, _camera, w * 0.7, h * 1.1, - 1 );
-	setPoint( 'u2', pointMap, geometry, _camera, - w * 0.7, h * 1.1, - 1 );
-	setPoint( 'u3', pointMap, geometry, _camera, 0, h * 2, - 1 );
-
-	// cross
-
-	setPoint( 'cf1', pointMap, geometry, _camera, - w, 0, 1 );
-	setPoint( 'cf2', pointMap, geometry, _camera, w, 0, 1 );
-	setPoint( 'cf3', pointMap, geometry, _camera, 0, - h, 1 );
-	setPoint( 'cf4', pointMap, geometry, _camera, 0, h, 1 );
-
-	setPoint( 'cn1', pointMap, geometry, _camera, - w, 0, - 1 );
-	setPoint( 'cn2', pointMap, geometry, _camera, w, 0, - 1 );
-	setPoint( 'cn3', pointMap, geometry, _camera, 0, - h, - 1 );
-	setPoint( 'cn4', pointMap, geometry, _camera, 0, h, - 1 );
-
-	geometry.getAttribute( 'position' ).needsUpdate = true;
-
-};
-
-function setPoint( point, pointMap, geometry, camera, x, y, z ) {
-
-	_vector$b.set( x, y, z ).unproject( camera );
-
-	const points = pointMap[ point ];
-
-	if ( points !== undefined ) {
-
-		const position = geometry.getAttribute( 'position' );
-
-		for ( let i = 0, l = points.length; i < l; i ++ ) {
-
-			position.setXYZ( points[ i ], _vector$b.x, _vector$b.y, _vector$b.z );
-
-		}
-
-	}
-
-}
-
 const _box$3 = new Box3();
 
-function BoxHelper( object, color ) {
-
-	this.object = object;
-
-	if ( color === undefined ) color = 0xffff00;
-
-	const indices = new Uint16Array( [ 0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7 ] );
-	const positions = new Float32Array( 8 * 3 );
-
-	const geometry = new BufferGeometry();
-	geometry.setIndex( new BufferAttribute( indices, 1 ) );
-	geometry.setAttribute( 'position', new BufferAttribute( positions, 3 ) );
-
-	LineSegments.call( this, geometry, new LineBasicMaterial( { color: color, toneMapped: false } ) );
-
-	this.type = 'BoxHelper';
-
-	this.matrixAutoUpdate = false;
-
-	this.update();
-
-}
-
-BoxHelper.prototype = Object.create( LineSegments.prototype );
-BoxHelper.prototype.constructor = BoxHelper;
-
-BoxHelper.prototype.update = function ( object ) {
-
-	if ( object !== undefined ) {
-
-		console.warn( 'THREE.BoxHelper: .update() has no longer arguments.' );
-
-	}
-
-	if ( this.object !== undefined ) {
-
-		_box$3.setFromObject( this.object );
-
-	}
-
-	if ( _box$3.isEmpty() ) return;
-
-	const min = _box$3.min;
-	const max = _box$3.max;
-
-	/*
-	  5____4
-	1/___0/|
-	| 6__|_7
-	2/___3/
-
-	0: max.x, max.y, max.z
-	1: min.x, max.y, max.z
-	2: min.x, min.y, max.z
-	3: max.x, min.y, max.z
-	4: max.x, max.y, min.z
-	5: min.x, max.y, min.z
-	6: min.x, min.y, min.z
-	7: max.x, min.y, min.z
-	*/
-
-	const position = this.geometry.attributes.position;
-	const array = position.array;
-
-	array[ 0 ] = max.x; array[ 1 ] = max.y; array[ 2 ] = max.z;
-	array[ 3 ] = min.x; array[ 4 ] = max.y; array[ 5 ] = max.z;
-	array[ 6 ] = min.x; array[ 7 ] = min.y; array[ 8 ] = max.z;
-	array[ 9 ] = max.x; array[ 10 ] = min.y; array[ 11 ] = max.z;
-	array[ 12 ] = max.x; array[ 13 ] = max.y; array[ 14 ] = min.z;
-	array[ 15 ] = min.x; array[ 16 ] = max.y; array[ 17 ] = min.z;
-	array[ 18 ] = min.x; array[ 19 ] = min.y; array[ 20 ] = min.z;
-	array[ 21 ] = max.x; array[ 22 ] = min.y; array[ 23 ] = min.z;
-
-	position.needsUpdate = true;
-
-	this.geometry.computeBoundingSphere();
-
-
-};
-
-BoxHelper.prototype.setFromObject = function ( object ) {
-
-	this.object = object;
-	this.update();
-
-	return this;
-
-};
-
-BoxHelper.prototype.copy = function ( source ) {
-
-	LineSegments.prototype.copy.call( this, source );
-
-	this.object = source.object;
-
-	return this;
-
-};
-
-function Box3Helper( box, color ) {
-
-	this.type = 'Box3Helper';
-
-	this.box = box;
-
-	if ( color === undefined ) color = 0xffff00;
-
-	const indices = new Uint16Array( [ 0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7 ] );
-
-	const positions = [ 1, 1, 1, - 1, 1, 1, - 1, - 1, 1, 1, - 1, 1, 1, 1, - 1, - 1, 1, - 1, - 1, - 1, - 1, 1, - 1, - 1 ];
-
-	const geometry = new BufferGeometry();
-
-	geometry.setIndex( new BufferAttribute( indices, 1 ) );
-
-	geometry.setAttribute( 'position', new Float32BufferAttribute( positions, 3 ) );
-
-	LineSegments.call( this, geometry, new LineBasicMaterial( { color: color, toneMapped: false } ) );
-
-	this.type = 'Box3Helper';
-
-	this.geometry.computeBoundingSphere();
-
-}
-
-Box3Helper.prototype = Object.create( LineSegments.prototype );
-Box3Helper.prototype.constructor = Box3Helper;
-
-Box3Helper.prototype.updateMatrixWorld = function ( force ) {
-
-	const box = this.box;
-
-	if ( box.isEmpty() ) return;
-
-	box.getCenter( this.position );
-
-	box.getSize( this.scale );
-
-	this.scale.multiplyScalar( 0.5 );
-
-	Object3D.prototype.updateMatrixWorld.call( this, force );
-
-};
-
-function PlaneHelper( plane, size, hex ) {
-
-	this.plane = plane;
-
-	this.size = ( size === undefined ) ? 1 : size;
-
-	const color = ( hex !== undefined ) ? hex : 0xffff00;
-
-	const positions = [ 1, - 1, 1, - 1, 1, 1, - 1, - 1, 1, 1, 1, 1, - 1, 1, 1, - 1, - 1, 1, 1, - 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0 ];
-
-	const geometry = new BufferGeometry();
-	geometry.setAttribute( 'position', new Float32BufferAttribute( positions, 3 ) );
-	geometry.computeBoundingSphere();
-
-	Line.call( this, geometry, new LineBasicMaterial( { color: color, toneMapped: false } ) );
-
-	this.type = 'PlaneHelper';
-
-	//
-
-	const positions2 = [ 1, 1, 1, - 1, 1, 1, - 1, - 1, 1, 1, 1, 1, - 1, - 1, 1, 1, - 1, 1 ];
-
-	const geometry2 = new BufferGeometry();
-	geometry2.setAttribute( 'position', new Float32BufferAttribute( positions2, 3 ) );
-	geometry2.computeBoundingSphere();
-
-	this.add( new Mesh( geometry2, new MeshBasicMaterial( { color: color, opacity: 0.2, transparent: true, depthWrite: false, toneMapped: false } ) ) );
-
-}
-
-PlaneHelper.prototype = Object.create( Line.prototype );
-PlaneHelper.prototype.constructor = PlaneHelper;
-
-PlaneHelper.prototype.updateMatrixWorld = function ( force ) {
-
-	let scale = - this.plane.constant;
-
-	if ( Math.abs( scale ) < 1e-8 ) scale = 1e-8; // sign does not matter
-
-	this.scale.set( 0.5 * this.size, 0.5 * this.size, scale );
-
-	this.children[ 0 ].material.side = ( scale < 0 ) ? BackSide : FrontSide; // renderer flips side when determinant < 0; flipping not wanted here
-
-	this.lookAt( this.plane.normal );
-
-	Object3D.prototype.updateMatrixWorld.call( this, force );
-
-};
-
 const _axis = new Vector3();
-let _lineGeometry, _coneGeometry;
-
-function ArrowHelper( dir, origin, length, color, headLength, headWidth ) {
-
-	// dir is assumed to be normalized
-
-	Object3D.call( this );
-
-	this.type = 'ArrowHelper';
-
-	if ( dir === undefined ) dir = new Vector3( 0, 0, 1 );
-	if ( origin === undefined ) origin = new Vector3( 0, 0, 0 );
-	if ( length === undefined ) length = 1;
-	if ( color === undefined ) color = 0xffff00;
-	if ( headLength === undefined ) headLength = 0.2 * length;
-	if ( headWidth === undefined ) headWidth = 0.2 * headLength;
-
-	if ( _lineGeometry === undefined ) {
-
-		_lineGeometry = new BufferGeometry();
-		_lineGeometry.setAttribute( 'position', new Float32BufferAttribute( [ 0, 0, 0, 0, 1, 0 ], 3 ) );
-
-		_coneGeometry = new CylinderBufferGeometry( 0, 0.5, 1, 5, 1 );
-		_coneGeometry.translate( 0, - 0.5, 0 );
-
-	}
-
-	this.position.copy( origin );
-
-	this.line = new Line( _lineGeometry, new LineBasicMaterial( { color: color, toneMapped: false } ) );
-	this.line.matrixAutoUpdate = false;
-	this.add( this.line );
-
-	this.cone = new Mesh( _coneGeometry, new MeshBasicMaterial( { color: color, toneMapped: false } ) );
-	this.cone.matrixAutoUpdate = false;
-	this.add( this.cone );
-
-	this.setDirection( dir );
-	this.setLength( length, headLength, headWidth );
-
-}
-
-ArrowHelper.prototype = Object.create( Object3D.prototype );
-ArrowHelper.prototype.constructor = ArrowHelper;
-
-ArrowHelper.prototype.setDirection = function ( dir ) {
-
-	// dir is assumed to be normalized
-
-	if ( dir.y > 0.99999 ) {
-
-		this.quaternion.set( 0, 0, 0, 1 );
-
-	} else if ( dir.y < - 0.99999 ) {
-
-		this.quaternion.set( 1, 0, 0, 0 );
-
-	} else {
-
-		_axis.set( dir.z, 0, - dir.x ).normalize();
-
-		const radians = Math.acos( dir.y );
-
-		this.quaternion.setFromAxisAngle( _axis, radians );
-
-	}
-
-};
-
-ArrowHelper.prototype.setLength = function ( length, headLength, headWidth ) {
-
-	if ( headLength === undefined ) headLength = 0.2 * length;
-	if ( headWidth === undefined ) headWidth = 0.2 * headLength;
-
-	this.line.scale.set( 1, Math.max( 0.0001, length - headLength ), 1 ); // see #17458
-	this.line.updateMatrix();
-
-	this.cone.scale.set( headWidth, headLength, headWidth );
-	this.cone.position.y = length;
-	this.cone.updateMatrix();
-
-};
-
-ArrowHelper.prototype.setColor = function ( color ) {
-
-	this.line.material.color.set( color );
-	this.cone.material.color.set( color );
-
-};
-
-ArrowHelper.prototype.copy = function ( source ) {
-
-	Object3D.prototype.copy.call( this, source, false );
-
-	this.line.copy( source.line );
-	this.cone.copy( source.cone );
-
-	return this;
-
-};
-
-function AxesHelper( size ) {
-
-	size = size || 1;
-
-	const vertices = [
-		0, 0, 0,	size, 0, 0,
-		0, 0, 0,	0, size, 0,
-		0, 0, 0,	0, 0, size
-	];
-
-	const colors = [
-		1, 0, 0,	1, 0.6, 0,
-		0, 1, 0,	0.6, 1, 0,
-		0, 0, 1,	0, 0.6, 1
-	];
-
-	const geometry = new BufferGeometry();
-	geometry.setAttribute( 'position', new Float32BufferAttribute( vertices, 3 ) );
-	geometry.setAttribute( 'color', new Float32BufferAttribute( colors, 3 ) );
-
-	const material = new LineBasicMaterial( { vertexColors: true, toneMapped: false } );
-
-	LineSegments.call( this, geometry, material );
-
-	this.type = 'AxesHelper';
-
-}
-
-AxesHelper.prototype = Object.create( LineSegments.prototype );
-AxesHelper.prototype.constructor = AxesHelper;
 
 const LOD_MIN = 4;
 const LOD_MAX = 8;
@@ -47675,6 +46310,24 @@ const TOTAL_LODS = LOD_MAX - LOD_MIN + 1 + EXTRA_LOD_SIGMA.length;
 
 const _flatCamera = new OrthographicCamera();
 const { _lodPlanes, _sizeLods, _sigmas } = _createPlanes();
+
+// Golden Ratio
+const PHI = ( 1 + Math.sqrt( 5 ) ) / 2;
+const INV_PHI = 1 / PHI;
+
+// Vertices of a dodecahedron (except the opposites, which represent the
+// same axis), used as axis directions evenly spread on a sphere.
+const _axisDirections = [
+	new Vector3( 1, 1, 1 ),
+	new Vector3( - 1, 1, 1 ),
+	new Vector3( 1, 1, - 1 ),
+	new Vector3( - 1, 1, - 1 ),
+	new Vector3( 0, PHI, INV_PHI ),
+	new Vector3( 0, PHI, - INV_PHI ),
+	new Vector3( INV_PHI, 0, PHI ),
+	new Vector3( - INV_PHI, 0, PHI ),
+	new Vector3( PHI, INV_PHI, 0 ),
+	new Vector3( - PHI, INV_PHI, 0 ) ];
 
 function _createPlanes() {
 
@@ -47859,18 +46512,6 @@ Object.assign( Spline.prototype, {
 
 } );
 
-GridHelper.prototype.setColors = function () {
-
-	console.error( 'THREE.GridHelper: setColors() has been deprecated, pass them in the constructor instead.' );
-
-};
-
-SkeletonHelper.prototype.update = function () {
-
-	console.error( 'THREE.SkeletonHelper: update() no longer needs to be called.' );
-
-};
-
 //
 
 Object.assign( Loader.prototype, {
@@ -47990,13 +46631,6 @@ Frustum.prototype.setFromMatrix = function ( m ) {
 
 	console.warn( 'THREE.Frustum: .setFromMatrix() has been renamed to .setFromProjectionMatrix().' );
 	return this.setFromProjectionMatrix( m );
-
-};
-
-Line3.prototype.center = function ( optionalTarget ) {
-
-	console.warn( 'THREE.Line3: .center() has been renamed to .getCenter().' );
-	return this.getCenter( optionalTarget );
 
 };
 
@@ -48900,6 +47534,18 @@ Object.assign( ExtrudeBufferGeometry.prototype, {
 
 //
 
+Object.assign( Scene.prototype, {
+
+	dispose: function () {
+
+		console.error( 'THREE.Scene: .dispose() has been removed.' );
+
+	}
+
+} );
+
+//
+
 Object.defineProperties( Uniform.prototype, {
 
 	dynamic: {
@@ -49515,13 +48161,6 @@ Object.defineProperties( Audio.prototype, {
 
 } );
 
-AudioAnalyser.prototype.getData = function () {
-
-	console.warn( 'THREE.AudioAnalyser: .getData() is now .getFrequencyData().' );
-	return this.getFrequencyData();
-
-};
-
 //
 
 CubeCamera.prototype.updateCubeMap = function ( renderer, scene ) {
@@ -49850,15 +48489,16 @@ var OrbitControls = function ( object, domElement ) {
 	this.dispose = function () {
 
 		scope.domElement.removeEventListener( 'contextmenu', onContextMenu, false );
-		scope.domElement.removeEventListener( 'mousedown', onMouseDown, false );
+
+		scope.domElement.removeEventListener( 'pointerdown', onPointerDown, false );
 		scope.domElement.removeEventListener( 'wheel', onMouseWheel, false );
 
 		scope.domElement.removeEventListener( 'touchstart', onTouchStart, false );
 		scope.domElement.removeEventListener( 'touchend', onTouchEnd, false );
 		scope.domElement.removeEventListener( 'touchmove', onTouchMove, false );
 
-		scope.domElement.ownerDocument.removeEventListener( 'mousemove', onMouseMove, false );
-		scope.domElement.ownerDocument.removeEventListener( 'mouseup', onMouseUp, false );
+		scope.domElement.ownerDocument.removeEventListener( 'pointermove', onPointerMove, false );
+		scope.domElement.ownerDocument.removeEventListener( 'pointerup', onPointerUp, false );
 
 		scope.domElement.removeEventListener( 'keydown', onKeyDown, false );
 
@@ -50338,9 +48978,55 @@ var OrbitControls = function ( object, domElement ) {
 	// event handlers - FSM: listen for events and reset state
 	//
 
-	function onMouseDown( event ) {
+	function onPointerDown( event ) {
 
 		if ( scope.enabled === false ) return;
+
+		switch ( event.pointerType ) {
+
+			case 'mouse':
+				onMouseDown( event );
+				break;
+
+			// TODO touch
+
+		}
+
+	}
+
+	function onPointerMove( event ) {
+
+		if ( scope.enabled === false ) return;
+
+		switch ( event.pointerType ) {
+
+			case 'mouse':
+				onMouseMove( event );
+				break;
+
+			// TODO touch
+
+		}
+
+	}
+
+	function onPointerUp( event ) {
+
+		if ( scope.enabled === false ) return;
+
+		switch ( event.pointerType ) {
+
+			case 'mouse':
+				onMouseUp();
+				break;
+
+			// TODO touch
+
+		}
+
+	}
+
+	function onMouseDown( event ) {
 
 		// Prevent the browser from scrolling.
 		event.preventDefault();
@@ -50439,8 +49125,8 @@ var OrbitControls = function ( object, domElement ) {
 
 		if ( state !== STATE.NONE ) {
 
-			scope.domElement.ownerDocument.addEventListener( 'mousemove', onMouseMove, false );
-			scope.domElement.ownerDocument.addEventListener( 'mouseup', onMouseUp, false );
+			scope.domElement.ownerDocument.addEventListener( 'pointermove', onPointerMove, false );
+			scope.domElement.ownerDocument.addEventListener( 'pointerup', onPointerUp, false );
 
 			scope.dispatchEvent( startEvent );
 
@@ -50488,8 +49174,8 @@ var OrbitControls = function ( object, domElement ) {
 
 		if ( scope.enabled === false ) return;
 
-		scope.domElement.ownerDocument.removeEventListener( 'mousemove', onMouseMove, false );
-		scope.domElement.ownerDocument.removeEventListener( 'mouseup', onMouseUp, false );
+		scope.domElement.ownerDocument.removeEventListener( 'pointermove', onPointerMove, false );
+		scope.domElement.ownerDocument.removeEventListener( 'pointerup', onPointerUp, false );
 
 		scope.dispatchEvent( endEvent );
 
@@ -50685,7 +49371,7 @@ var OrbitControls = function ( object, domElement ) {
 
 	scope.domElement.addEventListener( 'contextmenu', onContextMenu, false );
 
-	scope.domElement.addEventListener( 'mousedown', onMouseDown, false );
+	scope.domElement.addEventListener( 'pointerdown', onPointerDown, false );
 	scope.domElement.addEventListener( 'wheel', onMouseWheel, false );
 
 	scope.domElement.addEventListener( 'touchstart', onTouchStart, false );
@@ -71253,6 +69939,39 @@ setInterval(() => {
 }, 1000);
 render();
 
+const faceColorMaterial = new MeshPhongMaterial({
+    vertexColors: true,
+    flatShading: true,
+});
+const waterMaterial = new MeshPhongMaterial({
+    color: 0x182190,
+    flatShading: true,
+    opacity: 0.5,
+    transparent: true,
+});
+
+// http://www.wc3c.net/showpost.php?p=186511&postcount=5
+const LordaeronSummerRock = {
+    name: "Lordaeron Summer Rock",
+    color: "#876b62",
+};
+const LordaeronSummerGrass = {
+    name: "Lordaeron Summer Grass",
+    color: "#0c4013",
+};
+const LordaeronSummerDarkGrass = {
+    name: "Lordaeron Summer Dark Grass",
+    color: "#043609",
+};
+const LordaeronSummerDirtCliff = {
+    name: "Lordaeron Summer Dirt Cliff",
+    color: "#2f373f",
+};
+const LordaeronSummerGrassCliff = {
+    name: "Lordaeron Summer Grass Cliff",
+    color: "#867355",
+};
+
 const wood = new Color(0x3b2507);
 const stone = new Color(0x596566);
 const cloth = new Color(0x493113);
@@ -71357,17 +70076,6 @@ class Randomizer {
         return geometry;
     }
 }
-
-const faceColorMaterial = new MeshPhongMaterial({
-    vertexColors: true,
-    flatShading: true,
-});
-const waterMaterial = new MeshPhongMaterial({
-    color: 0x182190,
-    flatShading: true,
-    opacity: 0.5,
-    transparent: true,
-});
 
 // const compose = <R>(fn1: (a: R) => R, ...fns: Array<(a: R) => R>) =>
 // 	fns.reduce((prevFn, nextFn) => (value) => prevFn(nextFn(value)), fn1);
@@ -73057,7 +71765,6 @@ class Trough extends Mesh {
 
 var Objects = /*#__PURE__*/Object.freeze({
 	__proto__: null,
-	Terrain: Terrain,
 	Barn: Barn,
 	BrokenHayCart: BrokenHayCart,
 	BrokenWheelbarrow: BrokenWheelbarrow,
@@ -73068,38 +71775,18 @@ var Objects = /*#__PURE__*/Object.freeze({
 	PineTree: PineTree,
 	RockChunks: RockChunks,
 	ScorchedBarn: ScorchedBarn,
+	Terrain: Terrain,
+	stringMap: stringMap,
+	cliffMap: cliffMap,
 	Trough: Trough
 });
 
-// http://www.wc3c.net/showpost.php?p=186511&postcount=5
-const LordaeronSummerRock = {
-    name: "Lordaeron Summer Rock",
-    color: "#876b62",
-};
-const LordaeronSummerGrass = {
-    name: "Lordaeron Summer Grass",
-    color: "#0c4013",
-};
-const LordaeronSummerDarkGrass = {
-    name: "Lordaeron Summer Dark Grass",
-    color: "#043609",
-};
-const LordaeronSummerDirtCliff = {
-    name: "Lordaeron Summer Dirt Cliff",
-    color: "#2f373f",
-};
-const LordaeronSummerGrassCliff = {
-    name: "Lordaeron Summer Grass Cliff",
-    color: "#867355",
-};
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const { Terrain: _, ...filtered } = Objects;
-class Terrain$1 extends Terrain {
+const { Terrain: BaseTerrain, stringMap: stringMap$1, cliffMap: cliffMap$1, ...filtered } = Objects;
+class Terrain$1 extends BaseTerrain {
     constructor() {
         const props = {
             masks: {
-                height: stringMap(`
+                height: stringMap$1(`
 					0000000
 					0100000
 					0000000
@@ -73108,7 +71795,7 @@ class Terrain$1 extends Terrain {
 					0000000
 					0000000
 				`),
-                cliff: cliffMap(`
+                cliff: cliffMap$1(`
 					111111
 					111rr1
 					111rr1
@@ -73116,7 +71803,7 @@ class Terrain$1 extends Terrain {
 					1rr311
 					111110
 				`),
-                groundTile: stringMap(`
+                groundTile: stringMap$1(`
 					222222
 					222222
 					222222
@@ -73124,7 +71811,7 @@ class Terrain$1 extends Terrain {
 					222100
 					222201
 				`),
-                cliffTile: stringMap(`
+                cliffTile: stringMap$1(`
 					333333
 					333333
 					333333
@@ -73132,7 +71819,7 @@ class Terrain$1 extends Terrain {
 					333433
 					333334
 				`),
-                water: stringMap(`
+                water: stringMap$1(`
 					000000
 					000000
 					000000
@@ -73140,7 +71827,7 @@ class Terrain$1 extends Terrain {
 					000000
 					000001
 				`),
-                waterHeight: stringMap(`
+                waterHeight: stringMap$1(`
 					0000000
 					0000000
 					0000000
