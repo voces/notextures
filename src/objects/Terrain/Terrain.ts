@@ -100,7 +100,9 @@ export const calcCliffHeightCorner = (
 	if (direction.x !== 0 && direction.y !== 0)
 		checks.push({ x: 0, y: direction.y }, { x: direction.x, y: 0 });
 
-	const heights = checks.map(({ x: xD, y: yD }) => cliffMask[y + yD][x + xD]);
+	const heights = checks.map(
+		({ x: xD, y: yD }) => cliffMask[y + yD]?.[x + xD],
+	);
 
 	const max = heights.reduce<number>(
 		(max, v) => (typeof v === "number" && v > max ? v : max),
@@ -336,11 +338,13 @@ export class Terrain extends Group {
 
 		for (let y = this.height - 1; y >= 0; y--)
 			for (let x = 0; x < this.width; x++) {
+				const cliffTile = cliffMask[y][x];
+				if (cliffTile !== "r" && isNaN(cliffTile)) continue;
+
 				const topLeft = heightMask[y][x];
 				const topRight = heightMask[y][x + 1];
 				const botLeft = heightMask[y + 1][x];
 				const botRight = heightMask[y + 1][x + 1];
-				const cliffTile = cliffMask[y][x];
 
 				if (typeof cliffTile === "number") {
 					// Floor
@@ -799,6 +803,10 @@ export class Terrain extends Group {
 			y,
 		);
 
-		return Math.min(topLeft, topRight, bottomLeft, bottomRight);
+		return Math.min(
+			...[topLeft, topRight, bottomLeft, bottomRight].filter(
+				(v) => !isNaN(v) && Number.isFinite(v),
+			),
+		);
 	}
 }

@@ -72525,7 +72525,7 @@ const calcCliffHeightCorner = (cliffMask, x, y, direction) => {
     const checks = [{ ...direction }];
     if (direction.x !== 0 && direction.y !== 0)
         checks.push({ x: 0, y: direction.y }, { x: direction.x, y: 0 });
-    const heights = checks.map(({ x: xD, y: yD }) => cliffMask[y + yD][x + xD]);
+    const heights = checks.map(({ x: xD, y: yD }) => cliffMask[y + yD]?.[x + xD]);
     const max = heights.reduce((max, v) => (typeof v === "number" && v > max ? v : max), -Infinity);
     if (heights.every((v) => typeof v === "number"))
         return max;
@@ -72666,11 +72666,13 @@ class Terrain extends Group {
         const rampWalls = [];
         for (let y = this.height - 1; y >= 0; y--)
             for (let x = 0; x < this.width; x++) {
+                const cliffTile = cliffMask[y][x];
+                if (cliffTile !== "r" && isNaN(cliffTile))
+                    continue;
                 const topLeft = heightMask[y][x];
                 const topRight = heightMask[y][x + 1];
                 const botLeft = heightMask[y + 1][x];
                 const botRight = heightMask[y + 1][x + 1];
-                const cliffTile = cliffMask[y][x];
                 if (typeof cliffTile === "number") {
                     // Floor
                     const vertices = [
@@ -72903,7 +72905,7 @@ class Terrain extends Group {
         if (typeof raw === "number")
             return raw;
         const { topLeft, topRight, bottomLeft, bottomRight } = calcCliffHeight(cliffMask, x, y);
-        return Math.min(topLeft, topRight, bottomLeft, bottomRight);
+        return Math.min(...[topLeft, topRight, bottomLeft, bottomRight].filter((v) => !isNaN(v) && Number.isFinite(v)));
     }
 }
 
@@ -72940,20 +72942,32 @@ const stringMap = (map) => {
  * Calculates a CliffMask from a map.
  * Example: `01\nr2` => [[0, 1], ["r", 2]]
  */
-const cliffMap = (map) => {
+const cliffMap = (map, fill) => {
     const rows = map.split("\n").filter((v) => v.trim());
     const minLeftTrim = commonLeftTrim(rows);
-    return rows.map((row) => row
+    return rows
+        .map((row) => row
         .trimRight()
         .slice(minLeftTrim)
         .split("")
         .map((v) => {
-        if (v === "r")
-            return "r";
-        const num = parseInt(v);
-        if (isNaN(num))
+        if (v === "r" || v === ".")
+            return v;
+        return parseInt(v);
+    }))
+        .map((row, y, map) => row.map((v, x) => {
+        if (v === ".") {
+            if (typeof fill === "number")
+                return fill;
+            const left = row[x - 1];
+            if (typeof left === "number")
+                return left;
+            const up = map[y - 1][x];
+            if (typeof up === "number")
+                return up;
             return 0;
-        return num;
+        }
+        return v;
     }));
 };
 
@@ -73170,7 +73184,7 @@ Object.values(meshes).forEach((klass) => {
     a.setAttribute("href", `#${klass.name}`);
     a.textContent = klass.name;
     li.appendChild(a);
-    li.addEventListener("click", () => {
+    a.addEventListener("click", () => {
         setTimeout(() => load(klass.name), 0);
     });
     meshList.appendChild(li);

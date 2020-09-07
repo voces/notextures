@@ -15,8 +15,17 @@ a {
     font-weight: bold;
     text-shadow:
         black 0px 0px 0.25em,
+        rgba(0,0,0,0) 0px 0px 0.5em,
         black 0px 0px 1em;
     text-decoration: none;
+    transition: text-shadow 125ms;
+}
+
+a:hover {
+    text-shadow:
+        black 0px 0px 0.25em,
+        rgba(0,0,0,1) 0px 0px 0.5em,
+        black 0px 0px 1em;
 }
 
 a.selected {

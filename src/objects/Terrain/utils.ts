@@ -50,23 +50,36 @@ export const stringMap = (map: string): number[][] => {
  * Calculates a CliffMask from a map.
  * Example: `01\nr2` => [[0, 1], ["r", 2]]
  */
-export const cliffMap = (map: string): CliffMask => {
+export const cliffMap = (map: string, fill?: number): CliffMask => {
 	const rows = map.split("\n").filter((v) => v.trim());
 
 	const minLeftTrim = commonLeftTrim(rows);
 
-	return rows.map((row) =>
-		row
-			.trimRight()
-			.slice(minLeftTrim)
-			.split("")
-			.map((v) => {
-				if (v === "r") return "r";
-				const num = parseInt(v);
-				if (isNaN(num)) return 0;
-				return num;
+	return rows
+		.map((row) =>
+			row
+				.trimRight()
+				.slice(minLeftTrim)
+				.split("")
+				.map((v) => {
+					if (v === "r" || v === ".") return v;
+					return parseInt(v);
+				}),
+		)
+		.map((row, y, map) =>
+			row.map((v, x) => {
+				if (v === ".") {
+					if (typeof fill === "number") return fill;
+					const left = row[x - 1];
+					if (typeof left === "number") return left;
+					const up = map[y - 1][x];
+					if (typeof up === "number") return up;
+					return 0;
+				}
+
+				return v;
 			}),
-	);
+		);
 };
 
 /** Removes vetical and left white space. */

@@ -22,7 +22,7 @@ Object.values(meshes).forEach((klass) => {
 	a.setAttribute("href", `#${klass.name}`);
 	a.textContent = klass.name;
 	li.appendChild(a);
-	li.addEventListener("click", () => {
+	a.addEventListener("click", () => {
 		setTimeout(() => load(klass.name), 0);
 	});
 	meshList.appendChild(li);
