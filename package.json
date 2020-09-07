@@ -16,8 +16,9 @@
   "scripts": {
     "build": "rollup --config",
     "dev": "rollup --config --watch",
-    "test": "jest",
-    "test-debug": "node --inspect-brk node_modules/.bin/jest --runInBand"
+    "prepublish": "rm -rf dist && npm run build",
+    "test-debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
