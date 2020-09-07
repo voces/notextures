@@ -377,7 +377,7 @@ export class Terrain extends Group {
 					geometry.faces.push(...faces);
 
 					// Left wall (next gets right)
-					if (x > 0) {
+					if (x > 0 && cliffMask[y][x - 1] !== undefined) {
 						const altHeight = this._tileHeight(cliffMask, x - 1, y);
 						const currentIsLow = cliffTile < altHeight;
 						const low = currentIsLow ? cliffTile : altHeight;
@@ -427,7 +427,7 @@ export class Terrain extends Group {
 					}
 
 					// Top wall (next gets bottom)
-					if (y > 0) {
+					if (y > 0 && cliffMask[y - 1][x] !== undefined) {
 						const altHeight = this._tileHeight(cliffMask, x, y - 1);
 						const currentIsLow = cliffTile < altHeight;
 						const low = currentIsLow ? cliffTile : altHeight;
