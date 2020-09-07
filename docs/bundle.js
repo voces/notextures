@@ -71632,7 +71632,7 @@ const commonLeftTrim = (rows) => rows.reduce((min, row) => {
  * Calculates a CliffMask from a map.
  * Example: `01\nr2` => [[0, 1], ["r", 2]]
  */
-const stringMap = (map) => {
+const stringMap = (map, fill = 0) => {
     const rows = map.split("\n").filter((v) => v.trim());
     const minLeftTrim = commonLeftTrim(rows);
     return rows.map((row) => row
@@ -71642,7 +71642,7 @@ const stringMap = (map) => {
         .map((v) => {
         const num = parseInt(v);
         if (isNaN(num))
-            return 0;
+            return fill;
         return num;
     }));
 };
@@ -71650,33 +71650,37 @@ const stringMap = (map) => {
  * Calculates a CliffMask from a map.
  * Example: `01\nr2` => [[0, 1], ["r", 2]]
  */
-const cliffMap = (map, fill) => {
+const cliffMap = (map) => {
     const rows = map.split("\n").filter((v) => v.trim());
     const minLeftTrim = commonLeftTrim(rows);
-    return rows
-        .map((row) => row
-        .trimRight()
-        .slice(minLeftTrim)
-        .split("")
-        .map((v) => {
-        if (v === "r" || v === ".")
-            return v;
-        return parseInt(v);
-    }))
-        .map((row, y, map) => row.map((v, x) => {
-        if (v === ".") {
-            if (typeof fill === "number")
-                return fill;
-            const left = row[x - 1];
-            if (typeof left === "number")
-                return left;
-            const up = map[y - 1][x];
-            if (typeof up === "number")
-                return up;
-            return 0;
+    const exploded = rows.map((row) => row.trimRight().slice(minLeftTrim).split(""));
+    const newMap = [];
+    for (let y = 0; y < exploded.length; y++) {
+        const row = [];
+        newMap.push(row);
+        for (let x = 0; x < exploded[y].length; x++) {
+            const v = exploded[y][x];
+            if (v === "r") {
+                row.push("r");
+                continue;
+            }
+            if (v === ".") {
+                const left = row[x - 1];
+                if (typeof left === "number") {
+                    row.push(left);
+                    continue;
+                }
+                const up = newMap[y - 1][x];
+                if (typeof up === "number") {
+                    row.push(up);
+                    continue;
+                }
+                throw new Error(`cannot determine height at (${x}, ${y})`);
+            }
+            row.push(parseInt(v));
         }
-        return v;
-    }));
+    }
+    return newMap;
 };
 
 const wall = ({ thickness, length, height, }) => {
