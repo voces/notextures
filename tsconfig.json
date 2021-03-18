@@ -12,7 +12,7 @@
 		"strictNullChecks": true,
 		"esModuleInterop": true,
 		"types": ["@types/node", "@types/jest"],
-		"noEmit": true, // overridden by rollup
+		"noEmit": true,
 		"declaration": true
 	},
 	"include": ["src"],
