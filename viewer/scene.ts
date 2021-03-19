@@ -1,20 +1,21 @@
+import _ from "lodash-es";
 import {
 	BufferAttribute,
 	Color,
 	DoubleSide,
+	Group,
 	HemisphereLight,
 	Mesh,
 	MeshPhongMaterial,
+	Object3D,
 	PerspectiveCamera,
 	PlaneBufferGeometry,
 	Scene,
-	WebGLRenderer,
-	Object3D,
 	Vector3,
-	Group,
+	WebGLRenderer,
 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import _ from "lodash-es";
+
 import { params } from "./gui";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

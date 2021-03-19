@@ -31,12 +31,12 @@ const randomizeColor = (
 	colorVariation?: Variation,
 ): BufferGeometry => {
 	const positionAttribute = geometry.getAttribute("position");
-	const positions = positionAttribute.count / positionAttribute.itemSize;
+	const positions = positionAttribute.count;
 
 	let colorAttribute = geometry.getAttribute("color");
 	if (!colorAttribute) {
 		colorAttribute = new BufferAttribute(
-			new Float32Array(positions * 3),
+			new Float32Array(geometry.index!.count / 3),
 			3,
 		);
 		geometry.setAttribute("color", colorAttribute);
@@ -44,7 +44,7 @@ const randomizeColor = (
 
 	color = randColor(color, colorVariation);
 
-	for (let i = 0; i < positions; i += 3) {
+	for (let i = 0; i < geometry.index!.count / 3; i += 3) {
 		const vertexColor = randColor(color, colorVariation);
 		colorAttribute.setXYZ(i, vertexColor.r, vertexColor.g, vertexColor.b);
 		colorAttribute.setXYZ(
