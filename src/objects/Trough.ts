@@ -1,13 +1,8 @@
-import {
-	MathUtils,
-	Mesh,
-	Geometry,
-	PlaneGeometry,
-	BufferGeometry,
-} from "three";
+import { BufferGeometry, MathUtils, Mesh, PlaneGeometry } from "three";
+
 import { wood } from "../colors.js";
-import { box, randColor } from "./util/deprecatedShared.js";
 import { faceColorMaterial, waterMaterial } from "../materials.js";
+import { box, randColor } from "./util/deprecatedShared.js";
 
 const wall = ({
 	thickness,
@@ -53,7 +48,7 @@ export class Trough extends Mesh {
 		height = 1 / 4,
 		angle = 0,
 	} = {}) {
-		const geometry = new Geometry();
+		const geometry = new BufferGeometry();
 		const materials = [faceColorMaterial, waterMaterial];
 
 		const left = wall({ thickness, length: length + thickness, height });
@@ -122,25 +117,28 @@ export class Trough extends Mesh {
 		);
 		geometry.merge(bottomRight);
 
-		for (let i = 0; i < geometry.faces.length; i++)
-			geometry.faces[i].materialIndex = 0;
+		console.log(geometry.attributes);
+		geometry.addGroup(0, geometry.getAttribute("position").count, 0);
+		// for (let i = 0; i < geometry.faces.length; i++)
+		// 	geometry.faces[i].materialIndex = 0;
 
 		const water = new PlaneGeometry(width, length);
 		water.translate(0, 0, (height * 3) / 4);
-		water.faces[0].color.set(0x182190);
-		water.faces[1].color.set(0x182190);
+		geometry.addGroup(0, geometry.getAttribute("position").count, 1);
+		// water.faces[0].color.set(0x182190);
+		// water.faces[1].color.set(0x182190);
 
-		for (let i = 0; i < water.faces.length; i++)
-			water.faces[i].materialIndex = 1;
+		// for (let i = 0; i < water.faces.length; i++)
+		// 	water.faces[i].materialIndex = 1;
 
 		geometry.merge(water);
 
 		geometry.rotateZ(angle - Math.PI / 4);
 
-		geometry.computeFaceNormals();
+		// geometry.computeFaceNormals();
 		geometry.computeVertexNormals();
 
-		super(new BufferGeometry().fromGeometry(geometry), materials);
+		super(geometry, materials);
 
 		this.castShadow = true;
 		this.receiveShadow = true;

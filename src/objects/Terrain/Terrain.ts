@@ -1,17 +1,18 @@
 // https://github.com/mrdoob/three.js/blob/master/examples/js/objects/Water2.js
 
 import {
+	BufferGeometry,
+	Color,
+	Face3,
 	Geometry,
 	Group,
 	Mesh,
 	MeshPhongMaterial,
 	Vector3,
-	Face3,
-	Color,
-	BufferGeometry,
 } from "three";
-import memoize from "../../util/memoize";
+
 import { faceColorMaterial, waterMaterial } from "../../materials";
+import memoize from "../../util/memoize";
 
 export type Cliff = number | "r";
 export type CliffMask = Cliff[][];

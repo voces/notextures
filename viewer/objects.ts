@@ -7,82 +7,84 @@ import {
 } from "../src";
 import * as Objects from "../src/objects";
 
-const { Terrain: BaseTerrain, stringMap, cliffMap, ...filtered } = Objects;
+// const { Terrain, stringMap, cliffMap, ...filtered } = Objects;
+const { stringMap, cliffMap, ...filtered } = Objects;
 
-class Terrain extends BaseTerrain {
-	constructor() {
-		const props = {
-			masks: {
-				height: stringMap(`
-					0000000
-					0100000
-					0000000
-					0000000
-					0000000
-					0000000
-					0000000
-				`),
-				cliff: cliffMap(`
-					111111
-					111rr1
-					111rr1
-					1rr331
-					1rr311
-					111110
-				`),
-				groundTile: stringMap(`
-					222222
-					222222
-					222222
-					222112
-					222100
-					222201
-				`),
-				cliffTile: stringMap(`
-					333333
-					333333
-					333333
-					333443
-					333433
-					333334
-				`),
-				water: stringMap(`
-					000000
-					000000
-					000000
-					000000
-					000000
-					000001
-				`),
-				waterHeight: stringMap(`
-					0000000
-					0000000
-					0000000
-					0000000
-					0000000
-					0000000
-					0000000
-				`),
-			},
-			tiles: [
-				LordaeronSummerDarkGrass,
-				LordaeronSummerRock,
-				LordaeronSummerGrass,
-				LordaeronSummerDirtCliff,
-				LordaeronSummerGrassCliff,
-			],
-		};
-		const size = {
-			width: props.masks.cliff.length,
-			height: props.masks.cliff[0].length,
-		};
-		const offset = { x: size.width / 2, y: size.height / 2, z: 0 };
-		super({ ...props, size, offset });
+// class Terrain2 extends Terrain {
+// 	constructor() {
+// 		const props = {
+// 			masks: {
+// 				height: stringMap(`
+// 					0000000
+// 					0100000
+// 					0000000
+// 					0000000
+// 					0000000
+// 					0000000
+// 					0000000
+// 				`),
+// 				cliff: cliffMap(`
+// 					111111
+// 					111rr1
+// 					111rr1
+// 					1rr331
+// 					1rr311
+// 					111110
+// 				`),
+// 				groundTile: stringMap(`
+// 					222222
+// 					222222
+// 					222222
+// 					222112
+// 					222100
+// 					222201
+// 				`),
+// 				cliffTile: stringMap(`
+// 					333333
+// 					333333
+// 					333333
+// 					333443
+// 					333433
+// 					333334
+// 				`),
+// 				water: stringMap(`
+// 					000000
+// 					000000
+// 					000000
+// 					000000
+// 					000000
+// 					000001
+// 				`),
+// 				waterHeight: stringMap(`
+// 					0000000
+// 					0000000
+// 					0000000
+// 					0000000
+// 					0000000
+// 					0000000
+// 					0000000
+// 				`),
+// 			},
+// 			tiles: [
+// 				LordaeronSummerDarkGrass,
+// 				LordaeronSummerRock,
+// 				LordaeronSummerGrass,
+// 				LordaeronSummerDirtCliff,
+// 				LordaeronSummerGrassCliff,
+// 			],
+// 		};
+// 		const size = {
+// 			width: props.masks.cliff.length,
+// 			height: props.masks.cliff[0].length,
+// 		};
+// 		const offset = { x: size.width / 2, y: size.height / 2, z: 0 };
+// 		super({ ...props, size, offset });
 
-		this.scale.z = 0.5;
-	}
-}
+// 		this.scale.z = 0.5;
+// 	}
+// }
 
-Object.defineProperty(Terrain, "name", { value: "Terrain" });
+// Object.defineProperty(Terrain2, "name", { value: "Terrain" });
 
-export default { ...filtered, Terrain };
+// export default { ...filtered, Terrain2 };
+export default { ...filtered };
