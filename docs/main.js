@@ -35639,6 +35639,40 @@ setInterval(() => {
 }, 1e3);
 render();
 
+// src/materials.ts
+var faceColorMaterial = new MeshPhongMaterial({
+  vertexColors: true,
+  flatShading: true
+});
+var waterMaterial = new MeshPhongMaterial({
+  color: 1581456,
+  flatShading: true,
+  opacity: 0.5,
+  transparent: true
+});
+
+// src/tiles.ts
+var LordaeronSummerRock = {
+  name: "Lordaeron Summer Rock",
+  color: "#876b62"
+};
+var LordaeronSummerGrass = {
+  name: "Lordaeron Summer Grass",
+  color: "#0c4013"
+};
+var LordaeronSummerDarkGrass = {
+  name: "Lordaeron Summer Dark Grass",
+  color: "#043609"
+};
+var LordaeronSummerDirtCliff = {
+  name: "Lordaeron Summer Dirt Cliff",
+  color: "#2f373f"
+};
+var LordaeronSummerGrassCliff = {
+  name: "Lordaeron Summer Grass Cliff",
+  color: "#867355"
+};
+
 // src/objects/index.ts
 var objects_exports = {};
 __export(objects_exports, {
@@ -35652,7 +35686,10 @@ __export(objects_exports, {
   PineTree: () => PineTree,
   RockChunks: () => RockChunks,
   ScorchedBarn: () => ScorchedBarn,
-  Trough: () => Trough
+  Terrain: () => Terrain,
+  Trough: () => Trough,
+  cliffMap: () => cliffMap,
+  stringMap: () => stringMap
 });
 
 // src/colors.ts
@@ -35661,18 +35698,7 @@ var stone = new Color(5858662);
 var cloth = new Color(4796691);
 var rope = new Color(4990997);
 var steel = new Color(14738917);
-
-// src/materials.ts
-var faceColorMaterial = new MeshPhongMaterial({
-  vertexColors: true,
-  flatShading: true
-});
-var waterMaterial = new MeshPhongMaterial({
-  color: 1581456,
-  flatShading: true,
-  opacity: 0.5,
-  transparent: true
-});
+var water = new Color(1581456);
 
 // node_modules/three/examples/jsm/utils/BufferGeometryUtils.js
 var BufferGeometryUtils = {
@@ -36259,7 +36285,7 @@ var Randomizer = class {
     colorize,
     translate,
     blur,
-    rotate
+    rotate: rotate2
   } = {}) {
     if (colorize)
       this.colorize(geometry2, colorize.color, colorize.variation);
@@ -36267,8 +36293,8 @@ var Randomizer = class {
       this.translate(geometry2, translate.position, translate.variation);
     if (blur)
       this.blur(geometry2, blur);
-    if (rotate)
-      this.rotate(geometry2, rotate.rotation, rotate.variation);
+    if (rotate2)
+      this.rotate(geometry2, rotate2.rotation, rotate2.variation);
     return geometry2;
   }
 };
@@ -37203,6 +37229,514 @@ var ScorchedBarn = class extends Mesh {
   }
 };
 
+// src/util/memoize.ts
+var fetchCache = (rootCache, args) => {
+  let cache = rootCache;
+  for (let i = 0; i < args.length - 1; i++) {
+    if (!(args[i] in cache))
+      cache[args[i]] = {};
+    cache = cache[args[i]];
+  }
+  const lastArg = args[args.length - 1];
+  return [cache[lastArg], cache, lastArg in cache, lastArg];
+};
+var memoize_default2 = (fn) => {
+  const cache = {};
+  const memoizedFn = function(...args) {
+    const [value, container, contains, lastArg] = fetchCache(cache, args);
+    if (contains)
+      return value;
+    return container[lastArg] = fn.apply(this, args);
+  };
+  return memoizedFn;
+};
+
+// src/objects/Terrain/Terrain.ts
+var memoizedColor = memoize_default2((hex) => new Color(hex));
+var tileFaceVertices = (vertices, which) => (which ? [1, 0, 2] : [1, 2, 3]).map((index) => vertices[index]);
+var wallVertices = (vertices, vertical, low, first) => (vertical && low && first && [1, 0, 2] || vertical && low && !first && [1, 2, 3] || vertical && !low && first && [2, 0, 1] || vertical && !low && !first && [2, 1, 3] || !vertical && low && first && [2, 0, 1] || !vertical && low && !first && [2, 1, 3] || !vertical && !low && first && [1, 0, 2] || [1, 2, 3]).map((index) => vertices[index]);
+var rotate = (faces) => {
+  for (let i = 0; i < faces.length / 2; i++)
+    if (Math.random() < 0.5) {
+      faces[i * 2].c = faces[i * 2 + 1].c;
+      faces[i * 2 + 1].a = faces[i * 2].b;
+    }
+};
+var nudge2 = (factor = 1) => (Math.random() - 0.5) * (Math.random() - 0.5) * factor;
+var noise = (vertexMap) => {
+  for (const l1 of vertexMap)
+    for (const l2 of l1)
+      for (const l3 of l2) {
+        if (!l3)
+          continue;
+        l3.x += nudge2(0.75);
+        l3.y += nudge2(0.75);
+        l3.z += nudge2(0.5);
+      }
+};
+var findLastIndex2 = (arr, fn, fromIndex = arr.length - 1) => {
+  for (let i = fromIndex; i >= 0; i--)
+    if (fn(arr[i]))
+      return i;
+  return -1;
+};
+var CORNERS = {
+  TOP_LEFT: {x: -1, y: -1},
+  TOP_RIGHT: {x: 1, y: -1},
+  BOTTOM_LEFT: {x: -1, y: 1},
+  BOTTOM_RIGHT: {x: 1, y: 1}
+};
+var calcCliffHeightCorner = (cliffMask, x, y, direction) => {
+  const cliffHeight = cliffMask[y]?.[x];
+  if (typeof cliffHeight === "number")
+    return cliffHeight;
+  const checks = [{...direction}];
+  if (direction.x !== 0 && direction.y !== 0)
+    checks.push({x: 0, y: direction.y}, {x: direction.x, y: 0});
+  const heights = checks.map(({x: xD, y: yD}) => cliffMask[y + yD]?.[x + xD]);
+  const max2 = heights.reduce((max3, v) => typeof v === "number" && v > max3 ? v : max3, -Infinity);
+  if (heights.every((v) => typeof v === "number"))
+    return max2;
+  const rampHeights = heights.map((v, i) => {
+    if (v !== "r")
+      return NaN;
+    let cornerHeight = "r";
+    let xCorner = x + checks[i].x;
+    let yCorner = y + checks[i].y;
+    while (cornerHeight === "r") {
+      cornerHeight = cliffMask[yCorner][xCorner];
+      xCorner += checks[i].x;
+      yCorner += checks[i].y;
+    }
+    let oppositeHeight = "r";
+    let xOpposite = x - checks[i].x;
+    let yOpposite = y - checks[i].y;
+    while (oppositeHeight === "r") {
+      oppositeHeight = cliffMask[yOpposite][xOpposite];
+      xOpposite -= checks[i].x;
+      yOpposite -= checks[i].y;
+    }
+    if (cornerHeight === oppositeHeight && checks[i].x !== 0 && checks[i].y !== 0) {
+      let adjacentHeight = "r";
+      let xAdjacent = x - checks[i].x;
+      let yAdjacent = y + checks[i].y;
+      while (adjacentHeight === "r") {
+        adjacentHeight = cliffMask[yAdjacent][xAdjacent];
+        xAdjacent -= checks[i].x;
+        yAdjacent += checks[i].y;
+      }
+      let adjacentOppositeHeight = "r";
+      let xAdjacentOpposite = x + checks[i].x;
+      let yAdjacentOpposite = y - checks[i].y;
+      while (adjacentOppositeHeight === "r") {
+        adjacentOppositeHeight = cliffMask[yAdjacentOpposite][xAdjacentOpposite];
+        xAdjacentOpposite += checks[i].x;
+        yAdjacentOpposite -= checks[i].y;
+      }
+      return Math.max((adjacentHeight + adjacentOppositeHeight) / 2, max2);
+    }
+    return Math.max((cornerHeight + oppositeHeight) / 2, max2);
+  });
+  const rampHeight = rampHeights.reduce((max3, v) => !isNaN(v) && v > max3 ? v : max3, -Infinity);
+  return rampHeight;
+};
+var calcCliffHeight = (cliffMask, x, y) => {
+  const cliffHeight = cliffMask[y]?.[x];
+  if (typeof cliffHeight === "number")
+    return {
+      topLeft: cliffHeight,
+      topRight: cliffHeight,
+      bottomLeft: cliffHeight,
+      bottomRight: cliffHeight
+    };
+  const [topLeft, topRight, bottomLeft, bottomRight] = Object.values(CORNERS).map((direction) => calcCliffHeightCorner(cliffMask, x, y, direction));
+  return {
+    topLeft,
+    topRight,
+    bottomLeft,
+    bottomRight
+  };
+};
+var Face3 = class {
+  constructor(a, b, c, color2) {
+    this.a = a;
+    this.b = b;
+    this.c = c;
+    this.color = color2;
+  }
+};
+var Terrain = class extends Group {
+  constructor(terrain) {
+    super();
+    this.groundFaces = [];
+    this.vertices = [];
+    this.groundColor = memoize_default2((x, y) => {
+      try {
+        const hex = terrain.tiles[terrain.masks.groundTile[y][x]].color.toUpperCase();
+        return memoizedColor(hex);
+      } catch (err) {
+        throw new Error(`Tile ( ${x}, ${y} ) uses undefined color ${terrain.masks.groundTile[y][x]}.`);
+      }
+    });
+    this.cliffColor = memoize_default2((x, y) => {
+      try {
+        const hex = terrain.tiles[terrain.masks.cliffTile[y][x]].color.toUpperCase();
+        return memoizedColor(hex);
+      } catch (err) {
+        throw new Error(`Tile ( ${x}, ${y} ) uses undefined color ${terrain.masks.cliffTile[y][x]}.`);
+      }
+    });
+    const {width, height} = terrain.size;
+    this.width = width;
+    this.height = height;
+    {
+      const {geometry: geometry2, material: material2} = this._computeGround({
+        height: terrain.masks.height,
+        cliff: terrain.masks.cliff,
+        offset: terrain.offset
+      });
+      this.ground = geometry2;
+      const mesh = new Mesh(geometry2, material2);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      this.add(mesh);
+    }
+    {
+      const {geometry: geometry2, material: material2} = this._computeWater({
+        water: terrain.masks.water,
+        waterHeight: terrain.masks.waterHeight,
+        offset: terrain.offset
+      });
+      this.water = geometry2;
+      this.add(new Mesh(geometry2, material2));
+    }
+  }
+  _computeGround({
+    height: heightMask,
+    cliff: cliffMask,
+    offset
+  }) {
+    const allFaces = [];
+    const vertex = (x, y, z, offset2) => {
+      const existing = this.vertices[x]?.[y]?.[z];
+      if (existing !== void 0)
+        return existing;
+      if (this.vertices[x] === void 0)
+        this.vertices[x] = [];
+      if (this.vertices[x][y] === void 0)
+        this.vertices[x][y] = [];
+      const vector = new Vector3(x, -y, z + offset2);
+      this.vertices[x][y][z] = vector;
+      return vector;
+    };
+    const rampWalls = [];
+    for (let y = this.height - 1; y >= 0; y--)
+      for (let x = 0; x < this.width; x++) {
+        const cliffTile = cliffMask[y][x];
+        if (cliffTile !== "r" && isNaN(cliffTile))
+          continue;
+        const topLeft = heightMask[y][x];
+        const topRight = heightMask[y][x + 1];
+        const botLeft = heightMask[y + 1][x];
+        const botRight = heightMask[y + 1][x + 1];
+        if (typeof cliffTile === "number") {
+          const vertices = [
+            vertex(x, y, cliffTile, topLeft),
+            vertex(x + 1, y, cliffTile, topRight),
+            vertex(x, y + 1, cliffTile, botLeft),
+            vertex(x + 1, y + 1, cliffTile, botRight)
+          ];
+          const aVertices = tileFaceVertices(vertices, true);
+          const bVertices = tileFaceVertices(vertices, false);
+          const faces = [
+            new Face3(aVertices[0], aVertices[1], aVertices[2], this.groundColor(x, y)),
+            new Face3(bVertices[0], bVertices[1], bVertices[2], this.groundColor(x, y))
+          ];
+          if (!this.groundFaces[y])
+            this.groundFaces[y] = [];
+          this.groundFaces[y][x] = faces;
+          allFaces.push(...faces);
+          if (x > 0 && cliffMask[y][x - 1] !== void 0) {
+            const altHeight = this._tileHeight(cliffMask, x - 1, y);
+            const currentIsLow = cliffTile < altHeight;
+            const low = currentIsLow ? cliffTile : altHeight;
+            const high = currentIsLow ? altHeight : cliffTile;
+            for (let z = low; z < high; z++) {
+              const vertices2 = [
+                vertex(x, y, z, topLeft),
+                vertex(x, y + 1, z, botLeft),
+                vertex(x, y, z + 1, topLeft),
+                vertex(x, y + 1, z + 1, botLeft)
+              ];
+              const aVertices2 = wallVertices(vertices2, true, currentIsLow, true);
+              const bVertices2 = wallVertices(vertices2, true, currentIsLow, false);
+              allFaces.push(new Face3(aVertices2[0], aVertices2[1], aVertices2[2], this.cliffColor(x, y)), new Face3(bVertices2[0], bVertices2[1], bVertices2[2], this.cliffColor(x, y)));
+            }
+          }
+          if (y > 0 && cliffMask[y - 1][x] !== void 0) {
+            const altHeight = this._tileHeight(cliffMask, x, y - 1);
+            const currentIsLow = cliffTile < altHeight;
+            const low = currentIsLow ? cliffTile : altHeight;
+            const high = currentIsLow ? altHeight : cliffTile;
+            for (let z = low; z < high; z++) {
+              const vertices2 = [
+                vertex(x, y, z, topLeft),
+                vertex(x + 1, y, z, topRight),
+                vertex(x, y, z + 1, topLeft),
+                vertex(x + 1, y, z + 1, topRight)
+              ];
+              const aVertices2 = wallVertices(vertices2, false, currentIsLow, true);
+              const bVertices2 = wallVertices(vertices2, false, currentIsLow, false);
+              allFaces.push(new Face3(aVertices2[0], aVertices2[1], aVertices2[2], this.cliffColor(x, y)), new Face3(bVertices2[0], bVertices2[1], bVertices2[2], this.cliffColor(x, y)));
+            }
+          }
+        } else if (cliffTile.toLowerCase() === "r") {
+          const {
+            topLeft: topLeftCliff,
+            topRight: topRightCliff,
+            bottomLeft: botLeftCliff,
+            bottomRight: botRightCliff
+          } = calcCliffHeight(cliffMask, x, y);
+          const vertices = [
+            vertex(x, y, topLeftCliff, topLeft),
+            vertex(x + 1, y, topRightCliff, topRight),
+            vertex(x, y + 1, botLeftCliff, botLeft),
+            vertex(x + 1, y + 1, botRightCliff, botRight)
+          ];
+          const aVertices = tileFaceVertices(vertices, true);
+          const bVertices = tileFaceVertices(vertices, false);
+          const faces = [
+            new Face3(aVertices[0], aVertices[1], aVertices[2], this.groundColor(x, y)),
+            new Face3(bVertices[0], bVertices[1], bVertices[2], this.groundColor(x, y))
+          ];
+          if (!this.groundFaces[y])
+            this.groundFaces[y] = [];
+          this.groundFaces[y][x] = faces;
+          allFaces.push(...faces);
+          const corners = [
+            topLeftCliff,
+            topRightCliff,
+            botLeftCliff,
+            botRightCliff
+          ];
+          const walls = [
+            {a: 0, b: 1, neighbor: {x: 0, y: -1}},
+            {a: 1, b: 3, neighbor: {x: 1, y: 0}},
+            {a: 3, b: 2, neighbor: {x: 0, y: 1}},
+            {a: 2, b: 0, neighbor: {x: -1, y: 0}}
+          ];
+          for (let i = 0; i < walls.length; i++) {
+            const neighborCliffMaskTile = cliffMask[y + walls[i].neighbor.y]?.[x + walls[i].neighbor.x];
+            if (neighborCliffMaskTile !== void 0 && typeof neighborCliffMaskTile === "string")
+              continue;
+            const z = Math.min(corners[walls[i].a], corners[walls[i].b]);
+            const a = vertices[walls[i].a];
+            const b = vertices[walls[i].b];
+            if (a.z !== b.z && (a.x === b.x || a.y === b.y)) {
+              const height = Math.min(a.z, b.z);
+              const {x: vX, y: vY} = a.z === height ? b : a;
+              const v = vertex(vX, -vY, z, height - z);
+              rampWalls.push(new Face3(a, b, v, this.cliffColor(x, y)));
+            }
+          }
+          const minHeight = Math.min(topLeftCliff, topRightCliff, botLeftCliff, botRightCliff);
+          if (isNaN(minHeight))
+            console.warn("Got a NaN!");
+          if (topLeftCliff !== botLeftCliff && x > 0) {
+            const rawCliffLeft = cliffMask[y][x - 1];
+            const cliffLeft = typeof rawCliffLeft === "number" ? rawCliffLeft : -Infinity;
+            const currentIsLow = minHeight < cliffLeft;
+            const low = currentIsLow ? minHeight : cliffLeft;
+            const high = currentIsLow ? cliffLeft : minHeight;
+            if (isNaN(low) || isNaN(high) || !isFinite(low) || !isFinite(high))
+              continue;
+            for (let z = low; z < high; z++) {
+              const vertices2 = [
+                vertex(x, y, z, topLeft),
+                vertex(x, y + 1, z, botLeft),
+                vertex(x, y, z + 1, topLeft),
+                vertex(x, y + 1, z + 1, botLeft)
+              ];
+              const aVertices2 = wallVertices(vertices2, true, currentIsLow, true);
+              const bVertices2 = wallVertices(vertices2, true, currentIsLow, false);
+              allFaces.push(new Face3(aVertices2[0], aVertices2[1], aVertices2[2], this.cliffColor(x, y)), new Face3(bVertices2[0], bVertices2[1], bVertices2[2], this.cliffColor(x, y)));
+            }
+          }
+          if (topLeftCliff !== topRightCliff && y > 0) {
+            const rawCliffAbove = cliffMask[y - 1][x];
+            const cliffAbove = typeof rawCliffAbove === "number" ? rawCliffAbove : -Infinity;
+            const currentIsLow = minHeight < cliffAbove;
+            const low = currentIsLow ? minHeight : cliffAbove;
+            const high = currentIsLow ? cliffAbove : minHeight;
+            if (isNaN(low) || isNaN(high) || !isFinite(low) || !isFinite(high))
+              continue;
+            for (let z = low; z < high; z++) {
+              const vertices2 = [
+                vertex(x, y, z, topLeft),
+                vertex(x + 1, y, z, topRight),
+                vertex(x, y, z + 1, topLeft),
+                vertex(x + 1, y, z + 1, topRight)
+              ];
+              const aVertices2 = wallVertices(vertices2, false, currentIsLow, true);
+              const bVertices2 = wallVertices(vertices2, false, currentIsLow, false);
+              allFaces.push(new Face3(aVertices2[0], aVertices2[1], aVertices2[2], this.cliffColor(x, y)), new Face3(bVertices2[0], bVertices2[1], bVertices2[2], this.cliffColor(x, y)));
+            }
+          }
+        }
+      }
+    rotate(allFaces);
+    allFaces.push(...rampWalls);
+    noise(this.vertices);
+    const geometry2 = new BufferGeometry();
+    geometry2.setAttribute("position", new BufferAttribute(new Float32Array(allFaces.flatMap((face) => [face.a, face.b, face.c].flatMap((v) => [
+      v.x,
+      v.y,
+      v.z
+    ]))), 3));
+    geometry2.setAttribute("color", new BufferAttribute(new Float32Array(allFaces.flatMap((face) => [
+      face.color.r,
+      face.color.g,
+      face.color.b,
+      face.color.r,
+      face.color.g,
+      face.color.b,
+      face.color.r,
+      face.color.g,
+      face.color.b
+    ])), 3));
+    geometry2.translate(-offset.x, offset.y, offset.z);
+    return {geometry: geometry2, material: faceColorMaterial};
+  }
+  _computeWater({
+    water: waterMask,
+    waterHeight: waterHeightMask,
+    offset
+  }) {
+    const faces = [];
+    const vertex = (x, y, waterHeight) => {
+      const existing = this.vertices[x]?.[y]?.water;
+      if (existing !== void 0)
+        return existing;
+      if (this.vertices[x] === void 0)
+        this.vertices[x] = [];
+      if (this.vertices[x][y] === void 0)
+        this.vertices[x][y] = [];
+      waterHeight += 3 / 8 + offset.z;
+      const groundVertices = this.vertices[x][y];
+      if (!groundVertices || !groundVertices.length)
+        throw new Error("Expected ground where there is water");
+      const cliff = Math.floor(waterHeight);
+      const trueLowIndex = findLastIndex2(groundVertices, Boolean, cliff);
+      const lowIndex = trueLowIndex < 0 ? groundVertices.findIndex(Boolean) : trueLowIndex;
+      const low = groundVertices[lowIndex];
+      const high = groundVertices.length - 1 !== lowIndex ? groundVertices[groundVertices.length - 1] : void 0;
+      let vector;
+      if (high) {
+        const alpha = (waterHeight - low.z) / (high.z - low.z);
+        vector = low.clone().lerp(high, alpha);
+      } else
+        vector = low.clone().setZ(waterHeight + nudge2(1 / 8));
+      this.vertices[x][y].water = vector;
+      return vector;
+    };
+    for (let y = this.height - 1; y >= 0; y--)
+      for (let x = 0; x < this.width; x++)
+        if (waterMask[y][x]) {
+          const topLeft = waterHeightMask[y][x];
+          const topRight = waterHeightMask[y][x + 1];
+          const botLeft = waterHeightMask[y + 1][x];
+          const botRight = waterHeightMask[y + 1][x + 1];
+          const vertices = [
+            vertex(x, y, topLeft),
+            vertex(x + 1, y, topRight),
+            vertex(x, y + 1, botLeft),
+            vertex(x + 1, y + 1, botRight)
+          ];
+          faces.push(new Face3(...tileFaceVertices(vertices, true), water), new Face3(...tileFaceVertices(vertices, false), water));
+        }
+    rotate(faces);
+    const geometry2 = new BufferGeometry();
+    geometry2.setAttribute("position", new BufferAttribute(new Float32Array(faces.flatMap((face) => [face.a, face.b, face.c].flatMap((v) => [
+      v.x,
+      v.y,
+      v.z
+    ]))), 3));
+    geometry2.setAttribute("color", new BufferAttribute(new Float32Array(faces.flatMap((face) => [
+      face.color.r,
+      face.color.g,
+      face.color.b,
+      face.color.r,
+      face.color.g,
+      face.color.b,
+      face.color.r,
+      face.color.g,
+      face.color.b
+    ])), 3));
+    geometry2.translate(-offset.x, offset.y, offset.z);
+    return {geometry: geometry2, material: waterMaterial};
+  }
+  _tileHeight(cliffMask, x, y) {
+    const raw = cliffMask[y][x];
+    if (typeof raw === "number")
+      return raw;
+    const {topLeft, topRight, bottomLeft, bottomRight} = calcCliffHeight(cliffMask, x, y);
+    return Math.min(...[topLeft, topRight, bottomLeft, bottomRight].filter((v) => !isNaN(v) && Number.isFinite(v)));
+  }
+};
+
+// src/objects/Terrain/utils.ts
+var leftTrim = (v) => {
+  const match = v.match(/^\s+/);
+  return match ? match[0].length : 0;
+};
+var commonLeftTrim = (rows) => rows.reduce((min2, row) => {
+  if (!row.trim())
+    return min2;
+  return Math.min(min2, leftTrim(row));
+}, Infinity);
+var stringMap = (map3, fill2 = 0) => {
+  const rows = map3.split("\n").filter((v) => v.trim());
+  const minLeftTrim = commonLeftTrim(rows);
+  return rows.map((row) => row.trimRight().slice(minLeftTrim).split("").map((v) => {
+    const num = parseInt(v);
+    if (isNaN(num))
+      return fill2;
+    return num;
+  }));
+};
+var cliffMap = (map3) => {
+  const rows = map3.split("\n").filter((v) => v.trim());
+  const minLeftTrim = commonLeftTrim(rows);
+  const exploded = rows.map((row) => row.trimRight().slice(minLeftTrim).split(""));
+  const newMap = [];
+  for (let y = 0; y < exploded.length; y++) {
+    const row = [];
+    newMap.push(row);
+    for (let x = 0; x < exploded[y].length; x++) {
+      const v = exploded[y][x];
+      if (v === "r") {
+        row.push("r");
+        continue;
+      }
+      if (v === ".") {
+        const left = row[x - 1];
+        if (typeof left === "number") {
+          row.push(left);
+          continue;
+        }
+        const up = newMap[y - 1][x];
+        if (typeof up === "number") {
+          row.push(up);
+          continue;
+        }
+        throw new Error(`cannot determine height at (${x}, ${y})`);
+      }
+      row.push(parseInt(v));
+    }
+  }
+  return newMap;
+};
+
 // src/objects/Trough.ts
 var wall = ({
   thickness,
@@ -37301,13 +37835,13 @@ var Trough = class extends Mesh {
       bottomRight
     ]);
     geometry2.addGroup(0, geometry2.getAttribute("position").count * 2, 0);
-    const water = new PlaneGeometry(width, length).toNonIndexed();
+    const water2 = new PlaneGeometry(width, length).toNonIndexed();
     const waterColorAttribute = new BufferAttribute(new Float32Array(6 * 3), 3);
-    water.setAttribute("color", waterColorAttribute);
-    water.translate(0, 0, height * 3 / 4);
+    water2.setAttribute("color", waterColorAttribute);
+    water2.translate(0, 0, height * 3 / 4);
     for (let i = 0; i < 6; i++)
-      waterColorAttribute.setXYZ(i, 24, 33, 144);
-    geometry2 = BufferGeometryUtils.mergeBufferGeometries([geometry2, water], true);
+      waterColorAttribute.setXYZ(i, water.r, water.g, water.b);
+    geometry2 = BufferGeometryUtils.mergeBufferGeometries([geometry2, water2], true);
     geometry2.rotateZ(angle - Math.PI / 4);
     geometry2.computeVertexNormals();
     super(geometry2, materials);
@@ -37317,8 +37851,81 @@ var Trough = class extends Mesh {
 };
 
 // viewer/objects.ts
-var {stringMap, cliffMap, ...filtered} = objects_exports;
-var objects_default = {...filtered};
+var {Terrain: BaseTerrain, stringMap: stringMap2, cliffMap: cliffMap2, ...filtered} = objects_exports;
+var Terrain2 = class extends BaseTerrain {
+  constructor() {
+    const props = {
+      masks: {
+        height: stringMap2(`
+					0000000
+					0100000
+					0000000
+					0000000
+					0000000
+					0000000
+					0000000
+				`),
+        cliff: cliffMap2(`
+					111111
+					111rr1
+					111rr1
+					1rr331
+					1rr311
+					111110
+				`),
+        groundTile: stringMap2(`
+					222222
+					222222
+					222222
+					222112
+					222100
+					222201
+				`),
+        cliffTile: stringMap2(`
+					333333
+					333333
+					333333
+					333443
+					333433
+					333334
+				`),
+        water: stringMap2(`
+					000000
+					000000
+					000000
+					000000
+					000000
+					000001
+				`),
+        waterHeight: stringMap2(`
+					0000000
+					0000000
+					0000000
+					0000000
+					0000000
+					0000000
+					0000000
+				`)
+      },
+      tiles: [
+        LordaeronSummerDarkGrass,
+        LordaeronSummerRock,
+        LordaeronSummerGrass,
+        LordaeronSummerDirtCliff,
+        LordaeronSummerGrassCliff
+      ]
+    };
+    const size2 = {
+      width: props.masks.cliff.length,
+      height: props.masks.cliff[0].length
+    };
+    const offset = {x: size2.width / 2, y: size2.height / 2, z: 0};
+    super({...props, size: size2, offset});
+    this.scale.z = 0.5;
+  }
+};
+Object.defineProperty(Terrain2, "name", {value: "Terrain"});
+var objects_default = {...filtered, Terrain: Terrain2};
 
 // viewer/main.ts
 var meshList = document.getElementById("mesh-list");

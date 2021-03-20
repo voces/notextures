@@ -1,7 +1,7 @@
 import { BufferAttribute, MathUtils, Mesh, PlaneGeometry } from "three";
 import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtils";
 
-import { wood } from "../colors.js";
+import { water as waterColor, wood } from "../colors.js";
 import { faceColorMaterial, waterMaterial } from "../materials.js";
 import { box, randColor } from "./util/deprecatedShared.js";
 
@@ -145,7 +145,12 @@ export class Trough extends Mesh {
 		water.setAttribute("color", waterColorAttribute);
 		water.translate(0, 0, (height * 3) / 4);
 		for (let i = 0; i < 6; i++)
-			waterColorAttribute.setXYZ(i, 0x18, 0x21, 0x90);
+			waterColorAttribute.setXYZ(
+				i,
+				waterColor.r,
+				waterColor.g,
+				waterColor.b,
+			);
 
 		geometry = BufferGeometryUtils.mergeBufferGeometries(
 			[geometry, water],
