@@ -1,8 +1,10 @@
-import { Mesh, Vector2, Color, BufferGeometry } from "three";
+import { Color, Mesh, Vector2 } from "three";
+import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtils";
+
 import { wood } from "../colors.js";
+import { faceColorMaterial } from "../materials.js";
 import Builder from "./util/Builder.js";
 import Randomizer from "./util/Randomizer.js";
-import { faceColorMaterial } from "../materials.js";
 
 const HAY = new Color("#e4d96f");
 
@@ -16,7 +18,7 @@ export class BrokenHayCart extends Mesh {
 
 		const brokenWheel = -0.5;
 
-		const geometry = new Builder()
+		let geometry = new Builder()
 			// Wheels
 			.repeat(2, (b, x) => {
 				const wheel = b
@@ -82,7 +84,8 @@ export class BrokenHayCart extends Mesh {
 			.geometry();
 
 		// Hay
-		geometry.merge(
+		geometry = BufferGeometryUtils.mergeBufferGeometries([
+			geometry,
 			new Builder()
 				.for(3, (b, z) =>
 					b
@@ -105,9 +108,9 @@ export class BrokenHayCart extends Mesh {
 				.root()
 				.randomize()
 				.geometry(),
-		);
+		]);
 
-		super(new BufferGeometry().fromGeometry(geometry), faceColorMaterial);
+		super(geometry, faceColorMaterial);
 
 		this.castShadow = true;
 		this.receiveShadow = true;

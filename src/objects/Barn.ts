@@ -1,8 +1,9 @@
 import { Mesh } from "three";
+
 import { wood } from "../colors.js";
+import { faceColorMaterial } from "../materials.js";
 import Builder from "./util/Builder.js";
 import Randomizer from "./util/Randomizer.js";
-import { faceColorMaterial } from "../materials.js";
 
 export class Barn extends Mesh {
 	constructor() {
@@ -69,7 +70,7 @@ export class Barn extends Mesh {
 			.color(door)
 			.randomize()
 			.parent!.rotateZ(-Math.PI / 4)
-			.buffer();
+			.geometry();
 
 		super(geometry, faceColorMaterial);
 

@@ -1,4 +1,5 @@
-import { Mesh, PlaneBufferGeometry, BufferAttribute } from "three";
+import { BufferAttribute, Mesh, PlaneBufferGeometry } from "three";
+
 import { faceColorMaterial } from "../materials";
 
 class ColorAttribute extends BufferAttribute {

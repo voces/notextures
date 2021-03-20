@@ -1,14 +1,16 @@
 import {
-	MathUtils,
-	CylinderGeometry,
 	BoxGeometry,
-	TetrahedronGeometry,
-	DodecahedronGeometry,
+	BufferGeometry,
 	Color,
+	CylinderGeometry,
+	DodecahedronGeometry,
+	MathUtils,
+	TetrahedronGeometry,
 	Vector3,
-	Geometry,
 } from "three";
+
 import Randomizer, { Variation } from "./Randomizer.js";
+import { getColorAttribute } from "./utils.js";
 
 export const nudge = Randomizer.spreader(1 / 16, 1 / 4);
 
@@ -24,20 +26,38 @@ export const randColor = (color: Color, colorVariation = colorNudge): Color =>
 	);
 
 const randomizeColor = (
-	geometry: Geometry,
+	geometry: BufferGeometry,
 	color: Color,
 	colorVariation?: Variation,
-): Geometry => {
-	color = randColor(color, colorVariation);
+): BufferGeometry => {
+	const positionAttribute = geometry.getAttribute("position");
+	const positions = positionAttribute.count;
 
-	for (let i = 0; i < geometry.faces.length; i++)
-		geometry.faces[i].color = randColor(color, colorVariation);
+	const colorAttribute = getColorAttribute(geometry);
+
+	color = randColor(color, colorVariation);
+	for (let i = 0; i < positions; i += 3) {
+		const vertexColor = randColor(color, colorVariation);
+		colorAttribute.setXYZ(i, vertexColor.r, vertexColor.g, vertexColor.b);
+		colorAttribute.setXYZ(
+			i + 1,
+			vertexColor.r,
+			vertexColor.g,
+			vertexColor.b,
+		);
+		colorAttribute.setXYZ(
+			i + 2,
+			vertexColor.r,
+			vertexColor.g,
+			vertexColor.b,
+		);
+	}
 
 	return geometry;
 };
 
 const randomize = (
-	geometry: Geometry,
+	geometry: BufferGeometry,
 	{
 		color,
 		// The position of each vertex
@@ -47,17 +67,12 @@ const randomize = (
 	// rotationVariation = nudge,
 	{
 		color?: Color;
-		vertexVariation?: Variation;
+		vertexVariation?: number;
 	},
-): Geometry => {
+): BufferGeometry => {
 	if (color) randomizeColor(geometry, color);
 
-	if (vertexVariation)
-		for (let i = 0; i < geometry.vertices.length; i++) {
-			geometry.vertices[i].x = vertexVariation(geometry.vertices[i].x);
-			geometry.vertices[i].y = vertexVariation(geometry.vertices[i].y);
-			geometry.vertices[i].z = vertexVariation(geometry.vertices[i].z);
-		}
+	if (vertexVariation) Randomizer.blur(geometry, vertexVariation);
 
 	// if (rotation)
 	// 	geometry.lookAt(
@@ -86,13 +101,13 @@ export const cylinder = ({
 	length: number;
 	radius: number;
 	color: Color;
-}): Geometry =>
+}): BufferGeometry =>
 	randomize(
 		new CylinderGeometry(
 			radius * (1 + MathUtils.randFloatSpread(radius / 16)),
 			radius * (1 + MathUtils.randFloatSpread(radius / 16)),
 			length * (1 + MathUtils.randFloatSpread(length / 16)),
-		),
+		).toNonIndexed(),
 		{ color },
 	);
 
@@ -106,7 +121,8 @@ export const box = ({
 	height: number;
 	depth: number;
 	color: Color;
-}): Geometry => randomize(new BoxGeometry(width, height, depth), { color });
+}): BufferGeometry =>
+	randomize(new BoxGeometry(width, height, depth).toNonIndexed(), { color });
 
 export const tetrahedron = ({
 	radius,
@@ -117,9 +133,9 @@ export const tetrahedron = ({
 	radius: number;
 	detail: number;
 	color: Color;
-	vertexVariation: Variation;
-}): Geometry =>
-	randomize(new TetrahedronGeometry(radius, detail), {
+	vertexVariation: number;
+}): BufferGeometry =>
+	randomize(new TetrahedronGeometry(radius, detail).toNonIndexed(), {
 		color,
 		vertexVariation,
 	});
@@ -130,7 +146,10 @@ export const dodecahedron = ({
 	color,
 }: {
 	radius: number;
-	vertexVariation: Variation;
+	vertexVariation: number;
 	color: Color;
-}): Geometry =>
-	randomize(new DodecahedronGeometry(radius), { vertexVariation, color });
+}): BufferGeometry =>
+	randomize(new DodecahedronGeometry(radius).toNonIndexed(), {
+		vertexVariation,
+		color,
+	});

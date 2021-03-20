@@ -1,13 +1,9 @@
-import {
-	Color,
-	ConeGeometry,
-	CylinderGeometry,
-	Geometry,
-	MathUtils,
-	Mesh,
-	BufferGeometry,
-} from "three";
+import { Color, ConeGeometry, CylinderGeometry, MathUtils, Mesh } from "three";
+import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtils";
+
 import { faceColorMaterial } from "../materials";
+import Builder from "./util/Builder";
+import { colorFace, getFaceCount } from "./util/utils";
 
 const TRUNK_COLOR = new Color(0x483d19);
 const LEAVES_COLOR = new Color(0x026e2d);
@@ -20,20 +16,14 @@ const createTrunk = ({
 	radius: number;
 	height: number;
 	color: Color;
-}) => {
-	const trunk = new CylinderGeometry(radius / 16, radius / 10, height / 3);
-
-	for (let i = 0; i < trunk.faces.length; i++)
-		trunk.faces[i].color = color
-			.clone()
-			.offsetHSL(MathUtils.randFloatSpread(1 / 36), 0, 0);
-
-	trunk.rotateX(Math.PI / 2);
-	trunk.rotateZ(Math.PI * Math.random());
-	trunk.translate(0, 0, height / 8);
-
-	return trunk;
-};
+}) =>
+	new Builder()
+		.cylinder(radius / 16, radius / 10, height / 3)
+		.color(color)
+		.rotateX(Math.PI / 2)
+		.rotateZ(Math.PI * Math.random())
+		.translateZ(height / 8)
+		.parent!.geometry();
 
 const createShelfs = ({
 	height,
@@ -50,13 +40,14 @@ const createShelfs = ({
 		(((height * radius) / shelfs) * (Math.random() + 4)) / 300;
 	const shelfRadiusGrowth = height / shelfs / 10;
 
-	const geometry = new Geometry();
+	// const geometry = new Geometry();
 
 	let Class: typeof ConeGeometry | typeof CylinderGeometry = ConeGeometry;
 
 	const xTilt = MathUtils.randFloatSpread(height / 20);
 	const yTilt = MathUtils.randFloatSpread(height / 20);
 
+	const shelfGeometries = [];
 	for (let i = 0; i < shelfs; i++) {
 		// Adjust shelf
 		color.offsetHSL(
@@ -72,14 +63,19 @@ const createShelfs = ({
 		];
 		if (Class === CylinderGeometry) args.unshift(args[0] / 6);
 
-		const shelf = new Class(...args);
+		const shelf = new Class(...args).toNonIndexed();
 
 		if (Class === ConeGeometry) Class = CylinderGeometry;
 
-		for (let i = 0; i < shelf.faces.length; i++)
-			shelf.faces[i].color = color
-				.clone()
-				.offsetHSL(MathUtils.randFloatSpread(1 / 24), 0, 0);
+		const faces = getFaceCount(shelf);
+		for (let i = 0; i < faces; i++)
+			colorFace(
+				shelf,
+				i,
+				color
+					.clone()
+					.offsetHSL(MathUtils.randFloatSpread(1 / 24), 0, 0),
+			);
 
 		// todo: does this do anything?
 		((shelf as unknown) as { radius: number }).radius = shelfRadius;
@@ -95,10 +91,10 @@ const createShelfs = ({
 			(shelfs - i) ** 0.75 * yTilt,
 			height,
 		);
-		geometry.merge(shelf);
+		shelfGeometries.push(shelf);
 	}
 
-	return geometry;
+	return shelfGeometries;
 };
 
 export class PineTree extends Mesh {
@@ -132,15 +128,15 @@ export class PineTree extends Mesh {
 		if (shelfs === undefined)
 			shelfs = height > 10 / 3 ? 3 + (Math.random() > 0.5 ? 1 : 0) : 3;
 
-		const geometry = new Geometry();
+		const geometry = BufferGeometryUtils.mergeBufferGeometries([
+			createTrunk({ radius, height, color: trunk }),
+			...createShelfs({ height, radius, shelfs, color: leaves }),
+		]);
 
-		geometry.merge(createTrunk({ radius, height, color: trunk }));
-		geometry.merge(createShelfs({ height, radius, shelfs, color: leaves }));
-
-		geometry.computeFaceNormals();
+		// geometry.computeFaceNormals();
 		geometry.computeVertexNormals();
 
-		super(new BufferGeometry().fromGeometry(geometry), faceColorMaterial);
+		super(geometry, faceColorMaterial);
 
 		this.castShadow = true;
 		this.receiveShadow = true;

@@ -1,8 +1,9 @@
-import { Mesh, Vector2, Color } from "three";
+import { Color, Mesh, Vector2 } from "three";
+
 import { wood } from "../colors.js";
+import { faceColorMaterial } from "../materials.js";
 import Builder from "./util/Builder.js";
 import Randomizer from "./util/Randomizer.js";
-import { faceColorMaterial } from "../materials.js";
 
 const HAY = new Color("#e4d96f");
 
@@ -84,7 +85,7 @@ export class HayCart extends Mesh {
 			)
 			.root()
 			.randomize()
-			.buffer();
+			.geometry();
 
 		super(geometry, faceColorMaterial);
 

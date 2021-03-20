@@ -86,3 +86,6 @@ class Terrain extends BaseTerrain {
 Object.defineProperty(Terrain, "name", { value: "Terrain" });
 
 export default { ...filtered, Terrain };
+
+// Make TS happy
+export { BaseTerrain };

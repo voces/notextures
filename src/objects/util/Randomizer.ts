@@ -1,13 +1,15 @@
-import { Color, Geometry, Vector3 } from "three";
+import { BufferGeometry, Color, Vector3 } from "three";
+
 import Builder from "./Builder.js";
+import { getColorAttribute, getVertexCount } from "./utils.js";
 
 export type Variation = (value: number) => number;
 
 export default class Randomizer {
-	private geometry: Geometry;
+	private geometry: BufferGeometry;
 	private builder: Builder;
 
-	constructor(geometry: Geometry, builder: Builder) {
+	constructor(geometry: BufferGeometry, builder: Builder) {
 		this.geometry = geometry;
 		this.builder = builder;
 	}
@@ -58,15 +60,36 @@ export default class Randomizer {
 	}
 
 	static colorize(
-		geometry: Geometry,
+		geometry: BufferGeometry,
 		color: Color,
 		variation = this.spreader(),
-	): Geometry {
+	): BufferGeometry {
 		// Shift the entire geometry
 		color = this.colorSpread(color, variation);
 
-		for (let i = 0; i < geometry.faces.length; i++)
-			geometry.faces[i].color = this.colorSpread(color, variation);
+		const vertices = getVertexCount(geometry);
+		const colorAttribute = getColorAttribute(geometry);
+		for (let i = 0; i < vertices; i += 3) {
+			const vertexColor = this.colorSpread(color, variation);
+			colorAttribute.setXYZ(
+				i,
+				vertexColor.r,
+				vertexColor.g,
+				vertexColor.b,
+			);
+			colorAttribute.setXYZ(
+				i + 1,
+				vertexColor.r,
+				vertexColor.g,
+				vertexColor.b,
+			);
+			colorAttribute.setXYZ(
+				i + 2,
+				vertexColor.r,
+				vertexColor.g,
+				vertexColor.b,
+			);
+		}
 
 		return geometry;
 	}
@@ -78,10 +101,10 @@ export default class Randomizer {
 
 	// Nudges the entire geometry
 	static translate(
-		geometry: Geometry,
+		geometry: BufferGeometry,
 		position?: Vector3,
 		variation = this.spreader(),
-	): Geometry {
+	): BufferGeometry {
 		return geometry.translate(
 			variation(position?.x || 0),
 			variation(position?.y || 0),
@@ -94,25 +117,41 @@ export default class Randomizer {
 		return this;
 	}
 
-	static blur(geometry: Geometry, degree = 0.01): Geometry {
+	static blur(geometry: BufferGeometry, degree = 0.01): BufferGeometry {
 		geometry.computeBoundingBox();
+		const positionAttribute = geometry.getAttribute("position");
+		const vertexGroupsMap: number[][][][] = [];
+		for (let i = 0; i < positionAttribute.count; i++) {
+			const x = positionAttribute.getX(i);
+			if (!vertexGroupsMap[x]) vertexGroupsMap[x] = [];
+			const y = positionAttribute.getY(i);
+			if (!vertexGroupsMap[x][y]) vertexGroupsMap[x][y] = [];
+			const z = positionAttribute.getZ(i);
+			if (!vertexGroupsMap[x][y][z]) vertexGroupsMap[x][y][z] = [];
+			vertexGroupsMap[x][y][z].push(i);
+		}
+		const vertexGroups = Object.values(vertexGroupsMap).flatMap((v) =>
+			Object.values(v).flatMap((v) => Object.values(v)),
+		);
 
-		for (let i = 0; i < geometry.vertices.length; i++) {
-			geometry.vertices[i].x = this.flatSpread(
-				geometry.vertices[i].x,
+		for (const vertexGroup of vertexGroups) {
+			const x = this.flatSpread(
+				positionAttribute.getX(vertexGroup[0]),
 				(geometry.boundingBox!.max.x - geometry.boundingBox!.min.x) *
 					degree,
 			);
-			geometry.vertices[i].y = this.flatSpread(
-				geometry.vertices[i].y,
+			const y = this.flatSpread(
+				positionAttribute.getY(vertexGroup[0]),
 				(geometry.boundingBox!.max.y - geometry.boundingBox!.min.y) *
 					degree,
 			);
-			geometry.vertices[i].z = this.flatSpread(
-				geometry.vertices[i].z,
+			const z = this.flatSpread(
+				positionAttribute.getZ(vertexGroup[0]),
 				(geometry.boundingBox!.max.z - geometry.boundingBox!.min.z) *
 					degree,
 			);
+			for (const idx of vertexGroup)
+				positionAttribute.setXYZ(idx, x, y, z);
 		}
 
 		return geometry;
@@ -125,10 +164,10 @@ export default class Randomizer {
 
 	// Rotates the entire geometry
 	static rotate(
-		geometry: Geometry,
+		geometry: BufferGeometry,
 		rotation: Vector3,
 		variation = Randomizer.spread,
-	): Geometry {
+	): BufferGeometry {
 		geometry.rotateX(variation(rotation.x));
 		geometry.rotateY(variation(rotation.y));
 		geometry.rotateZ(variation(rotation.z));
@@ -142,10 +181,10 @@ export default class Randomizer {
 	}
 
 	static scale(
-		geometry: Geometry,
+		geometry: BufferGeometry,
 		scale: Vector3,
 		variation = Randomizer.spread,
-	): Geometry {
+	): BufferGeometry {
 		geometry.scale(
 			variation(scale.x || 1),
 			variation(scale.y || 1),
@@ -161,7 +200,7 @@ export default class Randomizer {
 	}
 
 	static randomize(
-		geometry: Geometry,
+		geometry: BufferGeometry,
 		{
 			colorize,
 			translate,
@@ -173,7 +212,7 @@ export default class Randomizer {
 			blur?: number;
 			rotate?: { rotation: Vector3; variation?: Variation };
 		} = {},
-	): Geometry {
+	): BufferGeometry {
 		if (colorize)
 			this.colorize(geometry, colorize.color, colorize.variation);
 		if (translate)

@@ -1,36 +1,33 @@
 import {
 	BoxGeometry,
+	BufferAttribute,
+	BufferGeometry,
+	Color,
 	ConeGeometry,
 	CylinderGeometry,
-	Geometry,
 	LatheGeometry,
+	Mesh,
 	OctahedronGeometry,
 	SphereGeometry,
 	TetrahedronGeometry,
 	TubeGeometry,
-	Vector3,
 	Vector2,
-	Color,
-	BufferGeometry,
-	Mesh,
+	Vector3,
 } from "three";
-import Randomizer, { Variation } from "./Randomizer.js";
+import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtils";
+
 import { faceColorMaterial } from "../../materials.js";
+import Randomizer, { Variation } from "./Randomizer.js";
+import { getColorAttribute } from "./utils.js";
 
-// const compose = <R>(fn1: (a: R) => R, ...fns: Array<(a: R) => R>) =>
-// 	fns.reduce((prevFn, nextFn) => (value) => prevFn(nextFn(value)), fn1);
-
-// const compose = (arr) => {
-// 	if (!arr || arr.length === 0) return;
-
-// 	if (arr.length === 1) return arr[0];
-
-// 	return (val) => {
-// 		for (let i = 0; i < arr.length; i++) val = arr[i](val);
-
-// 		return val;
-// 	};
-// };
+export const createBufferGeometry = (): BufferGeometry => {
+	const geo = new BufferGeometry();
+	geo.setAttribute("position", new BufferAttribute(new Float32Array(0), 3));
+	geo.setAttribute("color", new BufferAttribute(new Float32Array(0), 3));
+	geo.setAttribute("normal", new BufferAttribute(new Float32Array(0), 3));
+	geo.setAttribute("uv", new BufferAttribute(new Float32Array(0), 2));
+	return geo;
+};
 
 const compose = <A, C extends (arg: A) => A>(fns?: C[]) => {
 	if (!fns || fns.length === 0) return;
@@ -58,7 +55,7 @@ type Tail<T extends any[]> = ((...t: T) => void) extends (
 export default class Builder {
 	parent?: Builder;
 
-	private _geometry?: Geometry;
+	private _geometry?: BufferGeometry;
 	private children: Builder[];
 	private _color?: Color;
 	private _colorVariation?: Variation[];
@@ -70,7 +67,8 @@ export default class Builder {
 	private _scaleVariation?: Variation[];
 	private _blur?: number;
 
-	constructor(geometry?: Geometry, parent?: Builder) {
+	constructor(geometry?: BufferGeometry, parent?: Builder) {
+		if (geometry && geometry.index) geometry = geometry.toNonIndexed();
 		this._geometry = geometry;
 		this.parent = parent;
 		this.children = [];
@@ -437,13 +435,20 @@ export default class Builder {
 		return cur;
 	}
 
-	geometry(): Geometry {
-		const geometry = this._geometry
+	geometry(): BufferGeometry {
+		let geometry = this._geometry
 			? this._geometry.clone()
-			: new Geometry();
+			: createBufferGeometry();
 
-		for (let i = 0; i < this.children.length; i++)
-			geometry.merge(this.children[i].geometry());
+		if (this.children.length)
+			geometry = BufferGeometryUtils.mergeBufferGeometries([
+				geometry,
+				...this.children.map((c) => {
+					const geo = c.geometry();
+					getColorAttribute(geo);
+					return geo;
+				}),
+			]);
 
 		if (this._color)
 			Randomizer.colorize(
@@ -478,11 +483,7 @@ export default class Builder {
 		return geometry;
 	}
 
-	buffer(): BufferGeometry {
-		return new BufferGeometry().fromGeometry(this.geometry());
-	}
-
 	mesh(): Mesh {
-		return new Mesh(this.buffer(), faceColorMaterial);
+		return new Mesh(this.geometry(), faceColorMaterial);
 	}
 }

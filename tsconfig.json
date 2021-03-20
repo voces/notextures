@@ -15,6 +15,6 @@
 		"noEmit": true,
 		"declaration": true
 	},
-	"include": ["src"],
+	"include": ["src", "viewer"],
 	"exclude": ["node_modules"]
 }

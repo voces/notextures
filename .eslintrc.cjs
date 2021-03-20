@@ -1,1 +1,4 @@
-module.exports = { extends: ["verit"] };
+module.exports = {
+	extends: ["verit"],
+	parserOptions: { project: "tsconfig.json" },
+};

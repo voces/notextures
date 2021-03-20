@@ -1,17 +1,18 @@
 // https://github.com/mrdoob/three.js/blob/master/examples/js/objects/Water2.js
 
 import {
-	Geometry,
+	BufferAttribute,
+	BufferGeometry,
+	Color,
 	Group,
 	Mesh,
 	MeshPhongMaterial,
 	Vector3,
-	Face3,
-	Color,
-	BufferGeometry,
 } from "three";
-import memoize from "../../util/memoize";
+
+import { water } from "../../colors";
 import { faceColorMaterial, waterMaterial } from "../../materials";
+import memoize from "../../util/memoize";
 
 export type Cliff = number | "r";
 export type CliffMask = Cliff[][];
@@ -19,22 +20,20 @@ export type CliffMask = Cliff[][];
 const memoizedColor = memoize((hex) => new Color(hex));
 
 const tileFaceVertices = (
-	vertices: [TVector, TVector, TVector, TVector],
+	vertices: [Vector3, Vector3, Vector3, Vector3],
 	which: boolean,
 ) =>
-	<[number, number, number]>(
-		(which ? [1, 0, 2] : [1, 2, 3]).map(
-			(index) => vertices[index]._geoIndex,
-		)
+	<[Vector3, Vector3, Vector3]>(
+		(which ? [1, 0, 2] : [1, 2, 3]).map((index) => vertices[index])
 	);
 
 const wallVertices = (
-	vertices: [TVector, TVector, TVector, TVector],
+	vertices: [Vector3, Vector3, Vector3, Vector3],
 	vertical: boolean,
 	low: boolean,
 	first: boolean,
 ) =>
-	<[number, number, number]>(
+	<[Vector3, Vector3, Vector3]>(
 		(
 			(vertical && low && first && [1, 0, 2]) ||
 			(vertical && low && !first && [1, 2, 3]) ||
@@ -43,15 +42,15 @@ const wallVertices = (
 			(!vertical && low && first && [2, 0, 1]) ||
 			(!vertical && low && !first && [2, 1, 3]) ||
 			(!vertical && !low && first && [1, 0, 2]) || [1, 2, 3]
-		).map((index) => vertices[index]._geoIndex)
+		).map((index) => vertices[index])
 	);
 
 // Randomly rotate 50% of squares
-const rotate = (geometry: Geometry) => {
-	for (let i = 0; i < geometry.faces.length / 2; i++)
+const rotate = (faces: Face3[]) => {
+	for (let i = 0; i < faces.length / 2; i++)
 		if (Math.random() < 0.5) {
-			geometry.faces[i * 2].c = geometry.faces[i * 2 + 1].c;
-			geometry.faces[i * 2 + 1].a = geometry.faces[i * 2].b;
+			faces[i * 2].c = faces[i * 2 + 1].c;
+			faces[i * 2 + 1].a = faces[i * 2].b;
 		}
 };
 
@@ -59,15 +58,15 @@ const nudge = (factor = 1) =>
 	(Math.random() - 0.5) * (Math.random() - 0.5) * factor;
 
 // Randomly move vertices a bit (so we don't have completely flat surfaces)
-const noise = (geometry: Geometry) => {
-	for (let i = 0; i < geometry.vertices.length; i++) {
-		geometry.vertices[i].x += nudge(0.75);
-		geometry.vertices[i].y += nudge(0.75);
-		geometry.vertices[i].z += nudge(0.5);
-	}
-
-	geometry.computeFaceNormals();
-	geometry.computeVertexNormals();
+const noise = (vertexMap: (Vector3[] & { water?: Vector3 })[][]) => {
+	for (const l1 of vertexMap)
+		for (const l2 of l1)
+			for (const l3 of l2) {
+				if (!l3) continue;
+				l3.x += nudge(0.75);
+				l3.y += nudge(0.75);
+				l3.z += nudge(0.5);
+			}
 };
 
 const findLastIndex = <T>(
@@ -201,24 +200,29 @@ export const calcCliffHeight = (
 	};
 };
 
-class TVector extends Vector3 {
-	_geoIndex: number;
-	constructor(x: number, y: number, z: number, index: number) {
-		super(x, y, z);
-		this._geoIndex = index;
+class Face3 {
+	a: Vector3;
+	b: Vector3;
+	c: Vector3;
+	color: Color;
+	constructor(a: Vector3, b: Vector3, c: Vector3, color: Color) {
+		this.a = a;
+		this.b = b;
+		this.c = c;
+		this.color = color;
 	}
 }
 
 // Extends Group instead so water doesn't cast/receive Shadows
 export class Terrain extends Group {
-	vertices: (TVector[] & { water?: TVector })[][];
+	vertices: (Vector3[] & { water?: Vector3 })[][];
 	/** Y-major, with y index being flipped, so y=0 is the bottom */
 	groundFaces = <[Face3, Face3][][]>[];
 	width: number;
 	height: number;
 
-	ground: Geometry;
-	water: Geometry;
+	ground: BufferGeometry;
+	water: BufferGeometry;
 
 	groundColor: (x: number, y: number) => Color;
 	cliffColor: (x: number, y: number) => Color;
@@ -282,10 +286,7 @@ export class Terrain extends Group {
 
 			this.ground = geometry;
 
-			const mesh = new Mesh(
-				new BufferGeometry().fromGeometry(geometry),
-				material,
-			);
+			const mesh = new Mesh(geometry, material);
 			mesh.castShadow = true;
 			mesh.receiveShadow = true;
 
@@ -301,9 +302,7 @@ export class Terrain extends Group {
 
 			this.water = geometry;
 
-			this.add(
-				new Mesh(new BufferGeometry().fromGeometry(geometry), material),
-			);
+			this.add(new Mesh(geometry, material));
 		}
 	}
 
@@ -315,21 +314,16 @@ export class Terrain extends Group {
 		height: number[][];
 		cliff: CliffMask;
 		offset: { x: number; y: number; z: number };
-	}): { geometry: Geometry; material: MeshPhongMaterial } {
-		const geometry = new Geometry();
+	}): { geometry: BufferGeometry; material: MeshPhongMaterial } {
+		const allFaces: Face3[] = [];
 
 		const vertex = (x: number, y: number, z: number, offset: number) => {
 			const existing = this.vertices[x]?.[y]?.[z];
 			if (existing !== undefined) return existing;
+
 			if (this.vertices[x] === undefined) this.vertices[x] = [];
 			if (this.vertices[x][y] === undefined) this.vertices[x][y] = [];
-			const vector = new TVector(
-				x,
-				-y,
-				z + offset,
-				geometry.vertices.length,
-			);
-			geometry.vertices.push(vector);
+			const vector = new Vector3(x, -y, z + offset);
 			this.vertices[x][y][z] = vector;
 			return vector;
 		};
@@ -348,7 +342,7 @@ export class Terrain extends Group {
 
 				if (typeof cliffTile === "number") {
 					// Floor
-					const vertices: [TVector, TVector, TVector, TVector] = [
+					const vertices: [Vector3, Vector3, Vector3, Vector3] = [
 						vertex(x, y, cliffTile, topLeft),
 						vertex(x + 1, y, cliffTile, topRight),
 						vertex(x, y + 1, cliffTile, botLeft),
@@ -361,20 +355,18 @@ export class Terrain extends Group {
 							aVertices[0],
 							aVertices[1],
 							aVertices[2],
-							undefined,
 							this.groundColor(x, y),
 						),
 						new Face3(
 							bVertices[0],
 							bVertices[1],
 							bVertices[2],
-							undefined,
 							this.groundColor(x, y),
 						),
 					];
 					if (!this.groundFaces[y]) this.groundFaces[y] = [];
 					this.groundFaces[y][x] = faces;
-					geometry.faces.push(...faces);
+					allFaces.push(...faces);
 
 					// Left wall (next gets right)
 					if (x > 0 && cliffMask[y][x - 1] !== undefined) {
@@ -385,10 +377,10 @@ export class Terrain extends Group {
 
 						for (let z = low; z < high; z++) {
 							const vertices: [
-								TVector,
-								TVector,
-								TVector,
-								TVector,
+								Vector3,
+								Vector3,
+								Vector3,
+								Vector3,
 							] = [
 								vertex(x, y, z, topLeft),
 								vertex(x, y + 1, z, botLeft),
@@ -407,19 +399,17 @@ export class Terrain extends Group {
 								currentIsLow,
 								false,
 							);
-							geometry.faces.push(
+							allFaces.push(
 								new Face3(
 									aVertices[0],
 									aVertices[1],
 									aVertices[2],
-									undefined,
 									this.cliffColor(x, y),
 								),
 								new Face3(
 									bVertices[0],
 									bVertices[1],
 									bVertices[2],
-									undefined,
 									this.cliffColor(x, y),
 								),
 							);
@@ -435,10 +425,10 @@ export class Terrain extends Group {
 
 						for (let z = low; z < high; z++) {
 							const vertices: [
-								TVector,
-								TVector,
-								TVector,
-								TVector,
+								Vector3,
+								Vector3,
+								Vector3,
+								Vector3,
 							] = [
 								vertex(x, y, z, topLeft),
 								vertex(x + 1, y, z, topRight),
@@ -457,19 +447,17 @@ export class Terrain extends Group {
 								currentIsLow,
 								false,
 							);
-							geometry.faces.push(
+							allFaces.push(
 								new Face3(
 									aVertices[0],
 									aVertices[1],
 									aVertices[2],
-									undefined,
 									this.cliffColor(x, y),
 								),
 								new Face3(
 									bVertices[0],
 									bVertices[1],
 									bVertices[2],
-									undefined,
 									this.cliffColor(x, y),
 								),
 							);
@@ -483,7 +471,7 @@ export class Terrain extends Group {
 						bottomRight: botRightCliff,
 					} = calcCliffHeight(cliffMask, x, y);
 
-					const vertices: [TVector, TVector, TVector, TVector] = [
+					const vertices: [Vector3, Vector3, Vector3, Vector3] = [
 						vertex(x, y, topLeftCliff, topLeft),
 						vertex(x + 1, y, topRightCliff, topRight),
 						vertex(x, y + 1, botLeftCliff, botLeft),
@@ -496,20 +484,18 @@ export class Terrain extends Group {
 							aVertices[0],
 							aVertices[1],
 							aVertices[2],
-							undefined,
 							this.groundColor(x, y),
 						),
 						new Face3(
 							bVertices[0],
 							bVertices[1],
 							bVertices[2],
-							undefined,
 							this.groundColor(x, y),
 						),
 					];
 					if (!this.groundFaces[y]) this.groundFaces[y] = [];
 					this.groundFaces[y][x] = faces;
-					geometry.faces.push(...faces);
+					allFaces.push(...faces);
 
 					const corners = [
 						topLeftCliff,
@@ -550,13 +536,7 @@ export class Terrain extends Group {
 							const v = vertex(vX, -vY, z, height - z);
 
 							rampWalls.push(
-								new Face3(
-									a._geoIndex,
-									b._geoIndex,
-									v._geoIndex,
-									undefined,
-									this.cliffColor(x, y),
-								),
+								new Face3(a, b, v, this.cliffColor(x, y)),
 							);
 						}
 					}
@@ -590,10 +570,10 @@ export class Terrain extends Group {
 
 						for (let z = low; z < high; z++) {
 							const vertices: [
-								TVector,
-								TVector,
-								TVector,
-								TVector,
+								Vector3,
+								Vector3,
+								Vector3,
+								Vector3,
 							] = [
 								vertex(x, y, z, topLeft),
 								vertex(x, y + 1, z, botLeft),
@@ -612,19 +592,17 @@ export class Terrain extends Group {
 								currentIsLow,
 								false,
 							);
-							geometry.faces.push(
+							allFaces.push(
 								new Face3(
 									aVertices[0],
 									aVertices[1],
 									aVertices[2],
-									undefined,
 									this.cliffColor(x, y),
 								),
 								new Face3(
 									bVertices[0],
 									bVertices[1],
 									bVertices[2],
-									undefined,
 									this.cliffColor(x, y),
 								),
 							);
@@ -652,10 +630,10 @@ export class Terrain extends Group {
 
 						for (let z = low; z < high; z++) {
 							const vertices: [
-								TVector,
-								TVector,
-								TVector,
-								TVector,
+								Vector3,
+								Vector3,
+								Vector3,
+								Vector3,
 							] = [
 								vertex(x, y, z, topLeft),
 								vertex(x + 1, y, z, topRight),
@@ -674,19 +652,17 @@ export class Terrain extends Group {
 								currentIsLow,
 								false,
 							);
-							geometry.faces.push(
+							allFaces.push(
 								new Face3(
 									aVertices[0],
 									aVertices[1],
 									aVertices[2],
-									undefined,
 									this.cliffColor(x, y),
 								),
 								new Face3(
 									bVertices[0],
 									bVertices[1],
 									bVertices[2],
-									undefined,
 									this.cliffColor(x, y),
 								),
 							);
@@ -695,15 +671,52 @@ export class Terrain extends Group {
 				}
 			}
 
-		rotate(geometry);
+		rotate(allFaces);
 
 		// We add ramp walls after since they are single triangles
-		geometry.faces.push(...rampWalls);
+		allFaces.push(...rampWalls);
+
+		noise(this.vertices);
+
+		const geometry = new BufferGeometry();
+		geometry.setAttribute(
+			"position",
+			new BufferAttribute(
+				new Float32Array(
+					allFaces.flatMap((face) =>
+						[face.a, face.b, face.c].flatMap((v) => [
+							v.x,
+							v.y,
+							v.z,
+						]),
+					),
+				),
+				3,
+			),
+		);
+
+		geometry.setAttribute(
+			"color",
+			new BufferAttribute(
+				new Float32Array(
+					allFaces.flatMap((face) => [
+						face.color.r,
+						face.color.g,
+						face.color.b,
+						face.color.r,
+						face.color.g,
+						face.color.b,
+						face.color.r,
+						face.color.g,
+						face.color.b,
+					]),
+				),
+				3,
+			),
+		);
 
 		// Center x & y
 		geometry.translate(-offset.x, offset.y, offset.z);
-
-		noise(geometry);
 
 		return { geometry, material: faceColorMaterial };
 	}
@@ -715,9 +728,9 @@ export class Terrain extends Group {
 	}: {
 		water: number[][];
 		waterHeight: number[][];
-		offset: { z: number };
-	}): { geometry: Geometry; material: MeshPhongMaterial } {
-		const geometry = new Geometry();
+		offset: { x: number; y: number; z: number };
+	}): { geometry: BufferGeometry; material: MeshPhongMaterial } {
+		const faces: Face3[] = [];
 
 		// This makes the water hug the cliff, it's not 100% between edges,
 		// but is at the edge, which is what matters most
@@ -730,7 +743,8 @@ export class Terrain extends Group {
 			waterHeight += 3 / 8 + offset.z;
 
 			const groundVertices = this.vertices[x][y];
-			if (!groundVertices) throw new Error();
+			if (!groundVertices || !groundVertices.length)
+				throw new Error("Expected ground where there is water");
 			const cliff = Math.floor(waterHeight);
 			const trueLowIndex = findLastIndex(groundVertices, Boolean, cliff);
 			const lowIndex =
@@ -754,15 +768,8 @@ export class Terrain extends Group {
 				// We only nudge open water to make sure cliff edges are touched
 			} else vector = low.clone().setZ(waterHeight + nudge(1 / 8));
 
-			const tVector = new TVector(
-				vector.x,
-				vector.y,
-				vector.z,
-				geometry.vertices.length,
-			);
-			geometry.vertices.push(tVector);
-			this.vertices[x][y].water = tVector;
-			return tVector;
+			this.vertices[x][y].water = vector;
+			return vector;
 		};
 
 		for (let y = this.height - 1; y >= 0; y--)
@@ -773,19 +780,59 @@ export class Terrain extends Group {
 					const botLeft = waterHeightMask[y + 1][x];
 					const botRight = waterHeightMask[y + 1][x + 1];
 
-					const vertices: [TVector, TVector, TVector, TVector] = [
+					const vertices: [Vector3, Vector3, Vector3, Vector3] = [
 						vertex(x, y, topLeft),
 						vertex(x + 1, y, topRight),
 						vertex(x, y + 1, botLeft),
 						vertex(x + 1, y + 1, botRight),
 					];
-					geometry.faces.push(
-						new Face3(...tileFaceVertices(vertices, true)),
-						new Face3(...tileFaceVertices(vertices, false)),
+					faces.push(
+						new Face3(...tileFaceVertices(vertices, true), water),
+						new Face3(...tileFaceVertices(vertices, false), water),
 					);
 				}
 
-		rotate(geometry);
+		rotate(faces);
+
+		const geometry = new BufferGeometry();
+		geometry.setAttribute(
+			"position",
+			new BufferAttribute(
+				new Float32Array(
+					faces.flatMap((face) =>
+						[face.a, face.b, face.c].flatMap((v) => [
+							v.x,
+							v.y,
+							v.z,
+						]),
+					),
+				),
+				3,
+			),
+		);
+
+		geometry.setAttribute(
+			"color",
+			new BufferAttribute(
+				new Float32Array(
+					faces.flatMap((face) => [
+						face.color.r,
+						face.color.g,
+						face.color.b,
+						face.color.r,
+						face.color.g,
+						face.color.b,
+						face.color.r,
+						face.color.g,
+						face.color.b,
+					]),
+				),
+				3,
+			),
+		);
+
+		// Center x & y
+		geometry.translate(-offset.x, offset.y, offset.z);
 
 		return { geometry, material: waterMaterial };
 	}
