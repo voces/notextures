@@ -2648,8 +2648,8 @@ var Promise2 = getNative_default(root_default, "Promise");
 var Promise_default = Promise2;
 
 // node_modules/lodash-es/_Set.js
-var Set = getNative_default(root_default, "Set");
-var Set_default = Set;
+var Set2 = getNative_default(root_default, "Set");
+var Set_default = Set2;
 
 // node_modules/lodash-es/_getTag.js
 var mapTag2 = "[object Map]";
@@ -8251,6 +8251,8 @@ var WrapAroundEnding = 2402;
 var NormalAnimationBlendMode = 2500;
 var AdditiveAnimationBlendMode = 2501;
 var TrianglesDrawMode = 0;
+var TriangleStripDrawMode = 1;
+var TriangleFanDrawMode = 2;
 var LinearEncoding = 3e3;
 var sRGBEncoding = 3001;
 var GammaEncoding = 3007;
@@ -23747,6 +23749,294 @@ var DepthTexture = class extends Texture {
   }
 };
 DepthTexture.prototype.isDepthTexture = true;
+var CylinderGeometry = class extends BufferGeometry {
+  constructor(radiusTop = 1, radiusBottom = 1, height = 1, radialSegments = 8, heightSegments = 1, openEnded = false, thetaStart = 0, thetaLength = Math.PI * 2) {
+    super();
+    this.type = "CylinderGeometry";
+    this.parameters = {
+      radiusTop,
+      radiusBottom,
+      height,
+      radialSegments,
+      heightSegments,
+      openEnded,
+      thetaStart,
+      thetaLength
+    };
+    const scope = this;
+    radialSegments = Math.floor(radialSegments);
+    heightSegments = Math.floor(heightSegments);
+    const indices = [];
+    const vertices = [];
+    const normals = [];
+    const uvs = [];
+    let index = 0;
+    const indexArray = [];
+    const halfHeight = height / 2;
+    let groupStart = 0;
+    generateTorso();
+    if (openEnded === false) {
+      if (radiusTop > 0)
+        generateCap(true);
+      if (radiusBottom > 0)
+        generateCap(false);
+    }
+    this.setIndex(indices);
+    this.setAttribute("position", new Float32BufferAttribute(vertices, 3));
+    this.setAttribute("normal", new Float32BufferAttribute(normals, 3));
+    this.setAttribute("uv", new Float32BufferAttribute(uvs, 2));
+    function generateTorso() {
+      const normal = new Vector3();
+      const vertex = new Vector3();
+      let groupCount = 0;
+      const slope = (radiusBottom - radiusTop) / height;
+      for (let y = 0; y <= heightSegments; y++) {
+        const indexRow = [];
+        const v = y / heightSegments;
+        const radius = v * (radiusBottom - radiusTop) + radiusTop;
+        for (let x = 0; x <= radialSegments; x++) {
+          const u = x / radialSegments;
+          const theta = u * thetaLength + thetaStart;
+          const sinTheta = Math.sin(theta);
+          const cosTheta = Math.cos(theta);
+          vertex.x = radius * sinTheta;
+          vertex.y = -v * height + halfHeight;
+          vertex.z = radius * cosTheta;
+          vertices.push(vertex.x, vertex.y, vertex.z);
+          normal.set(sinTheta, slope, cosTheta).normalize();
+          normals.push(normal.x, normal.y, normal.z);
+          uvs.push(u, 1 - v);
+          indexRow.push(index++);
+        }
+        indexArray.push(indexRow);
+      }
+      for (let x = 0; x < radialSegments; x++) {
+        for (let y = 0; y < heightSegments; y++) {
+          const a = indexArray[y][x];
+          const b = indexArray[y + 1][x];
+          const c = indexArray[y + 1][x + 1];
+          const d = indexArray[y][x + 1];
+          indices.push(a, b, d);
+          indices.push(b, c, d);
+          groupCount += 6;
+        }
+      }
+      scope.addGroup(groupStart, groupCount, 0);
+      groupStart += groupCount;
+    }
+    function generateCap(top) {
+      const centerIndexStart = index;
+      const uv = new Vector2();
+      const vertex = new Vector3();
+      let groupCount = 0;
+      const radius = top === true ? radiusTop : radiusBottom;
+      const sign2 = top === true ? 1 : -1;
+      for (let x = 1; x <= radialSegments; x++) {
+        vertices.push(0, halfHeight * sign2, 0);
+        normals.push(0, sign2, 0);
+        uvs.push(0.5, 0.5);
+        index++;
+      }
+      const centerIndexEnd = index;
+      for (let x = 0; x <= radialSegments; x++) {
+        const u = x / radialSegments;
+        const theta = u * thetaLength + thetaStart;
+        const cosTheta = Math.cos(theta);
+        const sinTheta = Math.sin(theta);
+        vertex.x = radius * sinTheta;
+        vertex.y = halfHeight * sign2;
+        vertex.z = radius * cosTheta;
+        vertices.push(vertex.x, vertex.y, vertex.z);
+        normals.push(0, sign2, 0);
+        uv.x = cosTheta * 0.5 + 0.5;
+        uv.y = sinTheta * 0.5 * sign2 + 0.5;
+        uvs.push(uv.x, uv.y);
+        index++;
+      }
+      for (let x = 0; x < radialSegments; x++) {
+        const c = centerIndexStart + x;
+        const i = centerIndexEnd + x;
+        if (top === true) {
+          indices.push(i, i + 1, c);
+        } else {
+          indices.push(i + 1, i, c);
+        }
+        groupCount += 3;
+      }
+      scope.addGroup(groupStart, groupCount, top === true ? 1 : 2);
+      groupStart += groupCount;
+    }
+  }
+};
+var ConeGeometry = class extends CylinderGeometry {
+  constructor(radius = 1, height = 1, radialSegments = 8, heightSegments = 1, openEnded = false, thetaStart = 0, thetaLength = Math.PI * 2) {
+    super(0, radius, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength);
+    this.type = "ConeGeometry";
+    this.parameters = {
+      radius,
+      height,
+      radialSegments,
+      heightSegments,
+      openEnded,
+      thetaStart,
+      thetaLength
+    };
+  }
+};
+var PolyhedronGeometry = class extends BufferGeometry {
+  constructor(vertices, indices, radius = 1, detail = 0) {
+    super();
+    this.type = "PolyhedronGeometry";
+    this.parameters = {
+      vertices,
+      indices,
+      radius,
+      detail
+    };
+    const vertexBuffer = [];
+    const uvBuffer = [];
+    subdivide(detail);
+    applyRadius(radius);
+    generateUVs();
+    this.setAttribute("position", new Float32BufferAttribute(vertexBuffer, 3));
+    this.setAttribute("normal", new Float32BufferAttribute(vertexBuffer.slice(), 3));
+    this.setAttribute("uv", new Float32BufferAttribute(uvBuffer, 2));
+    if (detail === 0) {
+      this.computeVertexNormals();
+    } else {
+      this.normalizeNormals();
+    }
+    function subdivide(detail2) {
+      const a = new Vector3();
+      const b = new Vector3();
+      const c = new Vector3();
+      for (let i = 0; i < indices.length; i += 3) {
+        getVertexByIndex(indices[i + 0], a);
+        getVertexByIndex(indices[i + 1], b);
+        getVertexByIndex(indices[i + 2], c);
+        subdivideFace(a, b, c, detail2);
+      }
+    }
+    function subdivideFace(a, b, c, detail2) {
+      const cols = detail2 + 1;
+      const v = [];
+      for (let i = 0; i <= cols; i++) {
+        v[i] = [];
+        const aj = a.clone().lerp(c, i / cols);
+        const bj = b.clone().lerp(c, i / cols);
+        const rows = cols - i;
+        for (let j = 0; j <= rows; j++) {
+          if (j === 0 && i === cols) {
+            v[i][j] = aj;
+          } else {
+            v[i][j] = aj.clone().lerp(bj, j / rows);
+          }
+        }
+      }
+      for (let i = 0; i < cols; i++) {
+        for (let j = 0; j < 2 * (cols - i) - 1; j++) {
+          const k = Math.floor(j / 2);
+          if (j % 2 === 0) {
+            pushVertex(v[i][k + 1]);
+            pushVertex(v[i + 1][k]);
+            pushVertex(v[i][k]);
+          } else {
+            pushVertex(v[i][k + 1]);
+            pushVertex(v[i + 1][k + 1]);
+            pushVertex(v[i + 1][k]);
+          }
+        }
+      }
+    }
+    function applyRadius(radius2) {
+      const vertex = new Vector3();
+      for (let i = 0; i < vertexBuffer.length; i += 3) {
+        vertex.x = vertexBuffer[i + 0];
+        vertex.y = vertexBuffer[i + 1];
+        vertex.z = vertexBuffer[i + 2];
+        vertex.normalize().multiplyScalar(radius2);
+        vertexBuffer[i + 0] = vertex.x;
+        vertexBuffer[i + 1] = vertex.y;
+        vertexBuffer[i + 2] = vertex.z;
+      }
+    }
+    function generateUVs() {
+      const vertex = new Vector3();
+      for (let i = 0; i < vertexBuffer.length; i += 3) {
+        vertex.x = vertexBuffer[i + 0];
+        vertex.y = vertexBuffer[i + 1];
+        vertex.z = vertexBuffer[i + 2];
+        const u = azimuth(vertex) / 2 / Math.PI + 0.5;
+        const v = inclination(vertex) / Math.PI + 0.5;
+        uvBuffer.push(u, 1 - v);
+      }
+      correctUVs();
+      correctSeam();
+    }
+    function correctSeam() {
+      for (let i = 0; i < uvBuffer.length; i += 6) {
+        const x0 = uvBuffer[i + 0];
+        const x1 = uvBuffer[i + 2];
+        const x2 = uvBuffer[i + 4];
+        const max2 = Math.max(x0, x1, x2);
+        const min2 = Math.min(x0, x1, x2);
+        if (max2 > 0.9 && min2 < 0.1) {
+          if (x0 < 0.2)
+            uvBuffer[i + 0] += 1;
+          if (x1 < 0.2)
+            uvBuffer[i + 2] += 1;
+          if (x2 < 0.2)
+            uvBuffer[i + 4] += 1;
+        }
+      }
+    }
+    function pushVertex(vertex) {
+      vertexBuffer.push(vertex.x, vertex.y, vertex.z);
+    }
+    function getVertexByIndex(index, vertex) {
+      const stride = index * 3;
+      vertex.x = vertices[stride + 0];
+      vertex.y = vertices[stride + 1];
+      vertex.z = vertices[stride + 2];
+    }
+    function correctUVs() {
+      const a = new Vector3();
+      const b = new Vector3();
+      const c = new Vector3();
+      const centroid = new Vector3();
+      const uvA = new Vector2();
+      const uvB = new Vector2();
+      const uvC = new Vector2();
+      for (let i = 0, j = 0; i < vertexBuffer.length; i += 9, j += 6) {
+        a.set(vertexBuffer[i + 0], vertexBuffer[i + 1], vertexBuffer[i + 2]);
+        b.set(vertexBuffer[i + 3], vertexBuffer[i + 4], vertexBuffer[i + 5]);
+        c.set(vertexBuffer[i + 6], vertexBuffer[i + 7], vertexBuffer[i + 8]);
+        uvA.set(uvBuffer[j + 0], uvBuffer[j + 1]);
+        uvB.set(uvBuffer[j + 2], uvBuffer[j + 3]);
+        uvC.set(uvBuffer[j + 4], uvBuffer[j + 5]);
+        centroid.copy(a).add(b).add(c).divideScalar(3);
+        const azi = azimuth(centroid);
+        correctUV(uvA, j + 0, a, azi);
+        correctUV(uvB, j + 2, b, azi);
+        correctUV(uvC, j + 4, c, azi);
+      }
+    }
+    function correctUV(uv, stride, vector, azimuth2) {
+      if (azimuth2 < 0 && uv.x === 1) {
+        uvBuffer[stride] = uv.x - 1;
+      }
+      if (vector.x === 0 && vector.z === 0) {
+        uvBuffer[stride] = azimuth2 / 2 / Math.PI + 0.5;
+      }
+    }
+    function azimuth(vector) {
+      return Math.atan2(vector.z, -vector.x);
+    }
+    function inclination(vector) {
+      return Math.atan2(-vector.y, Math.sqrt(vector.x * vector.x + vector.z * vector.z));
+    }
+  }
+};
 var _v0$2 = new Vector3();
 var _v1$5 = new Vector3();
 var _normal$1 = new Vector3();
@@ -24604,6 +24894,130 @@ function toJSON(shapes, options, data) {
     data.options.extrudePath = options.extrudePath.toJSON();
   return data;
 }
+var LatheGeometry = class extends BufferGeometry {
+  constructor(points, segments = 12, phiStart = 0, phiLength = Math.PI * 2) {
+    super();
+    this.type = "LatheGeometry";
+    this.parameters = {
+      points,
+      segments,
+      phiStart,
+      phiLength
+    };
+    segments = Math.floor(segments);
+    phiLength = MathUtils.clamp(phiLength, 0, Math.PI * 2);
+    const indices = [];
+    const vertices = [];
+    const uvs = [];
+    const inverseSegments = 1 / segments;
+    const vertex = new Vector3();
+    const uv = new Vector2();
+    for (let i = 0; i <= segments; i++) {
+      const phi = phiStart + i * inverseSegments * phiLength;
+      const sin = Math.sin(phi);
+      const cos = Math.cos(phi);
+      for (let j = 0; j <= points.length - 1; j++) {
+        vertex.x = points[j].x * sin;
+        vertex.y = points[j].y;
+        vertex.z = points[j].x * cos;
+        vertices.push(vertex.x, vertex.y, vertex.z);
+        uv.x = i / segments;
+        uv.y = j / (points.length - 1);
+        uvs.push(uv.x, uv.y);
+      }
+    }
+    for (let i = 0; i < segments; i++) {
+      for (let j = 0; j < points.length - 1; j++) {
+        const base = j + i * points.length;
+        const a = base;
+        const b = base + points.length;
+        const c = base + points.length + 1;
+        const d = base + 1;
+        indices.push(a, b, d);
+        indices.push(b, c, d);
+      }
+    }
+    this.setIndex(indices);
+    this.setAttribute("position", new Float32BufferAttribute(vertices, 3));
+    this.setAttribute("uv", new Float32BufferAttribute(uvs, 2));
+    this.computeVertexNormals();
+    if (phiLength === Math.PI * 2) {
+      const normals = this.attributes.normal.array;
+      const n1 = new Vector3();
+      const n2 = new Vector3();
+      const n = new Vector3();
+      const base = segments * points.length * 3;
+      for (let i = 0, j = 0; i < points.length; i++, j += 3) {
+        n1.x = normals[j + 0];
+        n1.y = normals[j + 1];
+        n1.z = normals[j + 2];
+        n2.x = normals[base + j + 0];
+        n2.y = normals[base + j + 1];
+        n2.z = normals[base + j + 2];
+        n.addVectors(n1, n2).normalize();
+        normals[j + 0] = normals[base + j + 0] = n.x;
+        normals[j + 1] = normals[base + j + 1] = n.y;
+        normals[j + 2] = normals[base + j + 2] = n.z;
+      }
+    }
+  }
+};
+var OctahedronGeometry = class extends PolyhedronGeometry {
+  constructor(radius = 1, detail = 0) {
+    const vertices = [
+      1,
+      0,
+      0,
+      -1,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      -1,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      -1
+    ];
+    const indices = [
+      0,
+      2,
+      4,
+      0,
+      4,
+      3,
+      0,
+      3,
+      5,
+      0,
+      5,
+      2,
+      1,
+      2,
+      5,
+      1,
+      5,
+      3,
+      1,
+      3,
+      4,
+      1,
+      4,
+      2
+    ];
+    super(vertices, indices, radius, detail);
+    this.type = "OctahedronGeometry";
+    this.parameters = {
+      radius,
+      detail
+    };
+  }
+};
 function ParametricGeometry(func, slices, stacks) {
   BufferGeometry.call(this);
   this.type = "ParametricGeometry";
@@ -24747,6 +25161,191 @@ function toJSON$1(shapes, data) {
   }
   return data;
 }
+var SphereGeometry = class extends BufferGeometry {
+  constructor(radius = 1, widthSegments = 8, heightSegments = 6, phiStart = 0, phiLength = Math.PI * 2, thetaStart = 0, thetaLength = Math.PI) {
+    super();
+    this.type = "SphereGeometry";
+    this.parameters = {
+      radius,
+      widthSegments,
+      heightSegments,
+      phiStart,
+      phiLength,
+      thetaStart,
+      thetaLength
+    };
+    widthSegments = Math.max(3, Math.floor(widthSegments));
+    heightSegments = Math.max(2, Math.floor(heightSegments));
+    const thetaEnd = Math.min(thetaStart + thetaLength, Math.PI);
+    let index = 0;
+    const grid = [];
+    const vertex = new Vector3();
+    const normal = new Vector3();
+    const indices = [];
+    const vertices = [];
+    const normals = [];
+    const uvs = [];
+    for (let iy = 0; iy <= heightSegments; iy++) {
+      const verticesRow = [];
+      const v = iy / heightSegments;
+      let uOffset = 0;
+      if (iy == 0 && thetaStart == 0) {
+        uOffset = 0.5 / widthSegments;
+      } else if (iy == heightSegments && thetaEnd == Math.PI) {
+        uOffset = -0.5 / widthSegments;
+      }
+      for (let ix = 0; ix <= widthSegments; ix++) {
+        const u = ix / widthSegments;
+        vertex.x = -radius * Math.cos(phiStart + u * phiLength) * Math.sin(thetaStart + v * thetaLength);
+        vertex.y = radius * Math.cos(thetaStart + v * thetaLength);
+        vertex.z = radius * Math.sin(phiStart + u * phiLength) * Math.sin(thetaStart + v * thetaLength);
+        vertices.push(vertex.x, vertex.y, vertex.z);
+        normal.copy(vertex).normalize();
+        normals.push(normal.x, normal.y, normal.z);
+        uvs.push(u + uOffset, 1 - v);
+        verticesRow.push(index++);
+      }
+      grid.push(verticesRow);
+    }
+    for (let iy = 0; iy < heightSegments; iy++) {
+      for (let ix = 0; ix < widthSegments; ix++) {
+        const a = grid[iy][ix + 1];
+        const b = grid[iy][ix];
+        const c = grid[iy + 1][ix];
+        const d = grid[iy + 1][ix + 1];
+        if (iy !== 0 || thetaStart > 0)
+          indices.push(a, b, d);
+        if (iy !== heightSegments - 1 || thetaEnd < Math.PI)
+          indices.push(b, c, d);
+      }
+    }
+    this.setIndex(indices);
+    this.setAttribute("position", new Float32BufferAttribute(vertices, 3));
+    this.setAttribute("normal", new Float32BufferAttribute(normals, 3));
+    this.setAttribute("uv", new Float32BufferAttribute(uvs, 2));
+  }
+};
+var TetrahedronGeometry = class extends PolyhedronGeometry {
+  constructor(radius = 1, detail = 0) {
+    const vertices = [
+      1,
+      1,
+      1,
+      -1,
+      -1,
+      1,
+      -1,
+      1,
+      -1,
+      1,
+      -1,
+      -1
+    ];
+    const indices = [
+      2,
+      1,
+      0,
+      0,
+      3,
+      2,
+      1,
+      3,
+      0,
+      2,
+      3,
+      1
+    ];
+    super(vertices, indices, radius, detail);
+    this.type = "TetrahedronGeometry";
+    this.parameters = {
+      radius,
+      detail
+    };
+  }
+};
+var TubeGeometry = class extends BufferGeometry {
+  constructor(path, tubularSegments = 64, radius = 1, radialSegments = 8, closed = false) {
+    super();
+    this.type = "TubeGeometry";
+    this.parameters = {
+      path,
+      tubularSegments,
+      radius,
+      radialSegments,
+      closed
+    };
+    const frames = path.computeFrenetFrames(tubularSegments, closed);
+    this.tangents = frames.tangents;
+    this.normals = frames.normals;
+    this.binormals = frames.binormals;
+    const vertex = new Vector3();
+    const normal = new Vector3();
+    const uv = new Vector2();
+    let P = new Vector3();
+    const vertices = [];
+    const normals = [];
+    const uvs = [];
+    const indices = [];
+    generateBufferData();
+    this.setIndex(indices);
+    this.setAttribute("position", new Float32BufferAttribute(vertices, 3));
+    this.setAttribute("normal", new Float32BufferAttribute(normals, 3));
+    this.setAttribute("uv", new Float32BufferAttribute(uvs, 2));
+    function generateBufferData() {
+      for (let i = 0; i < tubularSegments; i++) {
+        generateSegment(i);
+      }
+      generateSegment(closed === false ? tubularSegments : 0);
+      generateUVs();
+      generateIndices();
+    }
+    function generateSegment(i) {
+      P = path.getPointAt(i / tubularSegments, P);
+      const N = frames.normals[i];
+      const B = frames.binormals[i];
+      for (let j = 0; j <= radialSegments; j++) {
+        const v = j / radialSegments * Math.PI * 2;
+        const sin = Math.sin(v);
+        const cos = -Math.cos(v);
+        normal.x = cos * N.x + sin * B.x;
+        normal.y = cos * N.y + sin * B.y;
+        normal.z = cos * N.z + sin * B.z;
+        normal.normalize();
+        normals.push(normal.x, normal.y, normal.z);
+        vertex.x = P.x + radius * normal.x;
+        vertex.y = P.y + radius * normal.y;
+        vertex.z = P.z + radius * normal.z;
+        vertices.push(vertex.x, vertex.y, vertex.z);
+      }
+    }
+    function generateIndices() {
+      for (let j = 1; j <= tubularSegments; j++) {
+        for (let i = 1; i <= radialSegments; i++) {
+          const a = (radialSegments + 1) * (j - 1) + (i - 1);
+          const b = (radialSegments + 1) * j + (i - 1);
+          const c = (radialSegments + 1) * j + i;
+          const d = (radialSegments + 1) * (j - 1) + i;
+          indices.push(a, b, d);
+          indices.push(b, c, d);
+        }
+      }
+    }
+    function generateUVs() {
+      for (let i = 0; i <= tubularSegments; i++) {
+        for (let j = 0; j <= radialSegments; j++) {
+          uv.x = i / tubularSegments;
+          uv.y = j / radialSegments;
+          uvs.push(uv.x, uv.y);
+        }
+      }
+    }
+  }
+  toJSON() {
+    const data = BufferGeometry.prototype.toJSON.call(this);
+    data.path = this.parameters.path.toJSON();
+    return data;
+  }
+};
 var ShadowMaterial = class extends Material {
   constructor(parameters) {
     super();
@@ -32849,15 +33448,15 @@ var possibleConstructorReturn = function(self2, call) {
   return call && (typeof call === "object" || typeof call === "function") ? call : self2;
 };
 var Color2 = function() {
-  function Color3() {
-    classCallCheck(this, Color3);
+  function Color4() {
+    classCallCheck(this, Color4);
     this.__state = interpret.apply(this, arguments);
     if (this.__state === false) {
       throw new Error("Failed to interpret color arguments");
     }
     this.__state.a = this.__state.a || 1;
   }
-  createClass(Color3, [{
+  createClass(Color4, [{
     key: "toString",
     value: function toString2() {
       return colorToString(this);
@@ -32873,7 +33472,7 @@ var Color2 = function() {
       return this.__state.conversion.write(this);
     }
   }]);
-  return Color3;
+  return Color4;
 }();
 function defineRGBComponent(target, component, componentHexIndex) {
   Object.defineProperty(target, component, {
@@ -34859,6 +35458,7 @@ render();
 // src/objects/index.ts
 var objects_exports = {};
 __export(objects_exports, {
+  Barn: () => Barn,
   Trough: () => Trough
 });
 
@@ -34879,6 +35479,20 @@ var waterMaterial = new MeshPhongMaterial({
   opacity: 0.5,
   transparent: true
 });
+
+// src/objects/util/utils.ts
+var getVertexCount = (geometry2) => {
+  const positions = geometry2.getAttribute("position");
+  return positions.count;
+};
+var getColorAttribute = (geometry2) => {
+  const existingAttribute = geometry2.getAttribute("color");
+  if (existingAttribute)
+    return existingAttribute;
+  const attribute = new BufferAttribute(new Float32Array(getVertexCount(geometry2) * 3), 3);
+  geometry2.setAttribute("color", attribute);
+  return attribute;
+};
 
 // src/objects/util/Randomizer.ts
 var Randomizer = class {
@@ -34909,8 +35523,14 @@ var Randomizer = class {
   }
   static colorize(geometry2, color2, variation = this.spreader()) {
     color2 = this.colorSpread(color2, variation);
-    for (let i = 0; i < geometry2.faces.length; i++)
-      geometry2.faces[i].color = this.colorSpread(color2, variation);
+    const vertices = getVertexCount(geometry2);
+    const colorAttribute = getColorAttribute(geometry2);
+    for (let i = 0; i < vertices; i += 3) {
+      const vertexColor = this.colorSpread(color2, variation);
+      colorAttribute.setXYZ(i, vertexColor.r, vertexColor.g, vertexColor.b);
+      colorAttribute.setXYZ(i + 1, vertexColor.r, vertexColor.g, vertexColor.b);
+      colorAttribute.setXYZ(i + 2, vertexColor.r, vertexColor.g, vertexColor.b);
+    }
     return geometry2;
   }
   colorize(color2, variation) {
@@ -34974,6 +35594,783 @@ var Randomizer = class {
 };
 var Randomizer_default = Randomizer;
 
+// src/objects/util/Builder.ts
+var compose2 = (fns) => {
+  if (!fns || fns.length === 0)
+    return;
+  if (fns.length === 1)
+    return fns[0];
+  return (val) => {
+    for (let i = 0; i < fns.length; i++)
+      val = fns[i](val);
+    return val;
+  };
+};
+var IDENTITY = (v) => v;
+var LEFT = new Vector2(-1, 0);
+var Builder = class {
+  constructor(geometry2, parent2) {
+    this._geometry = geometry2;
+    this.parent = parent2;
+    this.children = [];
+  }
+  group() {
+    const group = new Builder(void 0, this);
+    this.children.push(group);
+    return group;
+  }
+  box(...args) {
+    const box2 = new Builder(new BoxGeometry(...args), this);
+    this.children.push(box2);
+    return box2;
+  }
+  cone(...args) {
+    const cone = new Builder(new ConeGeometry(...args), this);
+    this.children.push(cone);
+    return cone;
+  }
+  cylinder(...args) {
+    const cylinder = new Builder(new CylinderGeometry(...args), this);
+    this.children.push(cylinder);
+    return cylinder;
+  }
+  octahedron(...args) {
+    const octahedron = new Builder(new OctahedronGeometry(...args), this);
+    this.children.push(octahedron);
+    return octahedron;
+  }
+  sphere(...args) {
+    const sphere = new Builder(new SphereGeometry(...args), this);
+    this.children.push(sphere);
+    return sphere;
+  }
+  tetrahedron(...args) {
+    const tetrahedron = new Builder(new TetrahedronGeometry(...args), this);
+    this.children.push(tetrahedron);
+    return tetrahedron;
+  }
+  tube(...args) {
+    const tube = new Builder(new TubeGeometry(...args), this);
+    this.children.push(tube);
+    return tube;
+  }
+  lathe(...args) {
+    const lathe = new Builder(new LatheGeometry(...args), this);
+    this.children.push(lathe);
+    return lathe;
+  }
+  thickLathe(points, thickness = 1 / 32, direction = LEFT, ...rest2) {
+    const adjustment = direction.clone().multiplyScalar(thickness);
+    const allPoints = [
+      ...points,
+      ...[...points].reverse().map((p) => p.clone().add(adjustment)),
+      points[0]
+    ];
+    return this.lathe(allPoints, ...rest2);
+  }
+  color(color2, variation) {
+    this._color = color2;
+    if (variation)
+      if (this._colorVariation)
+        this._colorVariation.push(variation);
+      else
+        this._colorVariation = [variation];
+    return this;
+  }
+  translate(x = 0, y = 0, z = 0, variation) {
+    const position = new Vector3(x, y, z);
+    this._position = this._position ? this._position.add(position) : position;
+    if (variation)
+      if (this._positionVariation)
+        this._positionVariation.push(variation);
+      else
+        this._positionVariation = [variation];
+    return this;
+  }
+  translateX(x) {
+    if (this._position)
+      this._position.x += x;
+    else
+      this._position = new Vector3(x, 0, 0);
+    return this;
+  }
+  translateY(y) {
+    if (this._position)
+      this._position.y += y;
+    else
+      this._position = new Vector3(0, y, 0);
+    return this;
+  }
+  translateZ(z) {
+    if (this._position)
+      this._position.z += z;
+    else
+      this._position = new Vector3(0, 0, z);
+    return this;
+  }
+  rotate(x, y, z, variation) {
+    if (x === void 0)
+      return this;
+    const rotation = new Vector3(x ?? 0, y ?? 0, z ?? 0);
+    this._rotation = this._rotation ? this._rotation.add(rotation) : rotation;
+    if (variation)
+      if (this._rotationVariation)
+        this._rotationVariation.push(variation);
+      else
+        this._rotationVariation = [variation];
+    return this;
+  }
+  rotateX(x) {
+    if (this._rotation)
+      this._rotation.x += x;
+    else
+      this._rotation = new Vector3(x, 0, 0);
+    return this;
+  }
+  rotateY(y) {
+    if (this._rotation)
+      this._rotation.y += y;
+    else
+      this._rotation = new Vector3(0, y, 0);
+    return this;
+  }
+  rotateZ(z) {
+    if (this._rotation)
+      this._rotation.z += z;
+    else
+      this._rotation = new Vector3(0, 0, z);
+    return this;
+  }
+  scale(x, y, z, variation) {
+    const scale = new Vector3(x, y, z);
+    if (this._scale)
+      this._scale.multiply(scale);
+    else
+      this._scale = scale;
+    if (variation)
+      if (this._scaleVariation)
+        this._scaleVariation.push(variation);
+      else
+        this._scaleVariation = [variation];
+    return this;
+  }
+  scaleX(x) {
+    if (this._scale)
+      this._scale.x += x;
+    else
+      this._scale = new Vector3(x, 0, 0);
+    return this;
+  }
+  scaleY(y) {
+    if (this._scale)
+      this._scale.y += y;
+    else
+      this._scale = new Vector3(0, y, 0);
+    return this;
+  }
+  scaleZ(z) {
+    if (this._scale)
+      this._scale.z += z;
+    else
+      this._scale = new Vector3(0, 0, z);
+    return this;
+  }
+  randomize(props = {
+    color: Randomizer_default.flatSpreader(1 / 24),
+    position: Randomizer_default.percentSpreader(),
+    rotation: Randomizer_default.flatSpreader(),
+    scale: Randomizer_default.percentSpreader(),
+    blur: 0.01
+  }) {
+    let color2, position, rotation, scale, blur;
+    if (typeof props === "number") {
+      color2 = Randomizer_default.flatSpreader(1 / 24 * props);
+      position = Randomizer_default.percentSpreader(1 / 32 * props);
+      rotation = Randomizer_default.flatSpreader(1 / 16 * props);
+      blur = 0.01 * props;
+    } else
+      ({color: color2, position, rotation, scale, blur} = props);
+    if (color2) {
+      if (typeof color2 === "number")
+        color2 = Randomizer_default.flatSpreader(color2);
+      if (this._colorVariation)
+        this._colorVariation.push(color2);
+      else
+        this._colorVariation = [color2];
+    }
+    if (position) {
+      if (typeof position === "number")
+        position = Randomizer_default.percentSpreader(position);
+      if (this._positionVariation)
+        this._positionVariation.push(position);
+      else
+        this._positionVariation = [position];
+    }
+    if (rotation) {
+      if (typeof rotation === "number")
+        rotation = Randomizer_default.flatSpreader(rotation);
+      if (this._rotationVariation)
+        this._rotationVariation.push(rotation);
+      else
+        this._rotationVariation = [rotation];
+    }
+    if (scale) {
+      if (typeof scale === "number")
+        scale = Randomizer_default.percentSpreader(scale);
+      if (this._scaleVariation)
+        this._scaleVariation.push(scale);
+      else
+        this._scaleVariation = [scale];
+    }
+    return this.blur(blur);
+  }
+  blur(degree = 0.01) {
+    this._blur = (this._blur || 0) + degree;
+    return this;
+  }
+  repeat(count2, fn) {
+    const mid = (count2 - 1) / 2;
+    for (let i = 0; i < count2; i++)
+      fn(this, i - mid, mid - Math.abs(i - mid), mid, i, count2);
+    return this;
+  }
+  for(count2, fn) {
+    const mid = (count2 - 1) / 2;
+    for (let i = 0; i < count2; i++)
+      fn(this, i, count2, i - mid, mid - Math.abs(i - mid), mid);
+    return this;
+  }
+  do(fn) {
+    fn(this);
+    return this;
+  }
+  map(fn, centered = true) {
+    const mid = (this.children.length - 1) / 2;
+    if (centered)
+      for (let i = 0; i < this.children.length; i++)
+        fn(this.children[i], i - mid, mid - Math.abs(i - mid), mid, i, this.children.length);
+    else
+      for (let i = 0; i < this.children.length; i++)
+        fn(this.children[i], i, this.children.length, i - mid, mid - Math.abs(i - mid), mid);
+    return this;
+  }
+  add(builder) {
+    this.children.push(builder);
+    return this;
+  }
+  root() {
+    let cur = this;
+    while (cur.parent)
+      cur = cur.parent;
+    return cur;
+  }
+  geometry() {
+    const geometry2 = this._geometry ? this._geometry.clone() : new BufferGeometry();
+    for (let i = 0; i < this.children.length; i++)
+      geometry2.merge(this.children[i].geometry());
+    if (this._color)
+      Randomizer_default.colorize(geometry2, this._color, compose2(this._colorVariation) ?? IDENTITY);
+    if (this._rotation || this._rotationVariation)
+      Randomizer_default.rotate(geometry2, this._rotation ?? new Vector3(0, 0, 0), compose2(this._rotationVariation) ?? IDENTITY);
+    if (this._position || this._positionVariation)
+      Randomizer_default.translate(geometry2, this._position, compose2(this._positionVariation) ?? IDENTITY);
+    if (this._scale || this._scaleVariation)
+      Randomizer_default.scale(geometry2, this._scale ?? new Vector3(1, 1, 1), compose2(this._scaleVariation) ?? IDENTITY);
+    if (this._blur)
+      Randomizer_default.blur(geometry2, this._blur);
+    return geometry2;
+  }
+  mesh() {
+    return new Mesh(this.geometry(), faceColorMaterial);
+  }
+};
+var Builder_default = Builder;
+
+// src/objects/Barn.ts
+var Barn = class extends Mesh {
+  constructor() {
+    const color2 = Randomizer_default.colorSpread(wood);
+    const paneling = color2.clone();
+    const roof = color2.clone().offsetHSL(0, -0.05, 0.05);
+    const door = color2.clone().offsetHSL(0, 0.1, -0.1);
+    const length = 15;
+    const width = 11;
+    const thickness = 1 / 32;
+    const geometry2 = new Builder_default().repeat(2, (b, y) => b.repeat(width, (b2, x, _0, mid) => {
+      const angle = Math.acos(x / mid);
+      const height = 1 / 2 + Math.sin(angle) * 8 / length;
+      return b2.box(1 / 8, thickness, height).translate(x / 8, y * length / 8, height / 2).color(paneling).randomize(1 / 2);
+    })).repeat(2, (b, x) => b.repeat(length, (b2, y) => b2.box(thickness, 1 / 8, 1 / 2).translate(x * width / 8, y / 8, 1 / 4).color(paneling).randomize())).repeat(width, (b, x, _0, mid) => b.repeat(length + 1, (b2, y) => {
+      const width2 = Math.PI / 2 * x / mid;
+      return b2.box(thickness, 1 / 8, (1 / 8 + thickness) * Math.PI / 2).translate(Math.sin(width2) * ((mid + 0.5) / 8 + thickness), y / 8, 1 / 4 + 2 * thickness + Math.abs(Math.cos(width2) * ((mid + 0.5) / 8 + thickness))).rotateY(-Math.acos(Math.sin(width2))).color(roof).randomize();
+    })).box(1 / 2, thickness, 3 / 4).translate(0, -length / 2 / 8 - thickness / 2, 3 / 8).color(door).randomize().parent.rotateZ(-Math.PI / 4).geometry();
+    super(geometry2, faceColorMaterial);
+    this.castShadow = true;
+    this.receiveShadow = true;
+  }
+};
+
+// node_modules/three/examples/jsm/utils/BufferGeometryUtils.js
+var BufferGeometryUtils = {
+  computeTangents: function(geometry2) {
+    geometry2.computeTangents();
+    console.warn("THREE.BufferGeometryUtils: .computeTangents() has been removed. Use BufferGeometry.computeTangents() instead.");
+  },
+  mergeBufferGeometries: function(geometries, useGroups) {
+    var isIndexed = geometries[0].index !== null;
+    var attributesUsed = new Set(Object.keys(geometries[0].attributes));
+    var morphAttributesUsed = new Set(Object.keys(geometries[0].morphAttributes));
+    var attributes = {};
+    var morphAttributes = {};
+    var morphTargetsRelative = geometries[0].morphTargetsRelative;
+    var mergedGeometry = new BufferGeometry();
+    var offset = 0;
+    for (var i = 0; i < geometries.length; ++i) {
+      var geometry2 = geometries[i];
+      var attributesCount = 0;
+      if (isIndexed !== (geometry2.index !== null)) {
+        console.error("THREE.BufferGeometryUtils: .mergeBufferGeometries() failed with geometry at index " + i + ". All geometries must have compatible attributes; make sure index attribute exists among all geometries, or in none of them.");
+        return null;
+      }
+      for (var name in geometry2.attributes) {
+        if (!attributesUsed.has(name)) {
+          console.error("THREE.BufferGeometryUtils: .mergeBufferGeometries() failed with geometry at index " + i + '. All geometries must have compatible attributes; make sure "' + name + '" attribute exists among all geometries, or in none of them.');
+          return null;
+        }
+        if (attributes[name] === void 0)
+          attributes[name] = [];
+        attributes[name].push(geometry2.attributes[name]);
+        attributesCount++;
+      }
+      if (attributesCount !== attributesUsed.size) {
+        console.error("THREE.BufferGeometryUtils: .mergeBufferGeometries() failed with geometry at index " + i + ". Make sure all geometries have the same number of attributes.");
+        return null;
+      }
+      if (morphTargetsRelative !== geometry2.morphTargetsRelative) {
+        console.error("THREE.BufferGeometryUtils: .mergeBufferGeometries() failed with geometry at index " + i + ". .morphTargetsRelative must be consistent throughout all geometries.");
+        return null;
+      }
+      for (var name in geometry2.morphAttributes) {
+        if (!morphAttributesUsed.has(name)) {
+          console.error("THREE.BufferGeometryUtils: .mergeBufferGeometries() failed with geometry at index " + i + ".  .morphAttributes must be consistent throughout all geometries.");
+          return null;
+        }
+        if (morphAttributes[name] === void 0)
+          morphAttributes[name] = [];
+        morphAttributes[name].push(geometry2.morphAttributes[name]);
+      }
+      mergedGeometry.userData.mergedUserData = mergedGeometry.userData.mergedUserData || [];
+      mergedGeometry.userData.mergedUserData.push(geometry2.userData);
+      if (useGroups) {
+        var count2;
+        if (isIndexed) {
+          count2 = geometry2.index.count;
+        } else if (geometry2.attributes.position !== void 0) {
+          count2 = geometry2.attributes.position.count;
+        } else {
+          console.error("THREE.BufferGeometryUtils: .mergeBufferGeometries() failed with geometry at index " + i + ". The geometry must have either an index or a position attribute");
+          return null;
+        }
+        mergedGeometry.addGroup(offset, count2, i);
+        offset += count2;
+      }
+    }
+    if (isIndexed) {
+      var indexOffset = 0;
+      var mergedIndex = [];
+      for (var i = 0; i < geometries.length; ++i) {
+        var index = geometries[i].index;
+        for (var j = 0; j < index.count; ++j) {
+          mergedIndex.push(index.getX(j) + indexOffset);
+        }
+        indexOffset += geometries[i].attributes.position.count;
+      }
+      mergedGeometry.setIndex(mergedIndex);
+    }
+    for (var name in attributes) {
+      var mergedAttribute = this.mergeBufferAttributes(attributes[name]);
+      if (!mergedAttribute) {
+        console.error("THREE.BufferGeometryUtils: .mergeBufferGeometries() failed while trying to merge the " + name + " attribute.");
+        return null;
+      }
+      mergedGeometry.setAttribute(name, mergedAttribute);
+    }
+    for (var name in morphAttributes) {
+      var numMorphTargets = morphAttributes[name][0].length;
+      if (numMorphTargets === 0)
+        break;
+      mergedGeometry.morphAttributes = mergedGeometry.morphAttributes || {};
+      mergedGeometry.morphAttributes[name] = [];
+      for (var i = 0; i < numMorphTargets; ++i) {
+        var morphAttributesToMerge = [];
+        for (var j = 0; j < morphAttributes[name].length; ++j) {
+          morphAttributesToMerge.push(morphAttributes[name][j][i]);
+        }
+        var mergedMorphAttribute = this.mergeBufferAttributes(morphAttributesToMerge);
+        if (!mergedMorphAttribute) {
+          console.error("THREE.BufferGeometryUtils: .mergeBufferGeometries() failed while trying to merge the " + name + " morphAttribute.");
+          return null;
+        }
+        mergedGeometry.morphAttributes[name].push(mergedMorphAttribute);
+      }
+    }
+    return mergedGeometry;
+  },
+  mergeBufferAttributes: function(attributes) {
+    var TypedArray;
+    var itemSize;
+    var normalized;
+    var arrayLength = 0;
+    for (var i = 0; i < attributes.length; ++i) {
+      var attribute = attributes[i];
+      if (attribute.isInterleavedBufferAttribute) {
+        console.error("THREE.BufferGeometryUtils: .mergeBufferAttributes() failed. InterleavedBufferAttributes are not supported.");
+        return null;
+      }
+      if (TypedArray === void 0)
+        TypedArray = attribute.array.constructor;
+      if (TypedArray !== attribute.array.constructor) {
+        console.error("THREE.BufferGeometryUtils: .mergeBufferAttributes() failed. BufferAttribute.array must be of consistent array types across matching attributes.");
+        return null;
+      }
+      if (itemSize === void 0)
+        itemSize = attribute.itemSize;
+      if (itemSize !== attribute.itemSize) {
+        console.error("THREE.BufferGeometryUtils: .mergeBufferAttributes() failed. BufferAttribute.itemSize must be consistent across matching attributes.");
+        return null;
+      }
+      if (normalized === void 0)
+        normalized = attribute.normalized;
+      if (normalized !== attribute.normalized) {
+        console.error("THREE.BufferGeometryUtils: .mergeBufferAttributes() failed. BufferAttribute.normalized must be consistent across matching attributes.");
+        return null;
+      }
+      arrayLength += attribute.array.length;
+    }
+    var array = new TypedArray(arrayLength);
+    var offset = 0;
+    for (var i = 0; i < attributes.length; ++i) {
+      array.set(attributes[i].array, offset);
+      offset += attributes[i].array.length;
+    }
+    return new BufferAttribute(array, itemSize, normalized);
+  },
+  interleaveAttributes: function(attributes) {
+    var TypedArray;
+    var arrayLength = 0;
+    var stride = 0;
+    for (var i = 0, l = attributes.length; i < l; ++i) {
+      var attribute = attributes[i];
+      if (TypedArray === void 0)
+        TypedArray = attribute.array.constructor;
+      if (TypedArray !== attribute.array.constructor) {
+        console.error("AttributeBuffers of different types cannot be interleaved");
+        return null;
+      }
+      arrayLength += attribute.array.length;
+      stride += attribute.itemSize;
+    }
+    var interleavedBuffer = new InterleavedBuffer(new TypedArray(arrayLength), stride);
+    var offset = 0;
+    var res = [];
+    var getters = ["getX", "getY", "getZ", "getW"];
+    var setters = ["setX", "setY", "setZ", "setW"];
+    for (var j = 0, l = attributes.length; j < l; j++) {
+      var attribute = attributes[j];
+      var itemSize = attribute.itemSize;
+      var count2 = attribute.count;
+      var iba = new InterleavedBufferAttribute(interleavedBuffer, itemSize, offset, attribute.normalized);
+      res.push(iba);
+      offset += itemSize;
+      for (var c = 0; c < count2; c++) {
+        for (var k = 0; k < itemSize; k++) {
+          iba[setters[k]](c, attribute[getters[k]](c));
+        }
+      }
+    }
+    return res;
+  },
+  estimateBytesUsed: function(geometry2) {
+    var mem = 0;
+    for (var name in geometry2.attributes) {
+      var attr = geometry2.getAttribute(name);
+      mem += attr.count * attr.itemSize * attr.array.BYTES_PER_ELEMENT;
+    }
+    var indices = geometry2.getIndex();
+    mem += indices ? indices.count * indices.itemSize * indices.array.BYTES_PER_ELEMENT : 0;
+    return mem;
+  },
+  mergeVertices: function(geometry2, tolerance = 1e-4) {
+    tolerance = Math.max(tolerance, Number.EPSILON);
+    var hashToIndex = {};
+    var indices = geometry2.getIndex();
+    var positions = geometry2.getAttribute("position");
+    var vertexCount = indices ? indices.count : positions.count;
+    var nextIndex = 0;
+    var attributeNames = Object.keys(geometry2.attributes);
+    var attrArrays = {};
+    var morphAttrsArrays = {};
+    var newIndices = [];
+    var getters = ["getX", "getY", "getZ", "getW"];
+    for (var i = 0, l = attributeNames.length; i < l; i++) {
+      var name = attributeNames[i];
+      attrArrays[name] = [];
+      var morphAttr = geometry2.morphAttributes[name];
+      if (morphAttr) {
+        morphAttrsArrays[name] = new Array(morphAttr.length).fill().map(() => []);
+      }
+    }
+    var decimalShift = Math.log10(1 / tolerance);
+    var shiftMultiplier = Math.pow(10, decimalShift);
+    for (var i = 0; i < vertexCount; i++) {
+      var index = indices ? indices.getX(i) : i;
+      var hash = "";
+      for (var j = 0, l = attributeNames.length; j < l; j++) {
+        var name = attributeNames[j];
+        var attribute = geometry2.getAttribute(name);
+        var itemSize = attribute.itemSize;
+        for (var k = 0; k < itemSize; k++) {
+          hash += `${~~(attribute[getters[k]](index) * shiftMultiplier)},`;
+        }
+      }
+      if (hash in hashToIndex) {
+        newIndices.push(hashToIndex[hash]);
+      } else {
+        for (var j = 0, l = attributeNames.length; j < l; j++) {
+          var name = attributeNames[j];
+          var attribute = geometry2.getAttribute(name);
+          var morphAttr = geometry2.morphAttributes[name];
+          var itemSize = attribute.itemSize;
+          var newarray = attrArrays[name];
+          var newMorphArrays = morphAttrsArrays[name];
+          for (var k = 0; k < itemSize; k++) {
+            var getterFunc = getters[k];
+            newarray.push(attribute[getterFunc](index));
+            if (morphAttr) {
+              for (var m = 0, ml = morphAttr.length; m < ml; m++) {
+                newMorphArrays[m].push(morphAttr[m][getterFunc](index));
+              }
+            }
+          }
+        }
+        hashToIndex[hash] = nextIndex;
+        newIndices.push(nextIndex);
+        nextIndex++;
+      }
+    }
+    const result3 = geometry2.clone();
+    for (var i = 0, l = attributeNames.length; i < l; i++) {
+      var name = attributeNames[i];
+      var oldAttribute = geometry2.getAttribute(name);
+      var buffer = new oldAttribute.array.constructor(attrArrays[name]);
+      var attribute = new BufferAttribute(buffer, oldAttribute.itemSize, oldAttribute.normalized);
+      result3.setAttribute(name, attribute);
+      if (name in morphAttrsArrays) {
+        for (var j = 0; j < morphAttrsArrays[name].length; j++) {
+          var oldMorphAttribute = geometry2.morphAttributes[name][j];
+          var buffer = new oldMorphAttribute.array.constructor(morphAttrsArrays[name][j]);
+          var morphAttribute = new BufferAttribute(buffer, oldMorphAttribute.itemSize, oldMorphAttribute.normalized);
+          result3.morphAttributes[name][j] = morphAttribute;
+        }
+      }
+    }
+    result3.setIndex(newIndices);
+    return result3;
+  },
+  toTrianglesDrawMode: function(geometry2, drawMode) {
+    if (drawMode === TrianglesDrawMode) {
+      console.warn("THREE.BufferGeometryUtils.toTrianglesDrawMode(): Geometry already defined as triangles.");
+      return geometry2;
+    }
+    if (drawMode === TriangleFanDrawMode || drawMode === TriangleStripDrawMode) {
+      var index = geometry2.getIndex();
+      if (index === null) {
+        var indices = [];
+        var position = geometry2.getAttribute("position");
+        if (position !== void 0) {
+          for (var i = 0; i < position.count; i++) {
+            indices.push(i);
+          }
+          geometry2.setIndex(indices);
+          index = geometry2.getIndex();
+        } else {
+          console.error("THREE.BufferGeometryUtils.toTrianglesDrawMode(): Undefined position attribute. Processing not possible.");
+          return geometry2;
+        }
+      }
+      var numberOfTriangles = index.count - 2;
+      var newIndices = [];
+      if (drawMode === TriangleFanDrawMode) {
+        for (var i = 1; i <= numberOfTriangles; i++) {
+          newIndices.push(index.getX(0));
+          newIndices.push(index.getX(i));
+          newIndices.push(index.getX(i + 1));
+        }
+      } else {
+        for (var i = 0; i < numberOfTriangles; i++) {
+          if (i % 2 === 0) {
+            newIndices.push(index.getX(i));
+            newIndices.push(index.getX(i + 1));
+            newIndices.push(index.getX(i + 2));
+          } else {
+            newIndices.push(index.getX(i + 2));
+            newIndices.push(index.getX(i + 1));
+            newIndices.push(index.getX(i));
+          }
+        }
+      }
+      if (newIndices.length / 3 !== numberOfTriangles) {
+        console.error("THREE.BufferGeometryUtils.toTrianglesDrawMode(): Unable to generate correct amount of triangles.");
+      }
+      var newGeometry = geometry2.clone();
+      newGeometry.setIndex(newIndices);
+      newGeometry.clearGroups();
+      return newGeometry;
+    } else {
+      console.error("THREE.BufferGeometryUtils.toTrianglesDrawMode(): Unknown draw mode:", drawMode);
+      return geometry2;
+    }
+  },
+  computeMorphedAttributes: function(object) {
+    if (object.geometry.isBufferGeometry !== true) {
+      console.error("THREE.BufferGeometryUtils: Geometry is not of type BufferGeometry.");
+      return null;
+    }
+    var _vA2 = new Vector3();
+    var _vB2 = new Vector3();
+    var _vC2 = new Vector3();
+    var _tempA2 = new Vector3();
+    var _tempB2 = new Vector3();
+    var _tempC2 = new Vector3();
+    var _morphA2 = new Vector3();
+    var _morphB2 = new Vector3();
+    var _morphC2 = new Vector3();
+    function _calculateMorphedAttributeData(object2, material3, attribute, morphAttribute, morphTargetsRelative2, a2, b2, c2, modifiedAttributeArray) {
+      _vA2.fromBufferAttribute(attribute, a2);
+      _vB2.fromBufferAttribute(attribute, b2);
+      _vC2.fromBufferAttribute(attribute, c2);
+      var morphInfluences = object2.morphTargetInfluences;
+      if (material3.morphTargets && morphAttribute && morphInfluences) {
+        _morphA2.set(0, 0, 0);
+        _morphB2.set(0, 0, 0);
+        _morphC2.set(0, 0, 0);
+        for (var i2 = 0, il2 = morphAttribute.length; i2 < il2; i2++) {
+          var influence = morphInfluences[i2];
+          var morph = morphAttribute[i2];
+          if (influence === 0)
+            continue;
+          _tempA2.fromBufferAttribute(morph, a2);
+          _tempB2.fromBufferAttribute(morph, b2);
+          _tempC2.fromBufferAttribute(morph, c2);
+          if (morphTargetsRelative2) {
+            _morphA2.addScaledVector(_tempA2, influence);
+            _morphB2.addScaledVector(_tempB2, influence);
+            _morphC2.addScaledVector(_tempC2, influence);
+          } else {
+            _morphA2.addScaledVector(_tempA2.sub(_vA2), influence);
+            _morphB2.addScaledVector(_tempB2.sub(_vB2), influence);
+            _morphC2.addScaledVector(_tempC2.sub(_vC2), influence);
+          }
+        }
+        _vA2.add(_morphA2);
+        _vB2.add(_morphB2);
+        _vC2.add(_morphC2);
+      }
+      if (object2.isSkinnedMesh) {
+        object2.boneTransform(a2, _vA2);
+        object2.boneTransform(b2, _vB2);
+        object2.boneTransform(c2, _vC2);
+      }
+      modifiedAttributeArray[a2 * 3 + 0] = _vA2.x;
+      modifiedAttributeArray[a2 * 3 + 1] = _vA2.y;
+      modifiedAttributeArray[a2 * 3 + 2] = _vA2.z;
+      modifiedAttributeArray[b2 * 3 + 0] = _vB2.x;
+      modifiedAttributeArray[b2 * 3 + 1] = _vB2.y;
+      modifiedAttributeArray[b2 * 3 + 2] = _vB2.z;
+      modifiedAttributeArray[c2 * 3 + 0] = _vC2.x;
+      modifiedAttributeArray[c2 * 3 + 1] = _vC2.y;
+      modifiedAttributeArray[c2 * 3 + 2] = _vC2.z;
+    }
+    var geometry2 = object.geometry;
+    var material2 = object.material;
+    var a, b, c;
+    var index = geometry2.index;
+    var positionAttribute = geometry2.attributes.position;
+    var morphPosition = geometry2.morphAttributes.position;
+    var morphTargetsRelative = geometry2.morphTargetsRelative;
+    var normalAttribute = geometry2.attributes.normal;
+    var morphNormal = geometry2.morphAttributes.position;
+    var groups = geometry2.groups;
+    var drawRange = geometry2.drawRange;
+    var i, j, il, jl;
+    var group, groupMaterial;
+    var start, end;
+    var modifiedPosition = new Float32Array(positionAttribute.count * positionAttribute.itemSize);
+    var modifiedNormal = new Float32Array(normalAttribute.count * normalAttribute.itemSize);
+    if (index !== null) {
+      if (Array.isArray(material2)) {
+        for (i = 0, il = groups.length; i < il; i++) {
+          group = groups[i];
+          groupMaterial = material2[group.materialIndex];
+          start = Math.max(group.start, drawRange.start);
+          end = Math.min(group.start + group.count, drawRange.start + drawRange.count);
+          for (j = start, jl = end; j < jl; j += 3) {
+            a = index.getX(j);
+            b = index.getX(j + 1);
+            c = index.getX(j + 2);
+            _calculateMorphedAttributeData(object, groupMaterial, positionAttribute, morphPosition, morphTargetsRelative, a, b, c, modifiedPosition);
+            _calculateMorphedAttributeData(object, groupMaterial, normalAttribute, morphNormal, morphTargetsRelative, a, b, c, modifiedNormal);
+          }
+        }
+      } else {
+        start = Math.max(0, drawRange.start);
+        end = Math.min(index.count, drawRange.start + drawRange.count);
+        for (i = start, il = end; i < il; i += 3) {
+          a = index.getX(i);
+          b = index.getX(i + 1);
+          c = index.getX(i + 2);
+          _calculateMorphedAttributeData(object, material2, positionAttribute, morphPosition, morphTargetsRelative, a, b, c, modifiedPosition);
+          _calculateMorphedAttributeData(object, material2, normalAttribute, morphNormal, morphTargetsRelative, a, b, c, modifiedNormal);
+        }
+      }
+    } else if (positionAttribute !== void 0) {
+      if (Array.isArray(material2)) {
+        for (i = 0, il = groups.length; i < il; i++) {
+          group = groups[i];
+          groupMaterial = material2[group.materialIndex];
+          start = Math.max(group.start, drawRange.start);
+          end = Math.min(group.start + group.count, drawRange.start + drawRange.count);
+          for (j = start, jl = end; j < jl; j += 3) {
+            a = j;
+            b = j + 1;
+            c = j + 2;
+            _calculateMorphedAttributeData(object, groupMaterial, positionAttribute, morphPosition, morphTargetsRelative, a, b, c, modifiedPosition);
+            _calculateMorphedAttributeData(object, groupMaterial, normalAttribute, morphNormal, morphTargetsRelative, a, b, c, modifiedNormal);
+          }
+        }
+      } else {
+        start = Math.max(0, drawRange.start);
+        end = Math.min(positionAttribute.count, drawRange.start + drawRange.count);
+        for (i = start, il = end; i < il; i += 3) {
+          a = i;
+          b = i + 1;
+          c = i + 2;
+          _calculateMorphedAttributeData(object, material2, positionAttribute, morphPosition, morphTargetsRelative, a, b, c, modifiedPosition);
+          _calculateMorphedAttributeData(object, material2, normalAttribute, morphNormal, morphTargetsRelative, a, b, c, modifiedNormal);
+        }
+      }
+    }
+    var morphedPositionAttribute = new Float32BufferAttribute(modifiedPosition, 3);
+    var morphedNormalAttribute = new Float32BufferAttribute(modifiedNormal, 3);
+    return {
+      positionAttribute,
+      normalAttribute,
+      morphedPositionAttribute,
+      morphedNormalAttribute
+    };
+  }
+};
+
 // src/objects/util/deprecatedShared.ts
 var nudge = Randomizer_default.spreader(1 / 16, 1 / 4);
 var colorNudge = Randomizer_default.spreader(0, 1 / 24);
@@ -34981,13 +36378,9 @@ var randColor = (color2, colorVariation = colorNudge) => new Color(colorVariatio
 var randomizeColor = (geometry2, color2, colorVariation) => {
   const positionAttribute = geometry2.getAttribute("position");
   const positions = positionAttribute.count;
-  let colorAttribute = geometry2.getAttribute("color");
-  if (!colorAttribute) {
-    colorAttribute = new BufferAttribute(new Float32Array(geometry2.index.count / 3), 3);
-    geometry2.setAttribute("color", colorAttribute);
-  }
+  const colorAttribute = getColorAttribute(geometry2);
   color2 = randColor(color2, colorVariation);
-  for (let i = 0; i < geometry2.index.count / 3; i += 3) {
+  for (let i = 0; i < positions; i += 3) {
     const vertexColor = randColor(color2, colorVariation);
     colorAttribute.setXYZ(i, vertexColor.r, vertexColor.g, vertexColor.b);
     colorAttribute.setXYZ(i + 1, vertexColor.r, vertexColor.g, vertexColor.b);
@@ -35016,7 +36409,7 @@ var box = ({
   height,
   depth,
   color: color2
-}) => randomize(new BoxGeometry(width, height, depth), {color: color2});
+}) => randomize(new BoxGeometry(width, height, depth).toNonIndexed(), {color: color2});
 
 // src/objects/Trough.ts
 var wall = ({
@@ -35033,6 +36426,19 @@ var wall = ({
   wall2.translate(0, 0, height / 2);
   return wall2;
 };
+var spoke = ({
+  thickness,
+  height
+}) => {
+  const spoke2 = box({
+    width: thickness * 1.25,
+    height: thickness * 2,
+    depth: height * 1.25,
+    color: randColor(wood)
+  });
+  spoke2.translate(0, 0, height / 2 * 1.25);
+  return spoke2;
+};
 var Trough = class extends Mesh {
   constructor({
     thickness = 1 / 16,
@@ -35042,27 +36448,76 @@ var Trough = class extends Mesh {
     angle = 0
   } = {}) {
     const materials = [faceColorMaterial, waterMaterial];
-    const geometry2 = wall({
+    let geometry2 = wall({
       thickness,
       length: length + thickness,
       height
     });
-    console.log(geometry2.clone());
     geometry2.rotateY(-MathUtils.randFloat(1 / 5, 1 / 3));
     geometry2.translate(-width / 2 + thickness / 2, 0, 0);
-    geometry2.clearGroups();
+    const right = wall({thickness, length: length + thickness, height});
+    right.rotateY(MathUtils.randFloat(1 / 5, 1 / 3));
+    right.translate(width / 2 - thickness / 2, 0, 0);
+    geometry2 = BufferGeometryUtils.mergeBufferGeometries([geometry2, right]);
+    const top = wall({thickness, length: width, height});
+    top.rotateY(MathUtils.randFloat(1 / 5, 1 / 3));
+    top.rotateZ(Math.PI / 2);
+    top.translate(0, length / 2 - thickness / 2, 0);
+    geometry2 = BufferGeometryUtils.mergeBufferGeometries([geometry2, top]);
+    const bottom = wall({thickness, length: width, height});
+    bottom.rotateY(-MathUtils.randFloat(1 / 5, 1 / 3));
+    bottom.rotateZ(Math.PI / 2);
+    bottom.translate(0, -length / 2 + thickness / 2, 0);
+    geometry2 = BufferGeometryUtils.mergeBufferGeometries([
+      geometry2,
+      bottom
+    ]);
+    const topLeft = spoke({thickness, height});
+    topLeft.rotateY(MathUtils.randFloat(1 / 5, 1 / 3));
+    topLeft.rotateX(-MathUtils.randFloat(1 / 5, 1 / 3));
+    topLeft.rotateZ(Math.PI / 2);
+    topLeft.translate(-width / 2 + thickness / 2, length / 2 - thickness / 2, 0);
+    geometry2 = BufferGeometryUtils.mergeBufferGeometries([
+      geometry2,
+      topLeft
+    ]);
+    const topRight = spoke({thickness, height});
+    topRight.rotateY(MathUtils.randFloat(1 / 5, 1 / 3));
+    topRight.rotateX(MathUtils.randFloat(1 / 5, 1 / 3));
+    topRight.rotateZ(Math.PI / 2);
+    topRight.translate(width / 2 - thickness / 2, length / 2 - thickness / 2, 0);
+    geometry2 = BufferGeometryUtils.mergeBufferGeometries([
+      geometry2,
+      topRight
+    ]);
+    const bottomLeft = spoke({thickness, height});
+    bottomLeft.rotateY(-MathUtils.randFloat(1 / 5, 1 / 3));
+    bottomLeft.rotateX(-MathUtils.randFloat(1 / 5, 1 / 3));
+    bottomLeft.rotateZ(Math.PI / 2);
+    bottomLeft.translate(-width / 2 + thickness / 2, -length / 2 + thickness / 2, 0);
+    geometry2 = BufferGeometryUtils.mergeBufferGeometries([
+      geometry2,
+      bottomLeft
+    ]);
+    const bottomRight = spoke({thickness, height});
+    bottomRight.rotateY(-MathUtils.randFloat(1 / 5, 1 / 3));
+    bottomRight.rotateX(MathUtils.randFloat(1 / 5, 1 / 3));
+    bottomRight.rotateZ(Math.PI / 2);
+    bottomRight.translate(width / 2 - thickness / 2, -length / 2 + thickness / 2, 0);
+    geometry2 = BufferGeometryUtils.mergeBufferGeometries([
+      geometry2,
+      bottomRight
+    ]);
     geometry2.addGroup(0, geometry2.getAttribute("position").count * 2, 0);
-    const water = new PlaneGeometry(width, length);
+    const water = new PlaneGeometry(width, length).toNonIndexed();
     const waterColorAttribute = new BufferAttribute(new Float32Array(6 * 3), 3);
     water.setAttribute("color", waterColorAttribute);
     water.translate(0, 0, height * 3 / 4);
-    for (let i = 0; i < 6; i++) {
-      waterColorAttribute.setXYZ(i * 3, 24, 33, 144);
-      waterColorAttribute.setXYZ((i + 1) * 3, 24, 33, 144);
-      waterColorAttribute.setXYZ((i + 2) * 3, 24, 33, 144);
-    }
-    console.log(water);
-    console.log(geometry2);
+    for (let i = 0; i < 6; i++)
+      waterColorAttribute.setXYZ(i, 24, 33, 144);
+    geometry2 = BufferGeometryUtils.mergeBufferGeometries([geometry2, water], true);
+    geometry2.rotateZ(angle - Math.PI / 4);
+    geometry2.computeVertexNormals();
     super(geometry2, materials);
     this.castShadow = true;
     this.receiveShadow = true;

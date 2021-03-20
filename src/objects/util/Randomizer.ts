@@ -1,13 +1,15 @@
-import { Color, Geometry, Vector3 } from "three";
+import { BufferGeometry, Color, Vector3 } from "three";
+
 import Builder from "./Builder.js";
+import { getColorAttribute, getVertexCount } from "./utils.js";
 
 export type Variation = (value: number) => number;
 
 export default class Randomizer {
-	private geometry: Geometry;
+	private geometry: BufferGeometry;
 	private builder: Builder;
 
-	constructor(geometry: Geometry, builder: Builder) {
+	constructor(geometry: BufferGeometry, builder: Builder) {
 		this.geometry = geometry;
 		this.builder = builder;
 	}
@@ -58,15 +60,36 @@ export default class Randomizer {
 	}
 
 	static colorize(
-		geometry: Geometry,
+		geometry: BufferGeometry,
 		color: Color,
 		variation = this.spreader(),
-	): Geometry {
+	): BufferGeometry {
 		// Shift the entire geometry
 		color = this.colorSpread(color, variation);
 
-		for (let i = 0; i < geometry.faces.length; i++)
-			geometry.faces[i].color = this.colorSpread(color, variation);
+		const vertices = getVertexCount(geometry);
+		const colorAttribute = getColorAttribute(geometry);
+		for (let i = 0; i < vertices; i += 3) {
+			const vertexColor = this.colorSpread(color, variation);
+			colorAttribute.setXYZ(
+				i,
+				vertexColor.r,
+				vertexColor.g,
+				vertexColor.b,
+			);
+			colorAttribute.setXYZ(
+				i + 1,
+				vertexColor.r,
+				vertexColor.g,
+				vertexColor.b,
+			);
+			colorAttribute.setXYZ(
+				i + 2,
+				vertexColor.r,
+				vertexColor.g,
+				vertexColor.b,
+			);
+		}
 
 		return geometry;
 	}
@@ -78,10 +101,10 @@ export default class Randomizer {
 
 	// Nudges the entire geometry
 	static translate(
-		geometry: Geometry,
+		geometry: BufferGeometry,
 		position?: Vector3,
 		variation = this.spreader(),
-	): Geometry {
+	): BufferGeometry {
 		return geometry.translate(
 			variation(position?.x || 0),
 			variation(position?.y || 0),
@@ -94,7 +117,7 @@ export default class Randomizer {
 		return this;
 	}
 
-	static blur(geometry: Geometry, degree = 0.01): Geometry {
+	static blur(geometry: BufferGeometry, degree = 0.01): BufferGeometry {
 		geometry.computeBoundingBox();
 
 		for (let i = 0; i < geometry.vertices.length; i++) {

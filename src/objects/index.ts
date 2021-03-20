@@ -1,4 +1,4 @@
-// export * from "./Barn";
+export * from "./Barn";
 // export * from "./BrokenHayCart";
 // export * from "./BrokenWheelbarrow";
 // export * from "./Fence";

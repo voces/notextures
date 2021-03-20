@@ -1,6 +1,5 @@
 import {
 	BoxGeometry,
-	BufferAttribute,
 	BufferGeometry,
 	Color,
 	CylinderGeometry,
@@ -11,6 +10,7 @@ import {
 } from "three";
 
 import Randomizer, { Variation } from "./Randomizer.js";
+import { getColorAttribute } from "./utils.js";
 
 export const nudge = Randomizer.spreader(1 / 16, 1 / 4);
 
@@ -33,18 +33,10 @@ const randomizeColor = (
 	const positionAttribute = geometry.getAttribute("position");
 	const positions = positionAttribute.count;
 
-	let colorAttribute = geometry.getAttribute("color");
-	if (!colorAttribute) {
-		colorAttribute = new BufferAttribute(
-			new Float32Array(geometry.index!.count / 3),
-			3,
-		);
-		geometry.setAttribute("color", colorAttribute);
-	}
+	const colorAttribute = getColorAttribute(geometry);
 
 	color = randColor(color, colorVariation);
-
-	for (let i = 0; i < geometry.index!.count / 3; i += 3) {
+	for (let i = 0; i < positions; i += 3) {
 		const vertexColor = randColor(color, colorVariation);
 		colorAttribute.setXYZ(i, vertexColor.r, vertexColor.g, vertexColor.b);
 		colorAttribute.setXYZ(
@@ -126,7 +118,7 @@ export const cylinder = ({
 			radius * (1 + MathUtils.randFloatSpread(radius / 16)),
 			radius * (1 + MathUtils.randFloatSpread(radius / 16)),
 			length * (1 + MathUtils.randFloatSpread(length / 16)),
-		),
+		).toNonIndexed(),
 		{ color },
 	);
 
@@ -141,7 +133,7 @@ export const box = ({
 	depth: number;
 	color: Color;
 }): BufferGeometry =>
-	randomize(new BoxGeometry(width, height, depth), { color });
+	randomize(new BoxGeometry(width, height, depth).toNonIndexed(), { color });
 
 export const tetrahedron = ({
 	radius,
@@ -154,7 +146,7 @@ export const tetrahedron = ({
 	color: Color;
 	vertexVariation: Variation;
 }): BufferGeometry =>
-	randomize(new TetrahedronGeometry(radius, detail), {
+	randomize(new TetrahedronGeometry(radius, detail).toNonIndexed(), {
 		color,
 		vertexVariation,
 	});
@@ -168,4 +160,7 @@ export const dodecahedron = ({
 	vertexVariation: Variation;
 	color: Color;
 }): BufferGeometry =>
-	randomize(new DodecahedronGeometry(radius), { vertexVariation, color });
+	randomize(new DodecahedronGeometry(radius).toNonIndexed(), {
+		vertexVariation,
+		color,
+	});

@@ -1,21 +1,21 @@
 import {
 	BoxGeometry,
+	BufferGeometry,
+	Color,
 	ConeGeometry,
 	CylinderGeometry,
-	Geometry,
 	LatheGeometry,
+	Mesh,
 	OctahedronGeometry,
 	SphereGeometry,
 	TetrahedronGeometry,
 	TubeGeometry,
-	Vector3,
 	Vector2,
-	Color,
-	BufferGeometry,
-	Mesh,
+	Vector3,
 } from "three";
-import Randomizer, { Variation } from "./Randomizer.js";
+
 import { faceColorMaterial } from "../../materials.js";
+import Randomizer, { Variation } from "./Randomizer.js";
 
 // const compose = <R>(fn1: (a: R) => R, ...fns: Array<(a: R) => R>) =>
 // 	fns.reduce((prevFn, nextFn) => (value) => prevFn(nextFn(value)), fn1);
@@ -58,7 +58,7 @@ type Tail<T extends any[]> = ((...t: T) => void) extends (
 export default class Builder {
 	parent?: Builder;
 
-	private _geometry?: Geometry;
+	private _geometry?: BufferGeometry;
 	private children: Builder[];
 	private _color?: Color;
 	private _colorVariation?: Variation[];
@@ -70,7 +70,7 @@ export default class Builder {
 	private _scaleVariation?: Variation[];
 	private _blur?: number;
 
-	constructor(geometry?: Geometry, parent?: Builder) {
+	constructor(geometry?: BufferGeometry, parent?: Builder) {
 		this._geometry = geometry;
 		this.parent = parent;
 		this.children = [];
@@ -437,10 +437,10 @@ export default class Builder {
 		return cur;
 	}
 
-	geometry(): Geometry {
+	geometry(): BufferGeometry {
 		const geometry = this._geometry
 			? this._geometry.clone()
-			: new Geometry();
+			: new BufferGeometry();
 
 		for (let i = 0; i < this.children.length; i++)
 			geometry.merge(this.children[i].geometry());
@@ -478,11 +478,7 @@ export default class Builder {
 		return geometry;
 	}
 
-	buffer(): BufferGeometry {
-		return new BufferGeometry().fromGeometry(this.geometry());
-	}
-
 	mesh(): Mesh {
-		return new Mesh(this.buffer(), faceColorMaterial);
+		return new Mesh(this.geometry(), faceColorMaterial);
 	}
 }
