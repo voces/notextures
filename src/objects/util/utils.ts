@@ -1,6 +1,7 @@
 import {
 	BufferAttribute,
 	BufferGeometry,
+	Color,
 	InterleavedBufferAttribute,
 } from "three";
 
@@ -21,3 +22,18 @@ export const getColorAttribute = (
 	geometry.setAttribute("color", attribute);
 	return attribute;
 };
+
+export const colorFace = (
+	geometry: BufferGeometry,
+	face: number,
+	color: Color,
+): void => {
+	const colorAttribute = getColorAttribute(geometry);
+	const vertexIdx = face * 3;
+	colorAttribute.setXYZ(vertexIdx, color.r, color.g, color.b);
+	colorAttribute.setXYZ(vertexIdx + 1, color.r, color.g, color.b);
+	colorAttribute.setXYZ(vertexIdx + 2, color.r, color.g, color.b);
+};
+
+export const getFaceCount = (geometry: BufferGeometry): number =>
+	getVertexCount(geometry) / 3;

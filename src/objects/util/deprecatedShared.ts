@@ -67,23 +67,12 @@ const randomize = (
 	// rotationVariation = nudge,
 	{
 		color?: Color;
-		vertexVariation?: Variation;
+		vertexVariation?: number;
 	},
 ): BufferGeometry => {
 	if (color) randomizeColor(geometry, color);
 
-	if (vertexVariation) {
-		const positionAttribute = geometry.getAttribute("position");
-		const positions = positionAttribute.count / positionAttribute.itemSize;
-
-		for (let i = 0; i < positions; i++)
-			positionAttribute.setXYZ(
-				i,
-				vertexVariation(positionAttribute.getX(i)),
-				vertexVariation(positionAttribute.getY(i)),
-				vertexVariation(positionAttribute.getZ(i)),
-			);
-	}
+	if (vertexVariation) Randomizer.blur(geometry, vertexVariation);
 
 	// if (rotation)
 	// 	geometry.lookAt(
@@ -144,7 +133,7 @@ export const tetrahedron = ({
 	radius: number;
 	detail: number;
 	color: Color;
-	vertexVariation: Variation;
+	vertexVariation: number;
 }): BufferGeometry =>
 	randomize(new TetrahedronGeometry(radius, detail).toNonIndexed(), {
 		color,
@@ -157,7 +146,7 @@ export const dodecahedron = ({
 	color,
 }: {
 	radius: number;
-	vertexVariation: Variation;
+	vertexVariation: number;
 	color: Color;
 }): BufferGeometry =>
 	randomize(new DodecahedronGeometry(radius).toNonIndexed(), {

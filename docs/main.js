@@ -55,9 +55,9 @@ var require_nodeUtil = __commonJS((exports, module) => {
   var freeProcess = moduleExports && freeGlobal_default.process;
   var nodeUtil7 = function() {
     try {
-      var types = freeModule && freeModule.require && freeModule.require("util").types;
-      if (types) {
-        return types;
+      var types2 = freeModule && freeModule.require && freeModule.require("util").types;
+      if (types2) {
+        return types2;
       }
       return freeProcess && freeProcess.binding && freeProcess.binding("util");
     } catch (e) {
@@ -24037,6 +24037,190 @@ var PolyhedronGeometry = class extends BufferGeometry {
     }
   }
 };
+var DodecahedronGeometry = class extends PolyhedronGeometry {
+  constructor(radius = 1, detail = 0) {
+    const t = (1 + Math.sqrt(5)) / 2;
+    const r = 1 / t;
+    const vertices = [
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      1,
+      -1,
+      1,
+      -1,
+      -1,
+      1,
+      1,
+      1,
+      -1,
+      -1,
+      1,
+      -1,
+      1,
+      1,
+      1,
+      -1,
+      1,
+      1,
+      1,
+      0,
+      -r,
+      -t,
+      0,
+      -r,
+      t,
+      0,
+      r,
+      -t,
+      0,
+      r,
+      t,
+      -r,
+      -t,
+      0,
+      -r,
+      t,
+      0,
+      r,
+      -t,
+      0,
+      r,
+      t,
+      0,
+      -t,
+      0,
+      -r,
+      t,
+      0,
+      -r,
+      -t,
+      0,
+      r,
+      t,
+      0,
+      r
+    ];
+    const indices = [
+      3,
+      11,
+      7,
+      3,
+      7,
+      15,
+      3,
+      15,
+      13,
+      7,
+      19,
+      17,
+      7,
+      17,
+      6,
+      7,
+      6,
+      15,
+      17,
+      4,
+      8,
+      17,
+      8,
+      10,
+      17,
+      10,
+      6,
+      8,
+      0,
+      16,
+      8,
+      16,
+      2,
+      8,
+      2,
+      10,
+      0,
+      12,
+      1,
+      0,
+      1,
+      18,
+      0,
+      18,
+      16,
+      6,
+      10,
+      2,
+      6,
+      2,
+      13,
+      6,
+      13,
+      15,
+      2,
+      16,
+      18,
+      2,
+      18,
+      3,
+      2,
+      3,
+      13,
+      18,
+      1,
+      9,
+      18,
+      9,
+      11,
+      18,
+      11,
+      3,
+      4,
+      14,
+      12,
+      4,
+      12,
+      0,
+      4,
+      0,
+      8,
+      11,
+      9,
+      5,
+      11,
+      5,
+      19,
+      11,
+      19,
+      7,
+      19,
+      5,
+      14,
+      19,
+      14,
+      4,
+      19,
+      4,
+      17,
+      1,
+      12,
+      14,
+      1,
+      14,
+      5,
+      1,
+      5,
+      9
+    ];
+    super(vertices, indices, radius, detail);
+    this.type = "DodecahedronGeometry";
+    this.parameters = {
+      radius,
+      detail
+    };
+  }
+};
 var _v0$2 = new Vector3();
 var _v1$5 = new Vector3();
 var _normal$1 = new Vector3();
@@ -33448,15 +33632,15 @@ var possibleConstructorReturn = function(self2, call) {
   return call && (typeof call === "object" || typeof call === "function") ? call : self2;
 };
 var Color2 = function() {
-  function Color4() {
-    classCallCheck(this, Color4);
+  function Color8() {
+    classCallCheck(this, Color8);
     this.__state = interpret.apply(this, arguments);
     if (this.__state === false) {
       throw new Error("Failed to interpret color arguments");
     }
     this.__state.a = this.__state.a || 1;
   }
-  createClass(Color4, [{
+  createClass(Color8, [{
     key: "toString",
     value: function toString2() {
       return colorToString(this);
@@ -33472,7 +33656,7 @@ var Color2 = function() {
       return this.__state.conversion.write(this);
     }
   }]);
-  return Color4;
+  return Color8;
 }();
 function defineRGBComponent(target, component, componentHexIndex) {
   Object.defineProperty(target, component, {
@@ -35459,6 +35643,15 @@ render();
 var objects_exports = {};
 __export(objects_exports, {
   Barn: () => Barn,
+  BrokenHayCart: () => BrokenHayCart,
+  BrokenWheelbarrow: () => BrokenWheelbarrow,
+  Fence: () => Fence,
+  Grid: () => Grid,
+  HayCart: () => HayCart,
+  PileOfJunk: () => PileOfJunk,
+  PineTree: () => PineTree,
+  RockChunks: () => RockChunks,
+  ScorchedBarn: () => ScorchedBarn,
   Trough: () => Trough
 });
 
@@ -35467,6 +35660,7 @@ var wood = new Color(3876103);
 var stone = new Color(5858662);
 var cloth = new Color(4796691);
 var rope = new Color(4990997);
+var steel = new Color(14738917);
 
 // src/materials.ts
 var faceColorMaterial = new MeshPhongMaterial({
@@ -35479,436 +35673,6 @@ var waterMaterial = new MeshPhongMaterial({
   opacity: 0.5,
   transparent: true
 });
-
-// src/objects/util/utils.ts
-var getVertexCount = (geometry2) => {
-  const positions = geometry2.getAttribute("position");
-  return positions.count;
-};
-var getColorAttribute = (geometry2) => {
-  const existingAttribute = geometry2.getAttribute("color");
-  if (existingAttribute)
-    return existingAttribute;
-  const attribute = new BufferAttribute(new Float32Array(getVertexCount(geometry2) * 3), 3);
-  geometry2.setAttribute("color", attribute);
-  return attribute;
-};
-
-// src/objects/util/Randomizer.ts
-var Randomizer = class {
-  constructor(geometry2, builder) {
-    this.geometry = geometry2;
-    this.builder = builder;
-  }
-  static flatSpread(value = 0, spread2 = 1 / 16) {
-    return value + (Math.random() - 0.5) * 2 * spread2;
-  }
-  static flatSpreader(spread2 = 1 / 16) {
-    return (v) => v + (Math.random() - 0.5) * 2 * spread2;
-  }
-  static percentSpread(value, spread2 = 1 / 32) {
-    return value * (1 + (Math.random() - 0.5) * 2 * spread2);
-  }
-  static percentSpreader(spread2 = 1 / 32) {
-    return (v) => v * (1 + (Math.random() - 0.5) * 2 * spread2);
-  }
-  static spread(value, flat = 1 / 16, percent = 1 / 32) {
-    return (value + (Math.random() - 0.5) * 2 * flat) * (1 + (Math.random() - 0.5) * 2 * percent);
-  }
-  static spreader(flat = 1 / 16, percent = 1 / 32) {
-    return (v) => (v + (Math.random() - 0.5) * 2 * flat) * (1 + (Math.random() - 0.5) * 2 * percent);
-  }
-  static colorSpread(color2, variation = this.flatSpreader(1 / 32)) {
-    return new Color(variation(color2.r), variation(color2.g), variation(color2.b));
-  }
-  static colorize(geometry2, color2, variation = this.spreader()) {
-    color2 = this.colorSpread(color2, variation);
-    const vertices = getVertexCount(geometry2);
-    const colorAttribute = getColorAttribute(geometry2);
-    for (let i = 0; i < vertices; i += 3) {
-      const vertexColor = this.colorSpread(color2, variation);
-      colorAttribute.setXYZ(i, vertexColor.r, vertexColor.g, vertexColor.b);
-      colorAttribute.setXYZ(i + 1, vertexColor.r, vertexColor.g, vertexColor.b);
-      colorAttribute.setXYZ(i + 2, vertexColor.r, vertexColor.g, vertexColor.b);
-    }
-    return geometry2;
-  }
-  colorize(color2, variation) {
-    Randomizer.colorize(this.geometry, color2, variation);
-    return this;
-  }
-  static translate(geometry2, position, variation = this.spreader()) {
-    return geometry2.translate(variation(position?.x || 0), variation(position?.y || 0), variation(position?.z || 0));
-  }
-  translate(position, variation) {
-    Randomizer.translate(this.geometry, position, variation);
-    return this;
-  }
-  static blur(geometry2, degree = 0.01) {
-    geometry2.computeBoundingBox();
-    for (let i = 0; i < geometry2.vertices.length; i++) {
-      geometry2.vertices[i].x = this.flatSpread(geometry2.vertices[i].x, (geometry2.boundingBox.max.x - geometry2.boundingBox.min.x) * degree);
-      geometry2.vertices[i].y = this.flatSpread(geometry2.vertices[i].y, (geometry2.boundingBox.max.y - geometry2.boundingBox.min.y) * degree);
-      geometry2.vertices[i].z = this.flatSpread(geometry2.vertices[i].z, (geometry2.boundingBox.max.z - geometry2.boundingBox.min.z) * degree);
-    }
-    return geometry2;
-  }
-  blur(degree) {
-    Randomizer.blur(this.geometry, degree);
-    return this;
-  }
-  static rotate(geometry2, rotation, variation = Randomizer.spread) {
-    geometry2.rotateX(variation(rotation.x));
-    geometry2.rotateY(variation(rotation.y));
-    geometry2.rotateZ(variation(rotation.z));
-    return geometry2;
-  }
-  rotate(rotation, variation) {
-    Randomizer.rotate(this.geometry, rotation, variation);
-    return this;
-  }
-  static scale(geometry2, scale, variation = Randomizer.spread) {
-    geometry2.scale(variation(scale.x || 1), variation(scale.y || 1), variation(scale.z || 1));
-    return geometry2;
-  }
-  scale(scale, variation) {
-    Randomizer.scale(this.geometry, scale, variation);
-    return this;
-  }
-  static randomize(geometry2, {
-    colorize,
-    translate,
-    blur,
-    rotate
-  } = {}) {
-    if (colorize)
-      this.colorize(geometry2, colorize.color, colorize.variation);
-    if (translate)
-      this.translate(geometry2, translate.position, translate.variation);
-    if (blur)
-      this.blur(geometry2, blur);
-    if (rotate)
-      this.rotate(geometry2, rotate.rotation, rotate.variation);
-    return geometry2;
-  }
-};
-var Randomizer_default = Randomizer;
-
-// src/objects/util/Builder.ts
-var compose2 = (fns) => {
-  if (!fns || fns.length === 0)
-    return;
-  if (fns.length === 1)
-    return fns[0];
-  return (val) => {
-    for (let i = 0; i < fns.length; i++)
-      val = fns[i](val);
-    return val;
-  };
-};
-var IDENTITY = (v) => v;
-var LEFT = new Vector2(-1, 0);
-var Builder = class {
-  constructor(geometry2, parent2) {
-    this._geometry = geometry2;
-    this.parent = parent2;
-    this.children = [];
-  }
-  group() {
-    const group = new Builder(void 0, this);
-    this.children.push(group);
-    return group;
-  }
-  box(...args) {
-    const box2 = new Builder(new BoxGeometry(...args), this);
-    this.children.push(box2);
-    return box2;
-  }
-  cone(...args) {
-    const cone = new Builder(new ConeGeometry(...args), this);
-    this.children.push(cone);
-    return cone;
-  }
-  cylinder(...args) {
-    const cylinder = new Builder(new CylinderGeometry(...args), this);
-    this.children.push(cylinder);
-    return cylinder;
-  }
-  octahedron(...args) {
-    const octahedron = new Builder(new OctahedronGeometry(...args), this);
-    this.children.push(octahedron);
-    return octahedron;
-  }
-  sphere(...args) {
-    const sphere = new Builder(new SphereGeometry(...args), this);
-    this.children.push(sphere);
-    return sphere;
-  }
-  tetrahedron(...args) {
-    const tetrahedron = new Builder(new TetrahedronGeometry(...args), this);
-    this.children.push(tetrahedron);
-    return tetrahedron;
-  }
-  tube(...args) {
-    const tube = new Builder(new TubeGeometry(...args), this);
-    this.children.push(tube);
-    return tube;
-  }
-  lathe(...args) {
-    const lathe = new Builder(new LatheGeometry(...args), this);
-    this.children.push(lathe);
-    return lathe;
-  }
-  thickLathe(points, thickness = 1 / 32, direction = LEFT, ...rest2) {
-    const adjustment = direction.clone().multiplyScalar(thickness);
-    const allPoints = [
-      ...points,
-      ...[...points].reverse().map((p) => p.clone().add(adjustment)),
-      points[0]
-    ];
-    return this.lathe(allPoints, ...rest2);
-  }
-  color(color2, variation) {
-    this._color = color2;
-    if (variation)
-      if (this._colorVariation)
-        this._colorVariation.push(variation);
-      else
-        this._colorVariation = [variation];
-    return this;
-  }
-  translate(x = 0, y = 0, z = 0, variation) {
-    const position = new Vector3(x, y, z);
-    this._position = this._position ? this._position.add(position) : position;
-    if (variation)
-      if (this._positionVariation)
-        this._positionVariation.push(variation);
-      else
-        this._positionVariation = [variation];
-    return this;
-  }
-  translateX(x) {
-    if (this._position)
-      this._position.x += x;
-    else
-      this._position = new Vector3(x, 0, 0);
-    return this;
-  }
-  translateY(y) {
-    if (this._position)
-      this._position.y += y;
-    else
-      this._position = new Vector3(0, y, 0);
-    return this;
-  }
-  translateZ(z) {
-    if (this._position)
-      this._position.z += z;
-    else
-      this._position = new Vector3(0, 0, z);
-    return this;
-  }
-  rotate(x, y, z, variation) {
-    if (x === void 0)
-      return this;
-    const rotation = new Vector3(x ?? 0, y ?? 0, z ?? 0);
-    this._rotation = this._rotation ? this._rotation.add(rotation) : rotation;
-    if (variation)
-      if (this._rotationVariation)
-        this._rotationVariation.push(variation);
-      else
-        this._rotationVariation = [variation];
-    return this;
-  }
-  rotateX(x) {
-    if (this._rotation)
-      this._rotation.x += x;
-    else
-      this._rotation = new Vector3(x, 0, 0);
-    return this;
-  }
-  rotateY(y) {
-    if (this._rotation)
-      this._rotation.y += y;
-    else
-      this._rotation = new Vector3(0, y, 0);
-    return this;
-  }
-  rotateZ(z) {
-    if (this._rotation)
-      this._rotation.z += z;
-    else
-      this._rotation = new Vector3(0, 0, z);
-    return this;
-  }
-  scale(x, y, z, variation) {
-    const scale = new Vector3(x, y, z);
-    if (this._scale)
-      this._scale.multiply(scale);
-    else
-      this._scale = scale;
-    if (variation)
-      if (this._scaleVariation)
-        this._scaleVariation.push(variation);
-      else
-        this._scaleVariation = [variation];
-    return this;
-  }
-  scaleX(x) {
-    if (this._scale)
-      this._scale.x += x;
-    else
-      this._scale = new Vector3(x, 0, 0);
-    return this;
-  }
-  scaleY(y) {
-    if (this._scale)
-      this._scale.y += y;
-    else
-      this._scale = new Vector3(0, y, 0);
-    return this;
-  }
-  scaleZ(z) {
-    if (this._scale)
-      this._scale.z += z;
-    else
-      this._scale = new Vector3(0, 0, z);
-    return this;
-  }
-  randomize(props = {
-    color: Randomizer_default.flatSpreader(1 / 24),
-    position: Randomizer_default.percentSpreader(),
-    rotation: Randomizer_default.flatSpreader(),
-    scale: Randomizer_default.percentSpreader(),
-    blur: 0.01
-  }) {
-    let color2, position, rotation, scale, blur;
-    if (typeof props === "number") {
-      color2 = Randomizer_default.flatSpreader(1 / 24 * props);
-      position = Randomizer_default.percentSpreader(1 / 32 * props);
-      rotation = Randomizer_default.flatSpreader(1 / 16 * props);
-      blur = 0.01 * props;
-    } else
-      ({color: color2, position, rotation, scale, blur} = props);
-    if (color2) {
-      if (typeof color2 === "number")
-        color2 = Randomizer_default.flatSpreader(color2);
-      if (this._colorVariation)
-        this._colorVariation.push(color2);
-      else
-        this._colorVariation = [color2];
-    }
-    if (position) {
-      if (typeof position === "number")
-        position = Randomizer_default.percentSpreader(position);
-      if (this._positionVariation)
-        this._positionVariation.push(position);
-      else
-        this._positionVariation = [position];
-    }
-    if (rotation) {
-      if (typeof rotation === "number")
-        rotation = Randomizer_default.flatSpreader(rotation);
-      if (this._rotationVariation)
-        this._rotationVariation.push(rotation);
-      else
-        this._rotationVariation = [rotation];
-    }
-    if (scale) {
-      if (typeof scale === "number")
-        scale = Randomizer_default.percentSpreader(scale);
-      if (this._scaleVariation)
-        this._scaleVariation.push(scale);
-      else
-        this._scaleVariation = [scale];
-    }
-    return this.blur(blur);
-  }
-  blur(degree = 0.01) {
-    this._blur = (this._blur || 0) + degree;
-    return this;
-  }
-  repeat(count2, fn) {
-    const mid = (count2 - 1) / 2;
-    for (let i = 0; i < count2; i++)
-      fn(this, i - mid, mid - Math.abs(i - mid), mid, i, count2);
-    return this;
-  }
-  for(count2, fn) {
-    const mid = (count2 - 1) / 2;
-    for (let i = 0; i < count2; i++)
-      fn(this, i, count2, i - mid, mid - Math.abs(i - mid), mid);
-    return this;
-  }
-  do(fn) {
-    fn(this);
-    return this;
-  }
-  map(fn, centered = true) {
-    const mid = (this.children.length - 1) / 2;
-    if (centered)
-      for (let i = 0; i < this.children.length; i++)
-        fn(this.children[i], i - mid, mid - Math.abs(i - mid), mid, i, this.children.length);
-    else
-      for (let i = 0; i < this.children.length; i++)
-        fn(this.children[i], i, this.children.length, i - mid, mid - Math.abs(i - mid), mid);
-    return this;
-  }
-  add(builder) {
-    this.children.push(builder);
-    return this;
-  }
-  root() {
-    let cur = this;
-    while (cur.parent)
-      cur = cur.parent;
-    return cur;
-  }
-  geometry() {
-    const geometry2 = this._geometry ? this._geometry.clone() : new BufferGeometry();
-    for (let i = 0; i < this.children.length; i++)
-      geometry2.merge(this.children[i].geometry());
-    if (this._color)
-      Randomizer_default.colorize(geometry2, this._color, compose2(this._colorVariation) ?? IDENTITY);
-    if (this._rotation || this._rotationVariation)
-      Randomizer_default.rotate(geometry2, this._rotation ?? new Vector3(0, 0, 0), compose2(this._rotationVariation) ?? IDENTITY);
-    if (this._position || this._positionVariation)
-      Randomizer_default.translate(geometry2, this._position, compose2(this._positionVariation) ?? IDENTITY);
-    if (this._scale || this._scaleVariation)
-      Randomizer_default.scale(geometry2, this._scale ?? new Vector3(1, 1, 1), compose2(this._scaleVariation) ?? IDENTITY);
-    if (this._blur)
-      Randomizer_default.blur(geometry2, this._blur);
-    return geometry2;
-  }
-  mesh() {
-    return new Mesh(this.geometry(), faceColorMaterial);
-  }
-};
-var Builder_default = Builder;
-
-// src/objects/Barn.ts
-var Barn = class extends Mesh {
-  constructor() {
-    const color2 = Randomizer_default.colorSpread(wood);
-    const paneling = color2.clone();
-    const roof = color2.clone().offsetHSL(0, -0.05, 0.05);
-    const door = color2.clone().offsetHSL(0, 0.1, -0.1);
-    const length = 15;
-    const width = 11;
-    const thickness = 1 / 32;
-    const geometry2 = new Builder_default().repeat(2, (b, y) => b.repeat(width, (b2, x, _0, mid) => {
-      const angle = Math.acos(x / mid);
-      const height = 1 / 2 + Math.sin(angle) * 8 / length;
-      return b2.box(1 / 8, thickness, height).translate(x / 8, y * length / 8, height / 2).color(paneling).randomize(1 / 2);
-    })).repeat(2, (b, x) => b.repeat(length, (b2, y) => b2.box(thickness, 1 / 8, 1 / 2).translate(x * width / 8, y / 8, 1 / 4).color(paneling).randomize())).repeat(width, (b, x, _0, mid) => b.repeat(length + 1, (b2, y) => {
-      const width2 = Math.PI / 2 * x / mid;
-      return b2.box(thickness, 1 / 8, (1 / 8 + thickness) * Math.PI / 2).translate(Math.sin(width2) * ((mid + 0.5) / 8 + thickness), y / 8, 1 / 4 + 2 * thickness + Math.abs(Math.cos(width2) * ((mid + 0.5) / 8 + thickness))).rotateY(-Math.acos(Math.sin(width2))).color(roof).randomize();
-    })).box(1 / 2, thickness, 3 / 4).translate(0, -length / 2 / 8 - thickness / 2, 3 / 8).color(door).randomize().parent.rotateZ(-Math.PI / 4).geometry();
-    super(geometry2, faceColorMaterial);
-    this.castShadow = true;
-    this.receiveShadow = true;
-  }
-};
 
 // node_modules/three/examples/jsm/utils/BufferGeometryUtils.js
 var BufferGeometryUtils = {
@@ -36371,6 +36135,513 @@ var BufferGeometryUtils = {
   }
 };
 
+// src/objects/util/utils.ts
+var getVertexCount = (geometry2) => {
+  const positions = geometry2.getAttribute("position");
+  return positions.count;
+};
+var getColorAttribute = (geometry2) => {
+  const existingAttribute = geometry2.getAttribute("color");
+  if (existingAttribute)
+    return existingAttribute;
+  const attribute = new BufferAttribute(new Float32Array(getVertexCount(geometry2) * 3), 3);
+  geometry2.setAttribute("color", attribute);
+  return attribute;
+};
+var colorFace = (geometry2, face, color2) => {
+  const colorAttribute = getColorAttribute(geometry2);
+  const vertexIdx = face * 3;
+  colorAttribute.setXYZ(vertexIdx, color2.r, color2.g, color2.b);
+  colorAttribute.setXYZ(vertexIdx + 1, color2.r, color2.g, color2.b);
+  colorAttribute.setXYZ(vertexIdx + 2, color2.r, color2.g, color2.b);
+};
+var getFaceCount = (geometry2) => getVertexCount(geometry2) / 3;
+
+// src/objects/util/Randomizer.ts
+var Randomizer = class {
+  constructor(geometry2, builder) {
+    this.geometry = geometry2;
+    this.builder = builder;
+  }
+  static flatSpread(value = 0, spread2 = 1 / 16) {
+    return value + (Math.random() - 0.5) * 2 * spread2;
+  }
+  static flatSpreader(spread2 = 1 / 16) {
+    return (v) => v + (Math.random() - 0.5) * 2 * spread2;
+  }
+  static percentSpread(value, spread2 = 1 / 32) {
+    return value * (1 + (Math.random() - 0.5) * 2 * spread2);
+  }
+  static percentSpreader(spread2 = 1 / 32) {
+    return (v) => v * (1 + (Math.random() - 0.5) * 2 * spread2);
+  }
+  static spread(value, flat = 1 / 16, percent = 1 / 32) {
+    return (value + (Math.random() - 0.5) * 2 * flat) * (1 + (Math.random() - 0.5) * 2 * percent);
+  }
+  static spreader(flat = 1 / 16, percent = 1 / 32) {
+    return (v) => (v + (Math.random() - 0.5) * 2 * flat) * (1 + (Math.random() - 0.5) * 2 * percent);
+  }
+  static colorSpread(color2, variation = this.flatSpreader(1 / 32)) {
+    return new Color(variation(color2.r), variation(color2.g), variation(color2.b));
+  }
+  static colorize(geometry2, color2, variation = this.spreader()) {
+    color2 = this.colorSpread(color2, variation);
+    const vertices = getVertexCount(geometry2);
+    const colorAttribute = getColorAttribute(geometry2);
+    for (let i = 0; i < vertices; i += 3) {
+      const vertexColor = this.colorSpread(color2, variation);
+      colorAttribute.setXYZ(i, vertexColor.r, vertexColor.g, vertexColor.b);
+      colorAttribute.setXYZ(i + 1, vertexColor.r, vertexColor.g, vertexColor.b);
+      colorAttribute.setXYZ(i + 2, vertexColor.r, vertexColor.g, vertexColor.b);
+    }
+    return geometry2;
+  }
+  colorize(color2, variation) {
+    Randomizer.colorize(this.geometry, color2, variation);
+    return this;
+  }
+  static translate(geometry2, position, variation = this.spreader()) {
+    return geometry2.translate(variation(position?.x || 0), variation(position?.y || 0), variation(position?.z || 0));
+  }
+  translate(position, variation) {
+    Randomizer.translate(this.geometry, position, variation);
+    return this;
+  }
+  static blur(geometry2, degree = 0.01) {
+    geometry2.computeBoundingBox();
+    const positionAttribute = geometry2.getAttribute("position");
+    const vertexGroupsMap = [];
+    for (let i = 0; i < positionAttribute.count; i++) {
+      const x = positionAttribute.getX(i);
+      if (!vertexGroupsMap[x])
+        vertexGroupsMap[x] = [];
+      const y = positionAttribute.getY(i);
+      if (!vertexGroupsMap[x][y])
+        vertexGroupsMap[x][y] = [];
+      const z = positionAttribute.getZ(i);
+      if (!vertexGroupsMap[x][y][z])
+        vertexGroupsMap[x][y][z] = [];
+      vertexGroupsMap[x][y][z].push(i);
+    }
+    const vertexGroups = Object.values(vertexGroupsMap).flatMap((v) => Object.values(v).flatMap((v2) => Object.values(v2)));
+    for (const vertexGroup of vertexGroups) {
+      const x = this.flatSpread(positionAttribute.getX(vertexGroup[0]), (geometry2.boundingBox.max.x - geometry2.boundingBox.min.x) * degree);
+      const y = this.flatSpread(positionAttribute.getY(vertexGroup[0]), (geometry2.boundingBox.max.y - geometry2.boundingBox.min.y) * degree);
+      const z = this.flatSpread(positionAttribute.getZ(vertexGroup[0]), (geometry2.boundingBox.max.z - geometry2.boundingBox.min.z) * degree);
+      for (const idx of vertexGroup)
+        positionAttribute.setXYZ(idx, x, y, z);
+    }
+    return geometry2;
+  }
+  blur(degree) {
+    Randomizer.blur(this.geometry, degree);
+    return this;
+  }
+  static rotate(geometry2, rotation, variation = Randomizer.spread) {
+    geometry2.rotateX(variation(rotation.x));
+    geometry2.rotateY(variation(rotation.y));
+    geometry2.rotateZ(variation(rotation.z));
+    return geometry2;
+  }
+  rotate(rotation, variation) {
+    Randomizer.rotate(this.geometry, rotation, variation);
+    return this;
+  }
+  static scale(geometry2, scale, variation = Randomizer.spread) {
+    geometry2.scale(variation(scale.x || 1), variation(scale.y || 1), variation(scale.z || 1));
+    return geometry2;
+  }
+  scale(scale, variation) {
+    Randomizer.scale(this.geometry, scale, variation);
+    return this;
+  }
+  static randomize(geometry2, {
+    colorize,
+    translate,
+    blur,
+    rotate
+  } = {}) {
+    if (colorize)
+      this.colorize(geometry2, colorize.color, colorize.variation);
+    if (translate)
+      this.translate(geometry2, translate.position, translate.variation);
+    if (blur)
+      this.blur(geometry2, blur);
+    if (rotate)
+      this.rotate(geometry2, rotate.rotation, rotate.variation);
+    return geometry2;
+  }
+};
+var Randomizer_default = Randomizer;
+
+// src/objects/util/Builder.ts
+var createBufferGeometry = () => {
+  const geo = new BufferGeometry();
+  geo.setAttribute("position", new BufferAttribute(new Float32Array(0), 3));
+  geo.setAttribute("color", new BufferAttribute(new Float32Array(0), 3));
+  geo.setAttribute("normal", new BufferAttribute(new Float32Array(0), 3));
+  geo.setAttribute("uv", new BufferAttribute(new Float32Array(0), 2));
+  return geo;
+};
+var compose2 = (fns) => {
+  if (!fns || fns.length === 0)
+    return;
+  if (fns.length === 1)
+    return fns[0];
+  return (val) => {
+    for (let i = 0; i < fns.length; i++)
+      val = fns[i](val);
+    return val;
+  };
+};
+var IDENTITY = (v) => v;
+var LEFT = new Vector2(-1, 0);
+var Builder = class {
+  constructor(geometry2, parent2) {
+    if (geometry2 && geometry2.index)
+      geometry2 = geometry2.toNonIndexed();
+    this._geometry = geometry2;
+    this.parent = parent2;
+    this.children = [];
+  }
+  group() {
+    const group = new Builder(void 0, this);
+    this.children.push(group);
+    return group;
+  }
+  box(...args) {
+    const box2 = new Builder(new BoxGeometry(...args), this);
+    this.children.push(box2);
+    return box2;
+  }
+  cone(...args) {
+    const cone = new Builder(new ConeGeometry(...args), this);
+    this.children.push(cone);
+    return cone;
+  }
+  cylinder(...args) {
+    const cylinder2 = new Builder(new CylinderGeometry(...args), this);
+    this.children.push(cylinder2);
+    return cylinder2;
+  }
+  octahedron(...args) {
+    const octahedron = new Builder(new OctahedronGeometry(...args), this);
+    this.children.push(octahedron);
+    return octahedron;
+  }
+  sphere(...args) {
+    const sphere = new Builder(new SphereGeometry(...args), this);
+    this.children.push(sphere);
+    return sphere;
+  }
+  tetrahedron(...args) {
+    const tetrahedron2 = new Builder(new TetrahedronGeometry(...args), this);
+    this.children.push(tetrahedron2);
+    return tetrahedron2;
+  }
+  tube(...args) {
+    const tube = new Builder(new TubeGeometry(...args), this);
+    this.children.push(tube);
+    return tube;
+  }
+  lathe(...args) {
+    const lathe = new Builder(new LatheGeometry(...args), this);
+    this.children.push(lathe);
+    return lathe;
+  }
+  thickLathe(points, thickness = 1 / 32, direction = LEFT, ...rest2) {
+    const adjustment = direction.clone().multiplyScalar(thickness);
+    const allPoints = [
+      ...points,
+      ...[...points].reverse().map((p) => p.clone().add(adjustment)),
+      points[0]
+    ];
+    return this.lathe(allPoints, ...rest2);
+  }
+  color(color2, variation) {
+    this._color = color2;
+    if (variation)
+      if (this._colorVariation)
+        this._colorVariation.push(variation);
+      else
+        this._colorVariation = [variation];
+    return this;
+  }
+  translate(x = 0, y = 0, z = 0, variation) {
+    const position = new Vector3(x, y, z);
+    this._position = this._position ? this._position.add(position) : position;
+    if (variation)
+      if (this._positionVariation)
+        this._positionVariation.push(variation);
+      else
+        this._positionVariation = [variation];
+    return this;
+  }
+  translateX(x) {
+    if (this._position)
+      this._position.x += x;
+    else
+      this._position = new Vector3(x, 0, 0);
+    return this;
+  }
+  translateY(y) {
+    if (this._position)
+      this._position.y += y;
+    else
+      this._position = new Vector3(0, y, 0);
+    return this;
+  }
+  translateZ(z) {
+    if (this._position)
+      this._position.z += z;
+    else
+      this._position = new Vector3(0, 0, z);
+    return this;
+  }
+  rotate(x, y, z, variation) {
+    if (x === void 0)
+      return this;
+    const rotation = new Vector3(x ?? 0, y ?? 0, z ?? 0);
+    this._rotation = this._rotation ? this._rotation.add(rotation) : rotation;
+    if (variation)
+      if (this._rotationVariation)
+        this._rotationVariation.push(variation);
+      else
+        this._rotationVariation = [variation];
+    return this;
+  }
+  rotateX(x) {
+    if (this._rotation)
+      this._rotation.x += x;
+    else
+      this._rotation = new Vector3(x, 0, 0);
+    return this;
+  }
+  rotateY(y) {
+    if (this._rotation)
+      this._rotation.y += y;
+    else
+      this._rotation = new Vector3(0, y, 0);
+    return this;
+  }
+  rotateZ(z) {
+    if (this._rotation)
+      this._rotation.z += z;
+    else
+      this._rotation = new Vector3(0, 0, z);
+    return this;
+  }
+  scale(x, y, z, variation) {
+    const scale = new Vector3(x, y, z);
+    if (this._scale)
+      this._scale.multiply(scale);
+    else
+      this._scale = scale;
+    if (variation)
+      if (this._scaleVariation)
+        this._scaleVariation.push(variation);
+      else
+        this._scaleVariation = [variation];
+    return this;
+  }
+  scaleX(x) {
+    if (this._scale)
+      this._scale.x += x;
+    else
+      this._scale = new Vector3(x, 0, 0);
+    return this;
+  }
+  scaleY(y) {
+    if (this._scale)
+      this._scale.y += y;
+    else
+      this._scale = new Vector3(0, y, 0);
+    return this;
+  }
+  scaleZ(z) {
+    if (this._scale)
+      this._scale.z += z;
+    else
+      this._scale = new Vector3(0, 0, z);
+    return this;
+  }
+  randomize(props = {
+    color: Randomizer_default.flatSpreader(1 / 24),
+    position: Randomizer_default.percentSpreader(),
+    rotation: Randomizer_default.flatSpreader(),
+    scale: Randomizer_default.percentSpreader(),
+    blur: 0.01
+  }) {
+    let color2, position, rotation, scale, blur;
+    if (typeof props === "number") {
+      color2 = Randomizer_default.flatSpreader(1 / 24 * props);
+      position = Randomizer_default.percentSpreader(1 / 32 * props);
+      rotation = Randomizer_default.flatSpreader(1 / 16 * props);
+      blur = 0.01 * props;
+    } else
+      ({color: color2, position, rotation, scale, blur} = props);
+    if (color2) {
+      if (typeof color2 === "number")
+        color2 = Randomizer_default.flatSpreader(color2);
+      if (this._colorVariation)
+        this._colorVariation.push(color2);
+      else
+        this._colorVariation = [color2];
+    }
+    if (position) {
+      if (typeof position === "number")
+        position = Randomizer_default.percentSpreader(position);
+      if (this._positionVariation)
+        this._positionVariation.push(position);
+      else
+        this._positionVariation = [position];
+    }
+    if (rotation) {
+      if (typeof rotation === "number")
+        rotation = Randomizer_default.flatSpreader(rotation);
+      if (this._rotationVariation)
+        this._rotationVariation.push(rotation);
+      else
+        this._rotationVariation = [rotation];
+    }
+    if (scale) {
+      if (typeof scale === "number")
+        scale = Randomizer_default.percentSpreader(scale);
+      if (this._scaleVariation)
+        this._scaleVariation.push(scale);
+      else
+        this._scaleVariation = [scale];
+    }
+    return this.blur(blur);
+  }
+  blur(degree = 0.01) {
+    this._blur = (this._blur || 0) + degree;
+    return this;
+  }
+  repeat(count2, fn) {
+    const mid = (count2 - 1) / 2;
+    for (let i = 0; i < count2; i++)
+      fn(this, i - mid, mid - Math.abs(i - mid), mid, i, count2);
+    return this;
+  }
+  for(count2, fn) {
+    const mid = (count2 - 1) / 2;
+    for (let i = 0; i < count2; i++)
+      fn(this, i, count2, i - mid, mid - Math.abs(i - mid), mid);
+    return this;
+  }
+  do(fn) {
+    fn(this);
+    return this;
+  }
+  map(fn, centered = true) {
+    const mid = (this.children.length - 1) / 2;
+    if (centered)
+      for (let i = 0; i < this.children.length; i++)
+        fn(this.children[i], i - mid, mid - Math.abs(i - mid), mid, i, this.children.length);
+    else
+      for (let i = 0; i < this.children.length; i++)
+        fn(this.children[i], i, this.children.length, i - mid, mid - Math.abs(i - mid), mid);
+    return this;
+  }
+  add(builder) {
+    this.children.push(builder);
+    return this;
+  }
+  root() {
+    let cur = this;
+    while (cur.parent)
+      cur = cur.parent;
+    return cur;
+  }
+  geometry() {
+    let geometry2 = this._geometry ? this._geometry.clone() : createBufferGeometry();
+    if (this.children.length)
+      geometry2 = BufferGeometryUtils.mergeBufferGeometries([
+        geometry2,
+        ...this.children.map((c) => {
+          const geo = c.geometry();
+          getColorAttribute(geo);
+          return geo;
+        })
+      ]);
+    if (this._color)
+      Randomizer_default.colorize(geometry2, this._color, compose2(this._colorVariation) ?? IDENTITY);
+    if (this._rotation || this._rotationVariation)
+      Randomizer_default.rotate(geometry2, this._rotation ?? new Vector3(0, 0, 0), compose2(this._rotationVariation) ?? IDENTITY);
+    if (this._position || this._positionVariation)
+      Randomizer_default.translate(geometry2, this._position, compose2(this._positionVariation) ?? IDENTITY);
+    if (this._scale || this._scaleVariation)
+      Randomizer_default.scale(geometry2, this._scale ?? new Vector3(1, 1, 1), compose2(this._scaleVariation) ?? IDENTITY);
+    if (this._blur)
+      Randomizer_default.blur(geometry2, this._blur);
+    return geometry2;
+  }
+  mesh() {
+    return new Mesh(this.geometry(), faceColorMaterial);
+  }
+};
+var Builder_default = Builder;
+
+// src/objects/Barn.ts
+var Barn = class extends Mesh {
+  constructor() {
+    const color2 = Randomizer_default.colorSpread(wood);
+    const paneling = color2.clone();
+    const roof = color2.clone().offsetHSL(0, -0.05, 0.05);
+    const door = color2.clone().offsetHSL(0, 0.1, -0.1);
+    const length = 15;
+    const width = 11;
+    const thickness = 1 / 32;
+    const geometry2 = new Builder_default().repeat(2, (b, y) => b.repeat(width, (b2, x, _0, mid) => {
+      const angle = Math.acos(x / mid);
+      const height = 1 / 2 + Math.sin(angle) * 8 / length;
+      return b2.box(1 / 8, thickness, height).translate(x / 8, y * length / 8, height / 2).color(paneling).randomize(1 / 2);
+    })).repeat(2, (b, x) => b.repeat(length, (b2, y) => b2.box(thickness, 1 / 8, 1 / 2).translate(x * width / 8, y / 8, 1 / 4).color(paneling).randomize())).repeat(width, (b, x, _0, mid) => b.repeat(length + 1, (b2, y) => {
+      const width2 = Math.PI / 2 * x / mid;
+      return b2.box(thickness, 1 / 8, (1 / 8 + thickness) * Math.PI / 2).translate(Math.sin(width2) * ((mid + 0.5) / 8 + thickness), y / 8, 1 / 4 + 2 * thickness + Math.abs(Math.cos(width2) * ((mid + 0.5) / 8 + thickness))).rotateY(-Math.acos(Math.sin(width2))).color(roof).randomize();
+    })).box(1 / 2, thickness, 3 / 4).translate(0, -length / 2 / 8 - thickness / 2, 3 / 8).color(door).randomize().parent.rotateZ(-Math.PI / 4).geometry();
+    super(geometry2, faceColorMaterial);
+    this.castShadow = true;
+    this.receiveShadow = true;
+  }
+};
+
+// src/objects/BrokenHayCart.ts
+var HAY = new Color("#e4d96f");
+var BrokenHayCart = class extends Mesh {
+  constructor() {
+    const color2 = Randomizer_default.colorSpread(wood);
+    const wheels = Randomizer_default.colorSpread(color2);
+    const axis = Randomizer_default.colorSpread(color2);
+    const basket = Randomizer_default.colorSpread(color2);
+    const hay = Randomizer_default.colorSpread(HAY);
+    const brokenWheel = -0.5;
+    let geometry2 = new Builder_default().repeat(2, (b, x) => {
+      const wheel = b.cylinder(1 / 4, 1 / 4, 1 / 16).translate(x, 0, 7 / 32).rotateZ(Math.PI / 2).color(wheels);
+      if (x === brokenWheel) {
+        wheel.rotateX(Math.PI / 2);
+        1 + 1;
+        wheel.translateZ(-6 / 32);
+      }
+    }).cylinder(1 / 32, 1 / 32, 1).rotateZ(Math.PI / 2).translateZ(7 / 32).color(axis).parent.box(1 / 2, 1 / 2, 1 / 32).translateZ(1 / 4).color(basket).parent.thickLathe([
+      new Vector2(2 / 4 / Math.SQRT2, 1 / 4 / Math.SQRT2 + 1 / 16),
+      new Vector2(3 / 4 / Math.SQRT2, 1 / 2 / Math.SQRT2 + 1 / 16)
+    ], 1 / 32, new Vector2(-1, 0), 4, Math.PI / 4).rotateX(Math.PI / 2).color(basket).parent.repeat(2, (b, x) => b.cylinder(1 / 64, 1 / 64, 1).translate(x * 47 / 64, -1 / 8, 1 / 2 - 1 / 16 - 1 / 64).rotate(...x === brokenWheel ? [
+      Randomizer_default.flatSpread(0, 1 / 5),
+      Randomizer_default.flatSpread(0, 1 / 5),
+      Randomizer_default.flatSpread(0, 1 / 5)
+    ] : []).color(axis)).root().rotateY(brokenWheel < 0 ? -Math.PI / 8 : Math.PI / 8).rotateX(Math.PI / 8).randomize().geometry();
+    geometry2 = BufferGeometryUtils.mergeBufferGeometries([
+      geometry2,
+      new Builder_default().for(3, (b, z) => b.sphere(1 / 3 - z / 24, 8, 6, 0, Math.PI * 2, 0, Math.PI / 2).rotateX(Math.PI / 2).translate(Randomizer_default.flatSpread(-5 / 16, 1 / 4), Randomizer_default.flatSpread(-5 / 16, 1 / 4)).color(hay)).root().randomize().geometry()
+    ]);
+    super(geometry2, faceColorMaterial);
+    this.castShadow = true;
+    this.receiveShadow = true;
+  }
+};
+
 // src/objects/util/deprecatedShared.ts
 var nudge = Randomizer_default.spreader(1 / 16, 1 / 4);
 var colorNudge = Randomizer_default.spreader(0, 1 / 24);
@@ -36394,22 +36665,543 @@ var randomize = (geometry2, {
 }) => {
   if (color2)
     randomizeColor(geometry2, color2);
-  if (vertexVariation) {
-    const positionAttribute = geometry2.getAttribute("position");
-    const positions = positionAttribute.count / positionAttribute.itemSize;
-    for (let i = 0; i < positions; i++)
-      positionAttribute.setXYZ(i, vertexVariation(positionAttribute.getX(i)), vertexVariation(positionAttribute.getY(i)), vertexVariation(positionAttribute.getZ(i)));
-  }
+  if (vertexVariation)
+    Randomizer_default.blur(geometry2, vertexVariation);
   const positionVariation = nudge;
   geometry2.position = new Vector3(positionVariation(0), positionVariation(0), positionVariation(0));
   return geometry2;
 };
+var cylinder = ({
+  length,
+  radius,
+  color: color2
+}) => randomize(new CylinderGeometry(radius * (1 + MathUtils.randFloatSpread(radius / 16)), radius * (1 + MathUtils.randFloatSpread(radius / 16)), length * (1 + MathUtils.randFloatSpread(length / 16))).toNonIndexed(), {color: color2});
 var box = ({
   width,
   height,
   depth,
   color: color2
 }) => randomize(new BoxGeometry(width, height, depth).toNonIndexed(), {color: color2});
+var tetrahedron = ({
+  radius,
+  detail,
+  color: color2,
+  vertexVariation
+}) => randomize(new TetrahedronGeometry(radius, detail).toNonIndexed(), {
+  color: color2,
+  vertexVariation
+});
+var dodecahedron = ({
+  radius,
+  vertexVariation,
+  color: color2
+}) => randomize(new DodecahedronGeometry(radius).toNonIndexed(), {
+  vertexVariation,
+  color: color2
+});
+
+// src/objects/BrokenWheelbarrow.ts
+var BrokenWheelbarrow = class extends Mesh {
+  constructor({
+    color: inColor,
+    colorVariation = nudge
+  } = {}) {
+    const color2 = inColor ?? randColor(wood, colorVariation);
+    const wheel = (x) => cylinder({length: 1 / 16, radius: 1 / 4, color: randColor(color2)}).rotateX(nudge(Math.PI / 2)).translate(nudge(x), nudge(1 / 2), 1 / 64);
+    const leftWheel = wheel(-3 / 5);
+    const rightWheel = wheel(3 / 5);
+    const corner = (x, y) => box({
+      width: 1 / 16,
+      height: 1 / 2,
+      depth: 2 / 16,
+      color: randColor(color2)
+    }).rotateX(Math.PI / 2).translate(x, y, 1 / 4);
+    const leftCorner = corner(-3 / 8, 1 / 2);
+    const rightCorner = corner(3 / 8, 1 / 2);
+    const support = (x) => box({
+      width: 1 / 16,
+      height: 1 / 2,
+      depth: 1 / 16,
+      color: randColor(color2)
+    }).rotateX(Math.PI / 2).translate(x, 0, 1 / 4);
+    const leftSupport = support(-3 / 8);
+    const rightSupport = support(3 / 8);
+    const plank = (x = 0, long = true) => box({
+      width: 2 / 16,
+      height: long ? 1 : 3 / 4,
+      depth: 1 / 16,
+      color: randColor(color2)
+    }).rotateZ(MathUtils.randFloatSpread(1 / 12)).translate(x, 0, 0);
+    const bottomPlank1 = plank(-3 / 9);
+    const bottomPlank2 = plank(-1 / 9);
+    const bottomPlank3 = plank(1 / 9);
+    const bottomPlank4 = plank(3 / 9);
+    const leftSide1 = plank().rotateY(Math.PI / 2).translate(-3 / 9, 0, 3 / 16);
+    const leftSide2 = plank().rotateY(Math.PI / 2).translate(-3 / 9, 0, 7 / 16);
+    const rightSide1 = plank().rotateY(Math.PI / 2).translate(3 / 9, 0, 3 / 16);
+    const rightSide2 = plank().rotateY(Math.PI / 2).translate(3 / 9, 0, 7 / 16);
+    const frontSide = plank(0, false).rotateY(Math.PI / 2).rotateZ(Math.PI / 2).translate(0, 1 / 2, 0);
+    const backSide1 = plank(0, false).rotateY(Math.PI / 2).rotateZ(Math.PI / 2).translate(0, 1 / 2, 7 / 32);
+    const backSide2 = plank(0, false).rotateY(Math.PI / 2).rotateZ(Math.PI / 2).translate(0, 1 / 2, 14 / 32);
+    const back1 = plank(0, false).rotateY(Math.PI / 2).rotateZ(Math.PI / 2).translate(0, -1 / 2, 0);
+    const back2 = plank(0, false).rotateY(Math.PI / 2).rotateZ(Math.PI / 2).translate(0, -1 / 2, 7 / 32);
+    const back3 = plank(0, false).rotateY(Math.PI / 2).rotateZ(Math.PI / 2).translate(0, -1 / 2, 14 / 32);
+    const back4 = corner(-3 / 8, -1 / 2);
+    const back5 = corner(3 / 8, -1 / 2);
+    const back = BufferGeometryUtils.mergeBufferGeometries([
+      back1,
+      back2,
+      back3,
+      back4,
+      back5
+    ]);
+    back.center().rotateX(Math.PI / 2).rotateZ(Math.PI / 4).translate(1 / 4, -7 / 8, 0);
+    const handles = (x) => box({
+      width: 1 / 16,
+      height: 3 / 4,
+      depth: 1 / 16,
+      color: randColor(color2)
+    }).translate(x, -1 / 2 - 3 / 4 / 2, 0);
+    const handle1 = handles(-3 / 8);
+    const handle2 = handles(3 / 8);
+    const geometry2 = BufferGeometryUtils.mergeBufferGeometries([
+      leftWheel,
+      rightWheel,
+      leftCorner,
+      rightCorner,
+      leftSupport,
+      rightSupport,
+      bottomPlank1,
+      bottomPlank2,
+      bottomPlank3,
+      bottomPlank4,
+      leftSide1,
+      leftSide2,
+      rightSide1,
+      rightSide2,
+      frontSide,
+      backSide1,
+      backSide2,
+      handle1,
+      handle2,
+      back
+    ]);
+    geometry2.computeVertexNormals();
+    geometry2.rotateZ(Randomizer_default.flatSpread(Math.PI / 2, Math.PI / 16));
+    super(geometry2, faceColorMaterial);
+    this.castShadow = true;
+    this.receiveShadow = true;
+  }
+};
+
+// src/objects/Fence.ts
+var createPost = ({
+  height,
+  width,
+  color: color2
+}) => {
+  const post = new CylinderGeometry(width + Math.random() / 24, width + Math.random() / 24, height + Math.random() / 16).toNonIndexed();
+  const faces = getFaceCount(post);
+  for (let i = 0; i < faces; i++)
+    colorFace(post, i, color2.clone().offsetHSL(MathUtils.randFloatSpread(1 / 36), 0, 0));
+  post.rotateX(Math.PI / 2 + (Math.random() - 0.5) / 6);
+  post.rotateZ(Math.PI * Math.random());
+  post.rotateY((Math.random() - 0.5) / 16);
+  post.translate(0, 0, height / 2);
+  return post;
+};
+var createPosts = ({
+  length,
+  width,
+  height,
+  angle,
+  color: color2
+}) => {
+  const postDisplacement = length / 2 - Math.random() / 16;
+  const leftPost = createPost({height, width, color: color2});
+  leftPost.translate(Math.cos(angle + Math.PI / 2) * -postDisplacement, Math.sin(angle + Math.PI / 2) * -postDisplacement, 0);
+  const rightPost = createPost({height, width, color: color2});
+  rightPost.translate(Math.cos(angle + Math.PI / 2) * postDisplacement, Math.sin(angle + Math.PI / 2) * postDisplacement, 0);
+  return [leftPost, rightPost];
+};
+var createRail = ({
+  width,
+  length,
+  color: color2
+}) => {
+  const rail = new CylinderGeometry(width + Math.random() / 24, width + Math.random() / 24, length + width + Math.random() / 4).toNonIndexed();
+  const faces = getFaceCount(rail);
+  for (let i = 0; i < faces; i++)
+    colorFace(rail, i, color2.clone().offsetHSL(MathUtils.randFloatSpread(1 / 36), 0, 0));
+  rail.rotateY(Math.PI * Math.random());
+  rail.rotateX((Math.random() - 0.5) / 4 / length);
+  return rail;
+};
+var createRails = ({
+  length,
+  height,
+  width,
+  angle,
+  color: color2
+}) => {
+  const topRail = createRail({width, length, color: color2});
+  topRail.translate(0, 0, height / 3);
+  topRail.rotateZ(angle);
+  const bottomRail = createRail({width, length, color: color2});
+  bottomRail.translate(0, 0, height / 3 * 2);
+  bottomRail.rotateZ(angle);
+  return [topRail, bottomRail];
+};
+var Fence = class extends Mesh {
+  constructor({
+    length = 2 - 1 / 4,
+    width = 1 / 24,
+    height = 1 / 2,
+    angle = 0,
+    color: color2 = wood.clone().offsetHSL(MathUtils.randFloatSpread(1 / 36), 0, 0)
+  } = {}) {
+    const geometry2 = BufferGeometryUtils.mergeBufferGeometries([
+      ...createPosts({length, width, height, angle, color: color2}),
+      ...createRails({length, width, height, angle, color: color2})
+    ]);
+    geometry2.computeVertexNormals();
+    super(geometry2, faceColorMaterial);
+    this.castShadow = true;
+    this.receiveShadow = true;
+  }
+};
+
+// src/objects/Grid.ts
+var _ColorAttribute = class extends BufferAttribute {
+  constructor(faces) {
+    const data = new Float32Array(faces * _ColorAttribute.COMPONNETS_PER_COLOR * _ColorAttribute.VERTICES_PER_FACE);
+    super(data, _ColorAttribute.ITEM_SIZE);
+    this.data = data;
+  }
+  setFace(index, red, blue, green) {
+    const base = index * _ColorAttribute.COMPONNETS_PER_COLOR * _ColorAttribute.VERTICES_PER_FACE;
+    for (let i = 0; i < _ColorAttribute.VERTICES_PER_FACE; i++) {
+      this.data[base + i * _ColorAttribute.VERTICES_PER_FACE] = red;
+      this.data[base + i * _ColorAttribute.VERTICES_PER_FACE + 1] = blue;
+      this.data[base + i * _ColorAttribute.VERTICES_PER_FACE + 2] = green;
+    }
+    this.needsUpdate = true;
+  }
+};
+var ColorAttribute = _ColorAttribute;
+ColorAttribute.COMPONNETS_PER_COLOR = 3;
+ColorAttribute.VERTICES_PER_FACE = 3;
+ColorAttribute.ITEM_SIZE = 3;
+var SquareColorAttribute = class extends ColorAttribute {
+  constructor(faces) {
+    super(faces * 2);
+  }
+  setFaces(index, red, blue, green) {
+    super.setFace(index * 2, red, blue, green);
+    super.setFace(index * 2 + 1, red, blue, green);
+  }
+};
+var GridColorAttribute = class extends SquareColorAttribute {
+  constructor(width, height) {
+    super(width * height);
+    this.width = width;
+    this.height = height;
+  }
+  setColor(x, y, red, blue, green) {
+    super.setFaces(y * this.width + x, red, blue, green);
+  }
+};
+var Grid = class extends Mesh {
+  constructor(width = 1, height = 1) {
+    const plane2 = new PlaneGeometry(width, height, width, height).toNonIndexed();
+    const colors2 = new GridColorAttribute(width, height);
+    plane2.setAttribute("color", colors2);
+    super(plane2, faceColorMaterial);
+    this.colors = colors2;
+  }
+  setColor(x, y, red, blue, green) {
+    this.colors.setColor(x, y, red, blue, green);
+  }
+};
+
+// src/objects/HayCart.ts
+var HAY2 = new Color("#e4d96f");
+var HayCart = class extends Mesh {
+  constructor() {
+    const color2 = Randomizer_default.colorSpread(wood);
+    const wheels = Randomizer_default.colorSpread(color2);
+    const axis = Randomizer_default.colorSpread(color2);
+    const basket = Randomizer_default.colorSpread(color2);
+    const hay = Randomizer_default.colorSpread(HAY2);
+    const geometry2 = new Builder_default().repeat(2, (b, x) => b.cylinder(1 / 4, 1 / 4, 1 / 16).translate(x, 0, 7 / 32).rotateZ(Math.PI / 2).color(wheels)).cylinder(1 / 32, 1 / 32, 1).rotateZ(Math.PI / 2).translateZ(7 / 32).color(axis).parent.box(1 / 2, 1 / 2, 1 / 32).translateZ(1 / 4).color(basket).parent.thickLathe([
+      new Vector2(2 / 4 / Math.SQRT2, 1 / 4 / Math.SQRT2 + 1 / 16),
+      new Vector2(3 / 4 / Math.SQRT2, 1 / 2 / Math.SQRT2 + 1 / 16)
+    ], 1 / 32, new Vector2(-1, 0), 4, Math.PI / 4).rotateX(Math.PI / 2).color(basket).parent.repeat(2, (b, x) => b.cylinder(1 / 64, 1 / 64, 1).translate(x * 47 / 64, -1 / 8, 1 / 2 - 1 / 16 - 1 / 64).color(axis)).for(3, (b, z) => b.sphere(1 / 3 - z / 24, 8, 6, 0, Math.PI * 2, 0, Math.PI / 2).rotateX(Math.PI / 2).translateZ(1 / 4 + Array(z).fill(0).reduce((sum2, _, i) => sum2 + (1 / 3 - i / 24) / 2, 0)).color(hay)).root().randomize().geometry();
+    super(geometry2, faceColorMaterial);
+    this.castShadow = true;
+    this.receiveShadow = true;
+  }
+};
+
+// src/objects/PileOfJunk.ts
+var nearPoint = (objects, min2) => {
+  let spread2 = min2;
+  while (spread2 < Infinity) {
+    const newPoint = new Vector2(MathUtils.randFloatSpread(spread2), MathUtils.randFloatSpread(spread2));
+    if (objects.length === 0)
+      return newPoint;
+    else {
+      const minDistObject = objects.reduce((min3, test) => newPoint.distanceTo(test.point) - min3.radius - test.radius < newPoint.distanceTo(min3.point) - min3.radius - test.radius ? test : min3, {point: new Vector2(Infinity, Infinity), radius: 0});
+      if (minDistObject.point.distanceTo(newPoint) - minDistObject.radius - min2 > min2)
+        return newPoint;
+      spread2 *= 1.05;
+    }
+  }
+};
+var spear = {
+  radius: 1 / 128,
+  builder: (b) => b.cylinder(1 / 96, 1 / 96, 17 / 16).translateY(17 / 32).color(Randomizer_default.colorSpread(wood)).blur(0.01).parent.octahedron(1 / 32).scale(4 / 7, 0, 2 / 5).translateY(17 / 16).color(Randomizer_default.colorSpread(stone)).blur(0.01).parent.rotate(MathUtils.randFloatSpread(1 / 8), MathUtils.randFloatSpread(1 / 8), MathUtils.randFloatSpread(1 / 8))
+};
+var shortSpear = {
+  radius: 1 / 128,
+  builder: (b) => b.cylinder(1 / 96, 1 / 96, 15 / 16).translateY(15 / 32).color(Randomizer_default.colorSpread(wood)).blur(0.01).parent.octahedron(1 / 32).scale(4 / 7, 0, 2 / 5).translateY(15 / 16).color(Randomizer_default.colorSpread(stone)).blur(0.01).parent.rotate(MathUtils.randFloatSpread(1 / 8), MathUtils.randFloatSpread(1 / 8), MathUtils.randFloatSpread(1 / 8))
+};
+var Helix = class extends Curve {
+  constructor(length = Math.PI * 4, height = 2, bottomRadius = 1, topRadius = bottomRadius) {
+    super();
+    this.length = length;
+    this.height = height;
+    this.bottomRadius = bottomRadius;
+    this.topRadius = topRadius;
+  }
+  getPoint(t) {
+    const lerp = MathUtils.lerp(this.bottomRadius, this.topRadius, t);
+    return new Vector3(Math.cos(t * this.length) * lerp, Math.sin(t * this.length) * lerp, t * this.height);
+  }
+};
+var sword = {
+  radius: 1 / 96,
+  builder: (b) => b.cylinder(1 / 96, 1 / 96, 15 / 16).scale(2, 1, 1 / 4).translateY(15 / 32).color(steel).parent.cone(1 / 96, 2 / 96).translateY(30 / 32 + 2 / 96 / 2).scale(2, 1, 1 / 4).color(steel).parent.cylinder(1 / 96, 1 / 96, 1 / 8).rotateZ(Math.PI / 2).color(wood).parent.cylinder(1 / 64 / 4, 1 / 96, 1 / 8).color(steel).parent.tube(new Helix(Math.PI * 64, 1 / 16, 1 / 128, 1 / 96), 256, 1 / 1024).rotateX(Math.PI / 2).color(rope).parent.rotateZ(Math.PI).translateY(30 / 32 + 2 / 96).rotateY(Math.PI * Math.random())
+};
+var vaseContentTypes = [spear, shortSpear, sword];
+var vase = {
+  radius: 1 / 8,
+  builder: (b) => {
+    const count2 = MathUtils.randInt(0, 3);
+    const objects = [];
+    return b.thickLathe([
+      new Vector2(0, 0),
+      new Vector2(1 / 16, 0),
+      new Vector2(2 / 16, 1 / 32),
+      new Vector2(3 / 16, 1 / 2),
+      new Vector2(2 / 16, 24 / 32),
+      new Vector2(3 / 32, 26 / 32)
+    ]).color(new Color().setHSL(Math.random(), MathUtils.randFloat(0.25, 0.8), MathUtils.randFloat(0.25, 0.75))).parent.repeat(count2, (b2) => {
+      const type = vaseContentTypes[Math.floor(Math.random() * vaseContentTypes.length)];
+      const center2 = nearPoint(objects, type.radius);
+      if (!center2)
+        throw new Error();
+      const center3 = new Vector3(center2.x, 0, center2.y);
+      objects.push({point: center2, radius: type.radius});
+      type.builder(b2.group()).translate(center3.x, center3.y, center3.z);
+    });
+  }
+};
+var pot = {
+  radius: 1 / 8,
+  builder: (b) => b.thickLathe([
+    new Vector2(0, 0),
+    new Vector2(1 / 16, 0),
+    new Vector2(2 / 16, 1 / 64),
+    new Vector2(3 / 16, 16 / 64),
+    new Vector2(2 / 16, 24 / 64)
+  ]).color(new Color().setHSL(Math.random(), MathUtils.randFloat(0.25, 0.8), MathUtils.randFloat(0.25, 0.75)))
+};
+var bag = {
+  radius: 1 / 16,
+  builder: (b) => b.thickLathe([
+    new Vector2(0, 0),
+    new Vector2(1 / 32, 0),
+    new Vector2(2 / 32, 1 / 64),
+    new Vector2(3 / 32, 8 / 64),
+    new Vector2(3 / 64, 13 / 64),
+    new Vector2(1 / 128, 14 / 64),
+    new Vector2(4 / 128, 16 / 64)
+  ]).color(Randomizer_default.colorSpread(cloth, Randomizer_default.flatSpreader(1 / 32)))
+};
+var types = [vase, pot, bag];
+var PileOfJunk = class extends Mesh {
+  constructor() {
+    const count2 = MathUtils.randInt(3, 5);
+    const objects = [];
+    const geometry2 = new Builder_default().repeat(count2, (b) => {
+      const type = types[Math.floor(Math.random() * types.length)];
+      const center = nearPoint(objects, type.radius);
+      if (!center)
+        throw new Error();
+      objects.push({point: center, radius: type.radius});
+      const child = b.group();
+      type.builder(child);
+      child.rotateX(Math.PI / 2).translate(center.x, center.y);
+    }).root().geometry();
+    super(geometry2, faceColorMaterial);
+    this.castShadow = true;
+    this.receiveShadow = true;
+  }
+};
+
+// src/objects/PineTree.ts
+var TRUNK_COLOR = new Color(4734233);
+var LEAVES_COLOR = new Color(159277);
+var createTrunk = ({
+  radius,
+  height,
+  color: color2
+}) => new Builder_default().cylinder(radius / 16, radius / 10, height / 3).color(color2).rotateX(Math.PI / 2).rotateZ(Math.PI * Math.random()).translateZ(height / 8).parent.geometry();
+var createShelfs = ({
+  height,
+  radius,
+  shelfs,
+  color: color2
+}) => {
+  let shelfRadius = height * radius / shelfs * (Math.random() + 4) / 300;
+  const shelfRadiusGrowth = height / shelfs / 10;
+  let Class = ConeGeometry;
+  const xTilt = MathUtils.randFloatSpread(height / 20);
+  const yTilt = MathUtils.randFloatSpread(height / 20);
+  const shelfGeometries = [];
+  for (let i = 0; i < shelfs; i++) {
+    color2.offsetHSL(MathUtils.randFloatSpread(1 / 16), MathUtils.randFloatSpread(1 / 2), MathUtils.randFloatSpread(1 / 12));
+    const args = [
+      shelfRadius += Math.random() * shelfRadiusGrowth + radius / shelfs / 5,
+      shelfRadius * (Class === CylinderGeometry ? 1.5 * 0.9 : 2 * 0.9)
+    ];
+    if (Class === CylinderGeometry)
+      args.unshift(args[0] / 6);
+    const shelf = new Class(...args).toNonIndexed();
+    if (Class === ConeGeometry)
+      Class = CylinderGeometry;
+    const faces = getFaceCount(shelf);
+    for (let i2 = 0; i2 < faces; i2++)
+      colorFace(shelf, i2, color2.clone().offsetHSL(MathUtils.randFloatSpread(1 / 24), 0, 0));
+    shelf.radius = shelfRadius;
+    shelf.height = shelfRadius * 2;
+    height -= shelfRadius ** 0.65 / shelfs * (Math.random() / 3 + 2.5);
+    shelf.rotateX(Math.PI / 2);
+    shelf.rotateZ(Math.PI * Math.random());
+    shelf.rotateY(MathUtils.randFloatSpread(1 / 6));
+    shelf.translate((shelfs - i) ** 0.75 * xTilt, (shelfs - i) ** 0.75 * yTilt, height);
+    shelfGeometries.push(shelf);
+  }
+  return shelfGeometries;
+};
+var PineTree = class extends Mesh {
+  constructor({
+    scale = 1,
+    height = Math.random() + 3,
+    radius = Math.random() / 4 + 3,
+    shelfs = void 0,
+    trunk = TRUNK_COLOR.clone().offsetHSL(MathUtils.randFloatSpread(1 / 24), 0, 0),
+    leaves = LEAVES_COLOR.clone().offsetHSL(MathUtils.randFloatSpread(1 / 24), 0, 0)
+  } = {}) {
+    height = height * scale;
+    radius = radius * scale;
+    if (shelfs === void 0)
+      shelfs = height > 10 / 3 ? 3 + (Math.random() > 0.5 ? 1 : 0) : 3;
+    const geometry2 = BufferGeometryUtils.mergeBufferGeometries([
+      createTrunk({radius, height, color: trunk}),
+      ...createShelfs({height, radius, shelfs, color: leaves})
+    ]);
+    geometry2.computeVertexNormals();
+    super(geometry2, faceColorMaterial);
+    this.castShadow = true;
+    this.receiveShadow = true;
+  }
+};
+
+// src/objects/RockChunks.ts
+var RockChunks = class extends Mesh {
+  constructor({
+    color: inColor,
+    colorVariation = colorNudge
+  } = {}) {
+    const color2 = inColor ?? randColor(stone, colorVariation);
+    const base = dodecahedron({
+      radius: 1,
+      color: randColor(color2, colorVariation),
+      vertexVariation: 1 / 8
+    });
+    base.rotateX(Math.PI / 2);
+    base.rotateZ(MathUtils.randFloatSpread(Math.PI));
+    base.translate(0, 0, 3 / 8);
+    const fallenChunks = MathUtils.randInt(0, 3);
+    const chunks = [];
+    for (let i = 0; i < fallenChunks; i++) {
+      const chunk2 = tetrahedron({
+        radius: 1 / 3,
+        detail: MathUtils.randInt(0, 1),
+        color: randColor(color2, colorVariation),
+        vertexVariation: 1 / 8
+      });
+      const angle = MathUtils.randFloatSpread(2 * Math.PI);
+      const dist = MathUtils.randFloat(1, 5 / 4);
+      chunk2.translate(dist * Math.cos(angle), dist * Math.sin(angle), 1 / 10);
+      chunks.push(chunk2);
+    }
+    const geometry2 = BufferGeometryUtils.mergeBufferGeometries([
+      base,
+      ...chunks
+    ]);
+    geometry2.computeVertexNormals();
+    super(geometry2, faceColorMaterial);
+    this.castShadow = true;
+    this.receiveShadow = true;
+  }
+};
+
+// src/objects/ScorchedBarn.ts
+var ScorchedBarn = class extends Mesh {
+  constructor() {
+    const color2 = Randomizer_default.colorSpread(wood.clone().offsetHSL(0, 0.1, -0.1));
+    const paneling = color2.clone();
+    const roof = color2.clone().offsetHSL(0, -0.05, 0.05);
+    const length = 15;
+    const width = 11;
+    const thickness = 1 / 32;
+    const geometry2 = new Builder_default().repeat(2, (b, y) => b.repeat(width, (b2, x, _0, mid) => {
+      if (Math.abs(x) <= 1)
+        return;
+      const angle = Math.acos(x / mid);
+      const height = (1 / 2 + Math.sin(angle) * 8 / length) * (Math.random() < 1 / 3 ? Math.random() : 1);
+      b2.box(1 / 8, thickness, height).translate(x / 8, y * length / 8, height / 2).color(paneling).randomize(1 / 2);
+    })).repeat(2, (b, x) => b.repeat(length, (b2, y) => {
+      const height = 1 / 2 * (Math.random() < 0.5 ? Math.random() : 1);
+      b2.box(thickness, 1 / 8, height).translate(x * width / 8, y / 8, height / 2).color(paneling).randomize();
+    })).repeat(length + 1, (b, y) => {
+      const leftShingles = Math.floor(width / 2 * Math.random());
+      const rigthShingles = Math.floor(width / 2 * Math.random());
+      b.repeat(width, (b2, x, x2, mid) => {
+        if (x < 0) {
+          if (x2 > leftShingles)
+            return;
+        }
+        if (x > 0) {
+          if (x2 > rigthShingles)
+            return;
+        }
+        if (x === 0) {
+          if (leftShingles !== mid && rigthShingles !== mid)
+            return;
+        }
+        const width2 = Math.PI / 2 * x / mid;
+        return b2.box(thickness, 1 / 8, (1 / 8 + thickness) * Math.PI / 2).translate(Math.sin(width2) * ((mid + 0.5) / 8 + thickness), y / 8, 9 / 4 * thickness + Math.abs(Math.cos(width2) * ((mid + 0.5) / 8 + thickness))).rotateY(-Math.acos(Math.sin(width2))).color(roof).randomize();
+      });
+    }).rotateZ(-Math.PI / 4).geometry();
+    super(geometry2, faceColorMaterial);
+    this.castShadow = true;
+    this.receiveShadow = true;
+  }
+};
 
 // src/objects/Trough.ts
 var wall = ({

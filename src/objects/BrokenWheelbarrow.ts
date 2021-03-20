@@ -1,8 +1,10 @@
-import { MathUtils, Mesh, Geometry, Color, BufferGeometry } from "three";
+import { Color, MathUtils, Mesh } from "three";
+import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtils";
+
 import { wood } from "../colors.js";
-import { box, cylinder, randColor, nudge } from "./util/deprecatedShared.js";
-import Randomizer, { Variation } from "./util/Randomizer.js";
 import { faceColorMaterial } from "../materials.js";
+import { box, cylinder, nudge, randColor } from "./util/deprecatedShared.js";
+import Randomizer, { Variation } from "./util/Randomizer.js";
 
 export class BrokenWheelbarrow extends Mesh {
 	constructor({
@@ -11,15 +13,15 @@ export class BrokenWheelbarrow extends Mesh {
 	}: { color?: Color; colorVariation?: Variation } = {}) {
 		const color = inColor ?? randColor(wood, colorVariation);
 
-		const geometry = new Geometry();
+		// let geometry = createBufferGeometry();
 
 		const wheel = (x: number) =>
 			cylinder({ length: 1 / 16, radius: 1 / 4, color: randColor(color) })
 				.rotateX(nudge(Math.PI / 2))
 				.translate(nudge(x), nudge(1 / 2), 1 / 64);
 
-		geometry.merge(wheel(-3 / 5));
-		geometry.merge(wheel(3 / 5));
+		const leftWheel = wheel(-3 / 5);
+		const rightWheel = wheel(3 / 5);
 
 		const corner = (x: number, y: number) =>
 			box({
@@ -32,8 +34,8 @@ export class BrokenWheelbarrow extends Mesh {
 				.translate(x, y, 1 / 4);
 
 		// Corners
-		geometry.merge(corner(-3 / 8, 1 / 2));
-		geometry.merge(corner(3 / 8, 1 / 2));
+		const leftCorner = corner(-3 / 8, 1 / 2);
+		const rightCorner = corner(3 / 8, 1 / 2);
 
 		const support = (x: number) =>
 			box({
@@ -46,8 +48,8 @@ export class BrokenWheelbarrow extends Mesh {
 				.translate(x, 0, 1 / 4);
 
 		// Two vertical supports
-		geometry.merge(support(-3 / 8));
-		geometry.merge(support(3 / 8));
+		const leftSupport = support(-3 / 8);
+		const rightSupport = support(3 / 8);
 
 		const plank = (x = 0, long = true) =>
 			box({
@@ -60,79 +62,64 @@ export class BrokenWheelbarrow extends Mesh {
 				.translate(x, 0, 0);
 
 		// Bottom
-		geometry.merge(plank(-3 / 9));
-		geometry.merge(plank(-1 / 9));
-		geometry.merge(plank(1 / 9));
-		geometry.merge(plank(3 / 9));
+		const bottomPlank1 = plank(-3 / 9);
+		const bottomPlank2 = plank(-1 / 9);
+		const bottomPlank3 = plank(1 / 9);
+		const bottomPlank4 = plank(3 / 9);
 
 		// Left and ride sides
-		geometry.merge(
-			plank()
-				.rotateY(Math.PI / 2)
-				.translate(-3 / 9, 0, 3 / 16),
-		);
-		geometry.merge(
-			plank()
-				.rotateY(Math.PI / 2)
-				.translate(-3 / 9, 0, 7 / 16),
-		);
-		geometry.merge(
-			plank()
-				.rotateY(Math.PI / 2)
-				.translate(3 / 9, 0, 3 / 16),
-		);
-		geometry.merge(
-			plank()
-				.rotateY(Math.PI / 2)
-				.translate(3 / 9, 0, 7 / 16),
-		);
+		const leftSide1 = plank()
+			.rotateY(Math.PI / 2)
+			.translate(-3 / 9, 0, 3 / 16);
+		const leftSide2 = plank()
+			.rotateY(Math.PI / 2)
+			.translate(-3 / 9, 0, 7 / 16);
+		const rightSide1 = plank()
+			.rotateY(Math.PI / 2)
+			.translate(3 / 9, 0, 3 / 16);
+		const rightSide2 = plank()
+			.rotateY(Math.PI / 2)
+			.translate(3 / 9, 0, 7 / 16);
 
 		// Front and back sides
-		geometry.merge(
-			plank(0, false)
-				.rotateY(Math.PI / 2)
-				.rotateZ(Math.PI / 2)
-				.translate(0, 1 / 2, 0),
-		);
-		geometry.merge(
-			plank(0, false)
-				.rotateY(Math.PI / 2)
-				.rotateZ(Math.PI / 2)
-				.translate(0, 1 / 2, 7 / 32),
-		);
-		geometry.merge(
-			plank(0, false)
-				.rotateY(Math.PI / 2)
-				.rotateZ(Math.PI / 2)
-				.translate(0, 1 / 2, 14 / 32),
-		);
+		const frontSide = plank(0, false)
+			.rotateY(Math.PI / 2)
+			.rotateZ(Math.PI / 2)
+			.translate(0, 1 / 2, 0);
+		const backSide1 = plank(0, false)
+			.rotateY(Math.PI / 2)
+			.rotateZ(Math.PI / 2)
+			.translate(0, 1 / 2, 7 / 32);
+		const backSide2 = plank(0, false)
+			.rotateY(Math.PI / 2)
+			.rotateZ(Math.PI / 2)
+			.translate(0, 1 / 2, 14 / 32);
 
-		const back = new Geometry();
-		back.merge(
-			plank(0, false)
-				.rotateY(Math.PI / 2)
-				.rotateZ(Math.PI / 2)
-				.translate(0, -1 / 2, 0),
-		);
-		back.merge(
-			plank(0, false)
-				.rotateY(Math.PI / 2)
-				.rotateZ(Math.PI / 2)
-				.translate(0, -1 / 2, 7 / 32),
-		);
-		back.merge(
-			plank(0, false)
-				.rotateY(Math.PI / 2)
-				.rotateZ(Math.PI / 2)
-				.translate(0, -1 / 2, 14 / 32),
-		);
-		back.merge(corner(-3 / 8, -1 / 2));
-		back.merge(corner(3 / 8, -1 / 2));
+		const back1 = plank(0, false)
+			.rotateY(Math.PI / 2)
+			.rotateZ(Math.PI / 2)
+			.translate(0, -1 / 2, 0);
+		const back2 = plank(0, false)
+			.rotateY(Math.PI / 2)
+			.rotateZ(Math.PI / 2)
+			.translate(0, -1 / 2, 7 / 32);
+		const back3 = plank(0, false)
+			.rotateY(Math.PI / 2)
+			.rotateZ(Math.PI / 2)
+			.translate(0, -1 / 2, 14 / 32);
+		const back4 = corner(-3 / 8, -1 / 2);
+		const back5 = corner(3 / 8, -1 / 2);
+		const back = BufferGeometryUtils.mergeBufferGeometries([
+			back1,
+			back2,
+			back3,
+			back4,
+			back5,
+		]);
 		back.center()
 			.rotateX(Math.PI / 2)
 			.rotateZ(Math.PI / 4)
 			.translate(1 / 4, -7 / 8, 0);
-		geometry.merge(back);
 
 		const handles = (x: number) =>
 			box({
@@ -143,15 +130,38 @@ export class BrokenWheelbarrow extends Mesh {
 			}).translate(x, -1 / 2 - 3 / 4 / 2, 0);
 
 		// Handles
-		geometry.merge(handles(-3 / 8));
-		geometry.merge(handles(3 / 8));
+		const handle1 = handles(-3 / 8);
+		const handle2 = handles(3 / 8);
 
-		geometry.computeFaceNormals();
+		const geometry = BufferGeometryUtils.mergeBufferGeometries([
+			leftWheel,
+			rightWheel,
+			leftCorner,
+			rightCorner,
+			leftSupport,
+			rightSupport,
+			bottomPlank1,
+			bottomPlank2,
+			bottomPlank3,
+			bottomPlank4,
+			leftSide1,
+			leftSide2,
+			rightSide1,
+			rightSide2,
+			frontSide,
+			backSide1,
+			backSide2,
+			handle1,
+			handle2,
+			back,
+		]);
+
+		// geometry.computeFaceNormals();
 		geometry.computeVertexNormals();
 
 		geometry.rotateZ(Randomizer.flatSpread(Math.PI / 2, Math.PI / 16));
 
-		super(new BufferGeometry().fromGeometry(geometry), faceColorMaterial);
+		super(geometry, faceColorMaterial);
 
 		this.castShadow = true;
 		this.receiveShadow = true;

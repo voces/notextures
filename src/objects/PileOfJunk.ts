@@ -1,8 +1,9 @@
 import { Color, Curve, MathUtils, Mesh, Vector2, Vector3 } from "three";
+
+import { cloth, rope, steel, stone, wood } from "../colors.js";
+import { faceColorMaterial } from "../materials.js";
 import Builder from "./util/Builder.js";
 import Randomizer from "./util/Randomizer.js";
-import { cloth, rope, wood, stone } from "../colors.js";
-import { faceColorMaterial } from "../materials.js";
 
 // TODO: This has a lot of smaller geometries; we should pull them out to be reusable
 
@@ -117,24 +118,33 @@ const sword = {
 	radius: 1 / 96,
 	builder: (b: Builder) =>
 		b
+			// blade base
 			.cylinder(1 / 96, 1 / 96, 15 / 16)
 			.scale(2, 1, 1 / 4)
 			.translateY(15 / 32)
-			.parent!.cone(1 / 96, 2 / 96)
+			.color(steel)
+			.parent! // pommel
+			.cone(1 / 96, 2 / 96)
 			.translateY(30 / 32 + 2 / 96 / 2)
 			.scale(2, 1, 1 / 4)
-			.parent!.cylinder(1 / 96, 1 / 96, 1 / 8)
+			.color(steel)
+			.parent! // guard
+			.cylinder(1 / 96, 1 / 96, 1 / 8)
 			.rotateZ(Math.PI / 2)
 			.color(wood)
-			.parent!.cylinder(1 / 64 / 4, 1 / 96, 1 / 8)
-			.parent!.tube(
+			.parent! // blade bump
+			.cylinder(1 / 64 / 4, 1 / 96, 1 / 8)
+			.color(steel)
+			.parent! // pommel rope
+			.tube(
 				new Helix(Math.PI * 64, 1 / 16, 1 / 128, 1 / 96),
 				256,
 				1 / 1024,
 			)
 			.rotateX(Math.PI / 2)
 			.color(rope)
-			.parent!.rotateZ(Math.PI)
+			.parent! // Base
+			.rotateZ(Math.PI)
 			.translateY(30 / 32 + 2 / 96)
 			.rotateY(Math.PI * Math.random()),
 };
@@ -237,7 +247,7 @@ export class PileOfJunk extends Mesh {
 				child.rotateX(Math.PI / 2).translate(center.x, center.y);
 			})
 			.root()
-			.buffer();
+			.geometry();
 
 		super(geometry, faceColorMaterial);
 
