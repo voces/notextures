@@ -37265,14 +37265,17 @@ var rotate = (faces) => {
 var nudge2 = (factor = 1) => (Math.random() - 0.5) * (Math.random() - 0.5) * factor;
 var noise = (vertexMap) => {
   for (const l1 of vertexMap)
-    for (const l2 of l1)
-      for (const l3 of l2) {
-        if (!l3)
-          continue;
-        l3.x += nudge2(0.75);
-        l3.y += nudge2(0.75);
-        l3.z += nudge2(0.5);
-      }
+    if (l1) {
+      for (const l2 of l1)
+        if (l2)
+          for (const l3 of l2) {
+            if (!l3)
+              continue;
+            l3.x += nudge2(0.75);
+            l3.y += nudge2(0.75);
+            l3.z += nudge2(0.5);
+          }
+    }
 };
 var findLastIndex2 = (arr, fn, fromIndex = arr.length - 1) => {
   for (let i = fromIndex; i >= 0; i--)

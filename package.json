@@ -1,6 +1,6 @@
 {
   "name": "notextures",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "description": "Low-poly meshes for three.js",
   "homepage": "https://voces.github.io/notextures",
   "keywords": [
@@ -20,7 +20,7 @@
     "build": "npm run build-viewer && npm run build-src && npm run build-src-types",
     "dev": "node scripts/dev.js",
     "lint": "eslint 'src/**/*.ts' --quiet --fix",
-    "prepublishOnly": "rm -rf dist && npm run build",
+    "prepublishOnly": "rm -rf node_modules && npm i && rm -rf dist && npm run build",
     "test-lint": "eslint src --ext .js,.ts,.jsx,.tsx --max-warnings 0",
     "test": "jest",
     "test-debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
