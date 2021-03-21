@@ -60,13 +60,15 @@ const nudge = (factor = 1) =>
 // Randomly move vertices a bit (so we don't have completely flat surfaces)
 const noise = (vertexMap: (Vector3[] & { water?: Vector3 })[][]) => {
 	for (const l1 of vertexMap)
-		for (const l2 of l1)
-			for (const l3 of l2) {
-				if (!l3) continue;
-				l3.x += nudge(0.75);
-				l3.y += nudge(0.75);
-				l3.z += nudge(0.5);
-			}
+		if (l1)
+			for (const l2 of l1)
+				if (l2)
+					for (const l3 of l2) {
+						if (!l3) continue;
+						l3.x += nudge(0.75);
+						l3.y += nudge(0.75);
+						l3.z += nudge(0.5);
+					}
 };
 
 const findLastIndex = <T>(
