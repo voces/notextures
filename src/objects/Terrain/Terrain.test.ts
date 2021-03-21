@@ -1,11 +1,11 @@
 import {
 	calcCliffHeight,
 	calcCliffHeightCorner,
-	CliffMask,
 	Cliff,
+	CliffMask,
 	CORNERS,
 } from "./Terrain";
-import { trim, cliffMap } from "./utils";
+import { cliffMap, trim } from "./utils";
 
 /** Calls calcCliffHeight on each cell and reformats it as a tuple of tuples. */
 const calcMultiCliffHeight = (cliffMask: CliffMask) => {

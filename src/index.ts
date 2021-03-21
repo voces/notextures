@@ -5,5 +5,5 @@ export * from "./tiles";
 
 import * as _Objects from "./objects";
 const { stringMap, cliffMap, ...Objects } = _Objects;
-export { stringMap, cliffMap, Objects };
+export { cliffMap, Objects, stringMap };
 export * from "./objects";

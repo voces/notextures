@@ -1,4 +1,4 @@
-import { stringMap, cliffMap } from "./utils";
+import { cliffMap, stringMap } from "./utils";
 
 describe("stringMap", () => {
 	it("works", () => {
