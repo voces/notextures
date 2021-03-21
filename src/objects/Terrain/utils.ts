@@ -71,7 +71,7 @@ export const cliffMap = (map: string): CliffMask => {
 				continue;
 			}
 
-			if (v === "." || v === " ") {
+			if (v === ".") {
 				const left = row[x - 1];
 				if (typeof left === "number") {
 					row.push(left);
