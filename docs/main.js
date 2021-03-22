@@ -37607,6 +37607,7 @@ var Terrain = class extends Group {
       face.color.g,
       face.color.b
     ])), 3));
+    geometry2.computeVertexNormals();
     geometry2.translate(-offset.x, offset.y, offset.z);
     return {geometry: geometry2, material: faceColorMaterial};
   }

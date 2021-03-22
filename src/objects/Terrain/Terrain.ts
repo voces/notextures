@@ -717,6 +717,8 @@ export class Terrain extends Group {
 			),
 		);
 
+		geometry.computeVertexNormals();
+
 		// Center x & y
 		geometry.translate(-offset.x, offset.y, offset.z);
 
