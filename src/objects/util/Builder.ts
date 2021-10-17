@@ -1,8 +1,8 @@
+import type { Color } from "three";
 import {
 	BoxGeometry,
 	BufferAttribute,
 	BufferGeometry,
-	Color,
 	ConeGeometry,
 	CylinderGeometry,
 	LatheGeometry,
@@ -14,10 +14,11 @@ import {
 	Vector2,
 	Vector3,
 } from "three";
-import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtils";
+import { mergeBufferGeometries } from "three/examples/jsm/utils/BufferGeometryUtils";
 
 import { faceColorMaterial } from "../../materials.js";
-import Randomizer, { Variation } from "./Randomizer.js";
+import type { Variation } from "./Randomizer.js";
+import Randomizer from "./Randomizer.js";
 import { getColorAttribute } from "./utils.js";
 
 export const createBufferGeometry = (): BufferGeometry => {
@@ -336,7 +337,7 @@ export default class Builder {
 	}
 
 	blur(degree = 0.01): Builder {
-		this._blur = (this._blur || 0) + degree;
+		this._blur = (this._blur ?? 0) + degree;
 		return this;
 	}
 
@@ -441,7 +442,7 @@ export default class Builder {
 			: createBufferGeometry();
 
 		if (this.children.length)
-			geometry = BufferGeometryUtils.mergeBufferGeometries([
+			geometry = mergeBufferGeometries([
 				geometry,
 				...this.children.map((c) => {
 					const geo = c.geometry();

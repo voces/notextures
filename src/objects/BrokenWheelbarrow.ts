@@ -1,10 +1,12 @@
-import { Color, MathUtils, Mesh } from "three";
-import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtils";
+import type { Color } from "three";
+import { MathUtils, Mesh } from "three";
+import { mergeBufferGeometries } from "three/examples/jsm/utils/BufferGeometryUtils";
 
 import { wood } from "../colors.js";
 import { faceColorMaterial } from "../materials.js";
 import { box, cylinder, nudge, randColor } from "./util/deprecatedShared.js";
-import Randomizer, { Variation } from "./util/Randomizer.js";
+import type { Variation } from "./util/Randomizer.js";
+import Randomizer from "./util/Randomizer.js";
 
 export class BrokenWheelbarrow extends Mesh {
 	constructor({
@@ -109,13 +111,7 @@ export class BrokenWheelbarrow extends Mesh {
 			.translate(0, -1 / 2, 14 / 32);
 		const back4 = corner(-3 / 8, -1 / 2);
 		const back5 = corner(3 / 8, -1 / 2);
-		const back = BufferGeometryUtils.mergeBufferGeometries([
-			back1,
-			back2,
-			back3,
-			back4,
-			back5,
-		]);
+		const back = mergeBufferGeometries([back1, back2, back3, back4, back5]);
 		back.center()
 			.rotateX(Math.PI / 2)
 			.rotateZ(Math.PI / 4)
@@ -133,7 +129,7 @@ export class BrokenWheelbarrow extends Mesh {
 		const handle1 = handles(-3 / 8);
 		const handle2 = handles(3 / 8);
 
-		const geometry = BufferGeometryUtils.mergeBufferGeometries([
+		const geometry = mergeBufferGeometries([
 			leftWheel,
 			rightWheel,
 			leftCorner,

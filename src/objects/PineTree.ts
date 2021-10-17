@@ -1,5 +1,5 @@
 import { Color, ConeGeometry, CylinderGeometry, MathUtils, Mesh } from "three";
-import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtils";
+import { mergeBufferGeometries } from "three/examples/jsm/utils/BufferGeometryUtils";
 
 import { faceColorMaterial } from "../materials";
 import Builder from "./util/Builder";
@@ -128,7 +128,7 @@ export class PineTree extends Mesh {
 		if (shelfs === undefined)
 			shelfs = height > 10 / 3 ? 3 + (Math.random() > 0.5 ? 1 : 0) : 3;
 
-		const geometry = BufferGeometryUtils.mergeBufferGeometries([
+		const geometry = mergeBufferGeometries([
 			createTrunk({ radius, height, color: trunk }),
 			...createShelfs({ height, radius, shelfs, color: leaves }),
 		]);

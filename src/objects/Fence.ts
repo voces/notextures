@@ -1,5 +1,6 @@
-import { Color, CylinderGeometry, MathUtils, Mesh } from "three";
-import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtils";
+import type { Color } from "three";
+import { CylinderGeometry, MathUtils, Mesh } from "three";
+import { mergeBufferGeometries } from "three/examples/jsm/utils/BufferGeometryUtils";
 
 import { wood } from "../colors.js";
 import { faceColorMaterial } from "../materials.js";
@@ -129,7 +130,7 @@ export class Fence extends Mesh {
 		angle = 0,
 		color = wood.clone().offsetHSL(MathUtils.randFloatSpread(1 / 36), 0, 0),
 	} = {}) {
-		const geometry = BufferGeometryUtils.mergeBufferGeometries([
+		const geometry = mergeBufferGeometries([
 			...createPosts({ length, width, height, angle, color }),
 			...createRails({ length, width, height, angle, color }),
 		]);

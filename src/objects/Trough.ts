@@ -1,5 +1,5 @@
 import { BufferAttribute, MathUtils, Mesh, PlaneGeometry } from "three";
-import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtils";
+import { mergeBufferGeometries } from "three/examples/jsm/utils/BufferGeometryUtils";
 
 import { water as waterColor, wood } from "../colors.js";
 import { faceColorMaterial, waterMaterial } from "../materials.js";
@@ -62,22 +62,19 @@ export class Trough extends Mesh {
 		const right = wall({ thickness, length: length + thickness, height });
 		right.rotateY(MathUtils.randFloat(1 / 5, 1 / 3));
 		right.translate(width / 2 - thickness / 2, 0, 0);
-		geometry = BufferGeometryUtils.mergeBufferGeometries([geometry, right]);
+		geometry = mergeBufferGeometries([geometry, right]);
 
 		const top = wall({ thickness, length: width, height });
 		top.rotateY(MathUtils.randFloat(1 / 5, 1 / 3));
 		top.rotateZ(Math.PI / 2);
 		top.translate(0, length / 2 - thickness / 2, 0);
-		geometry = BufferGeometryUtils.mergeBufferGeometries([geometry, top]);
+		geometry = mergeBufferGeometries([geometry, top]);
 
 		const bottom = wall({ thickness, length: width, height });
 		bottom.rotateY(-MathUtils.randFloat(1 / 5, 1 / 3));
 		bottom.rotateZ(Math.PI / 2);
 		bottom.translate(0, -length / 2 + thickness / 2, 0);
-		geometry = BufferGeometryUtils.mergeBufferGeometries([
-			geometry,
-			bottom,
-		]);
+		geometry = mergeBufferGeometries([geometry, bottom]);
 
 		const topLeft = spoke({ thickness, height });
 		topLeft.rotateY(MathUtils.randFloat(1 / 5, 1 / 3));
@@ -88,10 +85,7 @@ export class Trough extends Mesh {
 			length / 2 - thickness / 2,
 			0,
 		);
-		geometry = BufferGeometryUtils.mergeBufferGeometries([
-			geometry,
-			topLeft,
-		]);
+		geometry = mergeBufferGeometries([geometry, topLeft]);
 
 		const topRight = spoke({ thickness, height });
 		topRight.rotateY(MathUtils.randFloat(1 / 5, 1 / 3));
@@ -102,10 +96,7 @@ export class Trough extends Mesh {
 			length / 2 - thickness / 2,
 			0,
 		);
-		geometry = BufferGeometryUtils.mergeBufferGeometries([
-			geometry,
-			topRight,
-		]);
+		geometry = mergeBufferGeometries([geometry, topRight]);
 
 		const bottomLeft = spoke({ thickness, height });
 		bottomLeft.rotateY(-MathUtils.randFloat(1 / 5, 1 / 3));
@@ -116,10 +107,7 @@ export class Trough extends Mesh {
 			-length / 2 + thickness / 2,
 			0,
 		);
-		geometry = BufferGeometryUtils.mergeBufferGeometries([
-			geometry,
-			bottomLeft,
-		]);
+		geometry = mergeBufferGeometries([geometry, bottomLeft]);
 
 		const bottomRight = spoke({ thickness, height });
 		bottomRight.rotateY(-MathUtils.randFloat(1 / 5, 1 / 3));
@@ -130,10 +118,7 @@ export class Trough extends Mesh {
 			-length / 2 + thickness / 2,
 			0,
 		);
-		geometry = BufferGeometryUtils.mergeBufferGeometries([
-			geometry,
-			bottomRight,
-		]);
+		geometry = mergeBufferGeometries([geometry, bottomRight]);
 
 		geometry.addGroup(0, geometry.getAttribute("position").count * 2, 0);
 
@@ -152,10 +137,7 @@ export class Trough extends Mesh {
 				waterColor.b,
 			);
 
-		geometry = BufferGeometryUtils.mergeBufferGeometries(
-			[geometry, water],
-			true,
-		);
+		geometry = mergeBufferGeometries([geometry, water], true);
 
 		geometry.rotateZ(angle - Math.PI / 4);
 

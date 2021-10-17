@@ -1,5 +1,5 @@
 import { Color, Mesh, Vector2 } from "three";
-import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtils";
+import { mergeBufferGeometries } from "three/examples/jsm/utils/BufferGeometryUtils";
 
 import { wood } from "../colors.js";
 import { faceColorMaterial } from "../materials.js";
@@ -84,7 +84,7 @@ export class BrokenHayCart extends Mesh {
 			.geometry();
 
 		// Hay
-		geometry = BufferGeometryUtils.mergeBufferGeometries([
+		geometry = mergeBufferGeometries([
 			geometry,
 			new Builder()
 				.for(3, (b, z) =>

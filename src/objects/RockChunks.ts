@@ -1,5 +1,6 @@
-import { Color, MathUtils, Mesh } from "three";
-import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtils";
+import type { Color } from "three";
+import { MathUtils, Mesh } from "three";
+import { mergeBufferGeometries } from "three/examples/jsm/utils/BufferGeometryUtils";
 
 import { stone } from "../colors.js";
 import { faceColorMaterial } from "../materials.js";
@@ -9,7 +10,7 @@ import {
 	randColor,
 	tetrahedron,
 } from "./util/deprecatedShared.js";
-import { Variation } from "./util/Randomizer.js";
+import type { Variation } from "./util/Randomizer.js";
 
 export class RockChunks extends Mesh {
 	constructor({
@@ -46,10 +47,7 @@ export class RockChunks extends Mesh {
 			chunks.push(chunk);
 		}
 
-		const geometry = BufferGeometryUtils.mergeBufferGeometries([
-			base,
-			...chunks,
-		]);
+		const geometry = mergeBufferGeometries([base, ...chunks]);
 		geometry.computeVertexNormals();
 
 		super(geometry, faceColorMaterial);
