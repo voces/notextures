@@ -1,6 +1,6 @@
+import type { BufferGeometry } from "three";
 import {
 	BoxGeometry,
-	BufferGeometry,
 	Color,
 	CylinderGeometry,
 	DodecahedronGeometry,
@@ -9,7 +9,8 @@ import {
 	Vector3,
 } from "three";
 
-import Randomizer, { Variation } from "./Randomizer.js";
+import type { Variation } from "./Randomizer.js";
+import Randomizer from "./Randomizer.js";
 import { getColorAttribute } from "./utils.js";
 
 export const nudge = Randomizer.spreader(1 / 16, 1 / 4);
@@ -84,7 +85,7 @@ const randomize = (
 	// 	);
 
 	const positionVariation = nudge;
-	((geometry as unknown) as { position: Vector3 }).position = new Vector3(
+	(geometry as unknown as { position: Vector3 }).position = new Vector3(
 		positionVariation(0),
 		positionVariation(0),
 		positionVariation(0),

@@ -17,7 +17,7 @@
 		"build-src-types": "echo 'Building types...' && tsc --project tsconfig.build.json && echo 'Done!'",
 		"build-src": "esbuild src/index.ts --external:three --bundle --sourcemap --format=esm --outdir=dist",
 		"build-viewer": "esbuild viewer/main.ts --bundle --sourcemap --format=esm --outdir=docs",
-		"build": "npm run build-viewer && npm run build-src && npm run build-src-types",
+		"build": "rm -rf dist && npm run build-viewer && npm run build-src && npm run build-src-types",
 		"dev": "node scripts/dev.js",
 		"lint": "eslint 'src/**/*.ts' --quiet --fix",
 		"prepublishOnly": "rm -rf node_modules && npm i && rm -rf dist && npm run build",

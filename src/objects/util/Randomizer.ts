@@ -1,6 +1,7 @@
-import { BufferGeometry, Color, Vector3 } from "three";
+import type { BufferGeometry, Vector3 } from "three";
+import { Color } from "three";
 
-import Builder from "./Builder.js";
+import type Builder from "./Builder.js";
 import { getColorAttribute, getVertexCount } from "./utils.js";
 
 export type Variation = (value: number) => number;
@@ -106,9 +107,9 @@ export default class Randomizer {
 		variation = this.spreader(),
 	): BufferGeometry {
 		return geometry.translate(
-			variation(position?.x || 0),
-			variation(position?.y || 0),
-			variation(position?.z || 0),
+			variation(position?.x ?? 0),
+			variation(position?.y ?? 0),
+			variation(position?.z ?? 0),
 		);
 	}
 

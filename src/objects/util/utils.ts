@@ -1,9 +1,5 @@
-import {
-	BufferAttribute,
-	BufferGeometry,
-	Color,
-	InterleavedBufferAttribute,
-} from "three";
+import type { BufferGeometry, Color, InterleavedBufferAttribute } from "three";
+import { BufferAttribute } from "three";
 
 export const getVertexCount = (geometry: BufferGeometry): number => {
 	const positions = geometry.getAttribute("position");

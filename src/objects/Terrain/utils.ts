@@ -1,4 +1,4 @@
-import { Cliff, CliffMask } from "./Terrain";
+import type { Cliff, CliffMask } from "./Terrain";
 
 /** Calculates how much white space the string starts with. */
 const leftTrim = (v: string) => {

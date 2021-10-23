@@ -1,10 +1,5 @@
-import {
-	calcCliffHeight,
-	calcCliffHeightCorner,
-	Cliff,
-	CliffMask,
-	CORNERS,
-} from "./Terrain";
+import type { Cliff, CliffMask } from "./Terrain";
+import { calcCliffHeight, calcCliffHeightCorner, CORNERS } from "./Terrain";
 import { cliffMap, trim } from "./utils";
 
 /** Calls calcCliffHeight on each cell and reformats it as a tuple of tuples. */
@@ -13,12 +8,8 @@ const calcMultiCliffHeight = (cliffMask: CliffMask) => {
 	for (let y = 0; y < cliffMask.length; y++) {
 		results[y] = [];
 		for (let x = 0; x < cliffMask[y].length; x++) {
-			const {
-				topLeft,
-				topRight,
-				bottomLeft,
-				bottomRight,
-			} = calcCliffHeight(cliffMask, x, y);
+			const { topLeft, topRight, bottomLeft, bottomRight } =
+				calcCliffHeight(cliffMask, x, y);
 			results[y][x] = [
 				[topLeft, topRight],
 				[bottomLeft, bottomRight],

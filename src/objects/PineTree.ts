@@ -78,8 +78,8 @@ const createShelfs = ({
 			);
 
 		// todo: does this do anything?
-		((shelf as unknown) as { radius: number }).radius = shelfRadius;
-		((shelf as unknown) as { height: number }).height = shelfRadius * 2;
+		(shelf as unknown as { radius: number }).radius = shelfRadius;
+		(shelf as unknown as { height: number }).height = shelfRadius * 2;
 
 		height -= (shelfRadius ** 0.65 / shelfs) * (Math.random() / 3 + 2.5);
 

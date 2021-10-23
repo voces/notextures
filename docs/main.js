@@ -25188,7 +25188,7 @@ var Randomizer = class {
     return this;
   }
   static translate(geometry2, position, variation = this.spreader()) {
-    return geometry2.translate(variation(position?.x || 0), variation(position?.y || 0), variation(position?.z || 0));
+    return geometry2.translate(variation(position?.x ?? 0), variation(position?.y ?? 0), variation(position?.z ?? 0));
   }
   translate(position, variation) {
     Randomizer.translate(this.geometry, position, variation);
@@ -36094,16 +36094,16 @@ var possibleConstructorReturn = function(self2, call) {
   }
   return call && (typeof call === "object" || typeof call === "function") ? call : self2;
 };
-var Color3 = function() {
-  function Color4() {
-    classCallCheck(this, Color4);
+var Color2 = function() {
+  function Color3() {
+    classCallCheck(this, Color3);
     this.__state = interpret.apply(this, arguments);
     if (this.__state === false) {
       throw new Error("Failed to interpret color arguments");
     }
     this.__state.a = this.__state.a || 1;
   }
-  createClass(Color4, [{
+  createClass(Color3, [{
     key: "toString",
     value: function toString2() {
       return colorToString(this);
@@ -36119,7 +36119,7 @@ var Color3 = function() {
       return this.__state.conversion.write(this);
     }
   }]);
-  return Color4;
+  return Color3;
 }();
 function defineRGBComponent(target, component, componentHexIndex) {
   Object.defineProperty(target, component, {
@@ -36127,12 +36127,12 @@ function defineRGBComponent(target, component, componentHexIndex) {
       if (this.__state.space === "RGB") {
         return this.__state[component];
       }
-      Color3.recalculateRGB(this, component, componentHexIndex);
+      Color2.recalculateRGB(this, component, componentHexIndex);
       return this.__state[component];
     },
     set: function set$$13(v) {
       if (this.__state.space !== "RGB") {
-        Color3.recalculateRGB(this, component, componentHexIndex);
+        Color2.recalculateRGB(this, component, componentHexIndex);
         this.__state.space = "RGB";
       }
       this.__state[component] = v;
@@ -36145,19 +36145,19 @@ function defineHSVComponent(target, component) {
       if (this.__state.space === "HSV") {
         return this.__state[component];
       }
-      Color3.recalculateHSV(this);
+      Color2.recalculateHSV(this);
       return this.__state[component];
     },
     set: function set$$13(v) {
       if (this.__state.space !== "HSV") {
-        Color3.recalculateHSV(this);
+        Color2.recalculateHSV(this);
         this.__state.space = "HSV";
       }
       this.__state[component] = v;
     }
   });
 }
-Color3.recalculateRGB = function(color2, component, componentHexIndex) {
+Color2.recalculateRGB = function(color2, component, componentHexIndex) {
   if (color2.__state.space === "HEX") {
     color2.__state[component] = ColorMath.component_from_hex(color2.__state.hex, componentHexIndex);
   } else if (color2.__state.space === "HSV") {
@@ -36166,7 +36166,7 @@ Color3.recalculateRGB = function(color2, component, componentHexIndex) {
     throw new Error("Corrupted color state");
   }
 };
-Color3.recalculateHSV = function(color2) {
+Color2.recalculateHSV = function(color2) {
   var result3 = ColorMath.rgb_to_hsv(color2.r, color2.g, color2.b);
   Common.extend(color2.__state, {
     s: result3.s,
@@ -36178,14 +36178,14 @@ Color3.recalculateHSV = function(color2) {
     color2.__state.h = 0;
   }
 };
-Color3.COMPONENTS = ["r", "g", "b", "h", "s", "v", "hex", "a"];
-defineRGBComponent(Color3.prototype, "r", 2);
-defineRGBComponent(Color3.prototype, "g", 1);
-defineRGBComponent(Color3.prototype, "b", 0);
-defineHSVComponent(Color3.prototype, "h");
-defineHSVComponent(Color3.prototype, "s");
-defineHSVComponent(Color3.prototype, "v");
-Object.defineProperty(Color3.prototype, "a", {
+Color2.COMPONENTS = ["r", "g", "b", "h", "s", "v", "hex", "a"];
+defineRGBComponent(Color2.prototype, "r", 2);
+defineRGBComponent(Color2.prototype, "g", 1);
+defineRGBComponent(Color2.prototype, "b", 0);
+defineHSVComponent(Color2.prototype, "h");
+defineHSVComponent(Color2.prototype, "s");
+defineHSVComponent(Color2.prototype, "v");
+Object.defineProperty(Color2.prototype, "a", {
   get: function get$$1() {
     return this.__state.a;
   },
@@ -36193,7 +36193,7 @@ Object.defineProperty(Color3.prototype, "a", {
     this.__state.a = v;
   }
 });
-Object.defineProperty(Color3.prototype, "hex", {
+Object.defineProperty(Color2.prototype, "hex", {
   get: function get$$12() {
     if (this.__state.space !== "HEX") {
       this.__state.hex = ColorMath.rgb_to_hex(this.r, this.g, this.b);
@@ -36787,8 +36787,8 @@ var ColorController = function(_Controller) {
   function ColorController2(object, property2) {
     classCallCheck(this, ColorController2);
     var _this2 = possibleConstructorReturn(this, (ColorController2.__proto__ || Object.getPrototypeOf(ColorController2)).call(this, object, property2));
-    _this2.__color = new Color3(_this2.getValue());
-    _this2.__temp = new Color3(0);
+    _this2.__color = new Color2(_this2.getValue());
+    _this2.__temp = new Color2(0);
     var _this = _this2;
     _this2.domElement = document.createElement("div");
     dom.makeSelectable(_this2.domElement, false);
@@ -36981,7 +36981,7 @@ var ColorController = function(_Controller) {
       var i = interpret(this.getValue());
       if (i !== false) {
         var mismatch = false;
-        Common.each(Color3.COMPONENTS, function(component) {
+        Common.each(Color2.COMPONENTS, function(component) {
           if (!Common.isUndefined(i[component]) && !Common.isUndefined(this.__color.__state[component]) && i[component] !== this.__color.__state[component]) {
             mismatch = true;
             return {};
