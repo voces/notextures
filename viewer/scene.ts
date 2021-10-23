@@ -1,4 +1,5 @@
 import _ from "lodash-es";
+import type { Object3D } from "three";
 import {
 	BufferAttribute,
 	Color,
@@ -7,7 +8,6 @@ import {
 	HemisphereLight,
 	Mesh,
 	MeshPhongMaterial,
-	Object3D,
 	PerspectiveCamera,
 	PlaneBufferGeometry,
 	Scene,
@@ -95,11 +95,13 @@ window.addEventListener("keydown", (e) => {
 
 // Mesh object
 let obj: Object3D;
-let Klass: typeof Object3D;
+let generator: () => Object3D;
 let lastParams: typeof params = { ...params };
 
-export const remakeObjects = (NewKlass: typeof Object3D = Klass): void => {
-	if (Klass !== NewKlass) Klass = NewKlass;
+export const remakeObjects = (
+	newGenerator: () => Object3D = generator,
+): void => {
+	if (generator !== newGenerator) generator = newGenerator;
 
 	const oldZ = obj?.rotation.z ?? 0;
 	if (obj) scene.remove(obj);
@@ -113,7 +115,7 @@ export const remakeObjects = (NewKlass: typeof Object3D = Klass): void => {
 
 	for (let x = 0; x < params.width; x++)
 		for (let y = 0; y < params.height; y++) {
-			const child = new Klass();
+			const child = generator();
 			child.position.x = (x - xMid) * params.spacing;
 			child.position.y = (y - yMid) * params.spacing;
 			obj.add(child);

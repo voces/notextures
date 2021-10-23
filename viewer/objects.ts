@@ -79,7 +79,9 @@ class Terrain extends BaseTerrain {
 		const offset = { x: size.width / 2, y: size.height / 2, z: 0 };
 		super({ ...props, size, offset });
 
-		this.scale.z = 0.5;
+		this.scale.z = 0.25;
+		this.scale.x = 0.5;
+		this.scale.y = 0.5;
 	}
 }
 

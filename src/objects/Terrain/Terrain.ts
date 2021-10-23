@@ -1,12 +1,12 @@
 // https://github.com/mrdoob/three.js/blob/master/examples/js/objects/Water2.js
 
+import type { MeshPhongMaterial } from "three";
 import {
 	BufferAttribute,
 	BufferGeometry,
 	Color,
 	Group,
 	Mesh,
-	MeshPhongMaterial,
 	Vector3,
 } from "three";
 
@@ -251,9 +251,10 @@ export class Terrain extends Group {
 
 		this.groundColor = memoize((x, y) => {
 			try {
-				const hex = terrain.tiles[
-					terrain.masks.groundTile[y][x]
-				].color.toUpperCase();
+				const hex =
+					terrain.tiles[
+						terrain.masks.groundTile[y][x]
+					].color.toUpperCase();
 				return memoizedColor(hex);
 			} catch (err) {
 				throw new Error(
@@ -264,9 +265,10 @@ export class Terrain extends Group {
 
 		this.cliffColor = memoize((x, y) => {
 			try {
-				const hex = terrain.tiles[
-					terrain.masks.cliffTile[y][x]
-				].color.toUpperCase();
+				const hex =
+					terrain.tiles[
+						terrain.masks.cliffTile[y][x]
+					].color.toUpperCase();
 				return memoizedColor(hex);
 			} catch (err) {
 				throw new Error(

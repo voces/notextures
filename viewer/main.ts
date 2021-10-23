@@ -1,5 +1,5 @@
-import { remakeObjects } from "./scene";
 import meshes from "./objects";
+import { remakeObjects } from "./scene";
 
 const meshList = document.getElementById("mesh-list")!;
 
@@ -13,7 +13,7 @@ const load = (klass: string) => {
 	if (!isMeshKey(klass)) return;
 	if (selected) selected.classList.remove("selected");
 
-	remakeObjects(meshes[klass]);
+	remakeObjects(() => new meshes[klass]());
 };
 
 Object.values(meshes).forEach((klass) => {
