@@ -1,6 +1,6 @@
 {
 	"name": "notextures",
-	"version": "5.0.0",
+	"version": "5.0.1",
 	"description": "Low-poly meshes for three.js",
 	"homepage": "https://voces.github.io/notextures",
 	"keywords": [
@@ -12,7 +12,7 @@
 	],
 	"main": "dist/index.js",
 	"module": "dist/index.js",
-	"typings": "dist/index.js",
+	"types": "dist/index.d.ts",
 	"scripts": {
 		"build-src-types": "echo 'Building types...' && tsc --project tsconfig.build.json && echo 'Done!'",
 		"build-src": "esbuild src/index.ts --external:three --bundle --sourcemap --format=esm --outdir=dist",
