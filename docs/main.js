@@ -25963,10 +25963,6 @@ var MaterialGrid = class extends Mesh {
     return __privateGet(this, _materials).push(material) - 1;
   }
   setMaterial(x, y, material) {
-    if (!material) {
-      console.log("skipping", x, y);
-      return;
-    }
     const materialIndex = this.addMaterial(material);
     const start = (y * this.width + x) * 6;
     this.geometry.addGroup(start, 6, materialIndex);
