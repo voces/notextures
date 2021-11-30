@@ -283,11 +283,11 @@ export default class Builder {
 	randomize(
 		props:
 			| {
-					color: Variation;
-					position: Variation;
-					rotation: Variation;
-					scale: Variation;
-					blur: number;
+					color?: Variation | number;
+					position?: Variation | number;
+					rotation?: Variation | number;
+					scale?: Variation | number;
+					blur?: number;
 			  }
 			| number = {
 			color: Randomizer.flatSpreader(1 / 24),
@@ -297,13 +297,35 @@ export default class Builder {
 			blur: 0.01,
 		},
 	): Builder {
-		let color, position, rotation, scale, blur;
+		let color: (v: number) => number,
+			position: (v: number) => number,
+			rotation: (v: number) => number,
+			scale: ((v: number) => number) | undefined,
+			blur: number;
 		if (typeof props === "number") {
 			color = Randomizer.flatSpreader((1 / 24) * props);
 			position = Randomizer.percentSpreader((1 / 32) * props);
 			rotation = Randomizer.flatSpreader((1 / 16) * props);
 			blur = 0.01 * props;
-		} else ({ color, position, rotation, scale, blur } = props);
+		} else {
+			color =
+				typeof props.color === "number"
+					? Randomizer.flatSpreader((1 / 24) * props.color)
+					: props.color ?? Randomizer.flatSpreader(1 / 24);
+			position =
+				typeof props.position === "number"
+					? Randomizer.percentSpreader((1 / 32) * props.position)
+					: props.position ?? Randomizer.percentSpreader(1 / 32);
+			rotation =
+				typeof props.rotation === "number"
+					? Randomizer.flatSpreader((1 / 16) * props.rotation)
+					: props.rotation ?? Randomizer.flatSpreader(1 / 16);
+			scale =
+				typeof props.scale === "number"
+					? Randomizer.flatSpreader((1 / 32) * props.scale)
+					: props.scale ?? Randomizer.flatSpreader(1 / 32);
+			blur = 0.01 * (props.blur ?? 1);
+		}
 
 		if (color) {
 			if (typeof color === "number")

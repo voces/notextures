@@ -1,15 +1,10 @@
 import _ from "lodash-es";
 import type { Object3D } from "three";
 import {
-	BufferAttribute,
 	Color,
-	DoubleSide,
 	Group,
 	HemisphereLight,
-	Mesh,
-	MeshPhongMaterial,
 	PerspectiveCamera,
-	PlaneBufferGeometry,
 	Scene,
 	Vector3,
 	WebGLRenderer,
@@ -36,39 +31,14 @@ camera.position.copy(cameraInitialPosition);
 camera.rotation.x = 0.7;
 
 // Light
-const light = new HemisphereLight(0xffffbb, 0x144452, 2);
+const light = new HemisphereLight(0x144452, 0xffffddd, 2);
 scene.add(light);
-
-// Ground
-const geometry = new PlaneBufferGeometry(128, 128, 16, 16);
-const count = geometry.attributes.position.count;
-geometry.setAttribute(
-	"color",
-	new BufferAttribute(new Float32Array(count * 3), 3),
-);
-
-const color = new Color();
-const colors = geometry.attributes.color;
-for (let i = 0; i < count; i++) {
-	color.setHSL(0.1 + Math.random() / 5, 0.7, 0.5);
-	colors.setXYZ(i, color.r, color.g, color.b);
-}
-
-const material = new MeshPhongMaterial({
-	color: 0xffffff,
-	flatShading: true,
-	vertexColors: true,
-	shininess: 0,
-	side: DoubleSide,
-});
-const plane = new Mesh(geometry, material);
-plane.position.z = -5;
-scene.add(plane);
 
 // Renderer
 const renderer = new WebGLRenderer({ antialias: true });
 consoleExports.renderer = renderer;
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(new Color("#444"));
 document.body.appendChild(renderer.domElement);
 
 window.addEventListener("resize", () => {
@@ -80,7 +50,7 @@ window.addEventListener("resize", () => {
 // Controls
 const controls = new OrbitControls(camera, renderer.domElement);
 consoleExports.controls = controls;
-const storedState = localStorage.getItem("camera");
+const storedState = localStorage.getItem("notextures.camera");
 if (storedState) {
 	const data = JSON.parse(storedState);
 	camera.position.copy(data.position);
@@ -101,12 +71,15 @@ let lastParams: typeof params = { ...params };
 export const remakeObjects = (
 	newGenerator: () => Object3D = generator,
 ): void => {
+	renderer.setClearColor(new Color(params.background));
+
 	if (generator !== newGenerator) generator = newGenerator;
 
 	const oldZ = obj?.rotation.z ?? 0;
 	if (obj) scene.remove(obj);
 
 	obj = new Group();
+	obj.castShadow = true;
 
 	const xMid = (params.width - 1) / 2;
 	const yMid = (params.height - 1) / 2;
@@ -131,6 +104,7 @@ function render() {
 	if (!_.isEqual(params, lastParams)) {
 		remakeObjects();
 		lastParams = { ...params };
+		localStorage.setItem("notextures.params", JSON.stringify(lastParams));
 	}
 
 	renderer.render(scene, camera);
@@ -138,7 +112,7 @@ function render() {
 
 setInterval(() => {
 	localStorage.setItem(
-		"camera",
+		"notextures.camera",
 		JSON.stringify({
 			position: controls.object.position,
 			target: controls.target,

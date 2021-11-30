@@ -4,6 +4,7 @@ export * from "./BrokenWheelbarrow";
 export * from "./Fence";
 export * from "./Grid";
 export * from "./HayCart";
+export * from "./MaterialGrid";
 export * from "./PileOfJunk";
 export * from "./PineTree";
 export * from "./RockChunks";

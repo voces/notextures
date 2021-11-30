@@ -16,17 +16,19 @@ const load = (klass: string) => {
 	remakeObjects(() => new meshes[klass]());
 };
 
-Object.values(meshes).forEach((klass) => {
-	const li = document.createElement("li");
-	const a = document.createElement("a");
-	a.setAttribute("href", `#${klass.name}`);
-	a.textContent = klass.name;
-	li.appendChild(a);
-	a.addEventListener("click", () => {
-		setTimeout(() => load(klass.name), 0);
+Object.values(meshes)
+	.sort((a, b) => a.name.localeCompare(b.name))
+	.forEach((klass) => {
+		const li = document.createElement("li");
+		const a = document.createElement("a");
+		a.setAttribute("href", `#${klass.name}`);
+		a.textContent = klass.name;
+		li.appendChild(a);
+		a.addEventListener("click", () => {
+			setTimeout(() => load(klass.name), 0);
+		});
+		meshList.appendChild(li);
 	});
-	meshList.appendChild(li);
-});
 
 if (!location.hash) location.hash = "Barn"; // something
 load(location.hash.slice(1));

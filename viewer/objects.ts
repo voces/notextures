@@ -6,8 +6,16 @@ import {
 	LordaeronSummerRock,
 } from "../src";
 import * as Objects from "../src/objects";
+import { MaterialGrid } from "./MaterialGridExample";
 
-const { Terrain: BaseTerrain, stringMap, cliffMap, ...filtered } = Objects;
+const {
+	Grid: BaseGrid,
+	MaterialGrid: _MaterialGrid,
+	Terrain: BaseTerrain,
+	stringMap,
+	cliffMap,
+	...filtered
+} = Objects;
 
 class Terrain extends BaseTerrain {
 	constructor() {
@@ -84,10 +92,25 @@ class Terrain extends BaseTerrain {
 		this.scale.y = 0.5;
 	}
 }
-
 Object.defineProperty(Terrain, "name", { value: "Terrain" });
 
-export default { ...filtered, Terrain };
+class Grid extends BaseGrid {
+	constructor() {
+		super(2, 2);
+
+		const r = () => {
+			const a = Math.random() * Math.random();
+			return Math.random() < 0.5 ? a : 1 - a;
+		};
+		this.setColor(0, 0, r(), r(), r());
+		this.setColor(1, 0, r(), r(), r());
+		this.setColor(0, 1, r(), r(), r());
+		this.setColor(1, 1, r(), r(), r());
+	}
+}
+Object.defineProperty(Grid, "name", { value: "Grid" });
+
+export default { ...filtered, Terrain, MaterialGrid, Grid };
 
 // Make TS happy
-export { BaseTerrain };
+export { BaseGrid, BaseTerrain, MaterialGrid };

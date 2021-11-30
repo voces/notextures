@@ -1,5 +1,3 @@
 {
-    "search.exclude": {
-        "**/bundle.js": true
-	}
+  "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
 }
